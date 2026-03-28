@@ -9,7 +9,7 @@
 
 ## Phase 0: Project Skeleton
 
-### [ ] PR-01: Go project init + health endpoint
+### [x] PR-01: Go project init + health endpoint
 **Docs:** `docs/RULES.md` · `docs/ARCHITECTURE_BACKEND.md` (DI wiring section)
 **Files:** `backend/go.mod` · `backend/cmd/api/main.go` · `backend/internal/infrastructure/config/config.go` · `backend/internal/infrastructure/http/server.go` · `backend/internal/infrastructure/http/router.go` · `backend/internal/infrastructure/http/handler/health.go`
 
