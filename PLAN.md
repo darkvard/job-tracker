@@ -13,12 +13,12 @@
 **Docs:** `docs/RULES.md` · `docs/ARCHITECTURE_BACKEND.md` (DI wiring section)
 **Files:** `backend/go.mod` · `backend/cmd/api/main.go` · `backend/internal/infrastructure/config/config.go` · `backend/internal/infrastructure/http/server.go` · `backend/internal/infrastructure/http/router.go` · `backend/internal/infrastructure/http/handler/health.go`
 
-- [ ] `go mod init job-tracker`
-- [ ] Config struct with `envconfig`: PORT, DB_DSN, REDIS_ADDR, JWT_SECRET, JWT_EXPIRY — `Load()` panics on missing required fields
-- [ ] Chi router + `GET /api/v1/health` → `{"success":true,"data":{"status":"ok","version":"1.0.0"}}`
-- [ ] Graceful shutdown on `SIGINT`/`SIGTERM` with 10s timeout
-- [ ] Standardized response helpers: `respondJSON(w, status, data)` · `respondError(w, status, msg, code)`
-- [ ] Mount Swagger UI: `GET /api/v1/swagger/*` via `swaggo/http-swagger` (package: `github.com/swaggo/http-swagger`) — import blank `_ "job-tracker/docs"` in router.go
+- [x] `go mod init job-tracker`
+- [x] Config struct with `envconfig`: PORT, DB_DSN, REDIS_ADDR, JWT_SECRET, JWT_EXPIRY — `Load()` panics on missing required fields
+- [x] Chi router + `GET /api/v1/health` → `{"success":true,"data":{"status":"ok","version":"1.0.0"}}`
+- [x] Graceful shutdown on `SIGINT`/`SIGTERM` with 10s timeout
+- [x] Standardized response helpers: `respondJSON(w, status, data)` · `respondError(w, status, msg, code)`
+- [x] Mount Swagger UI: `GET /api/v1/swagger/*` via `swaggo/http-swagger` (package: `github.com/swaggo/http-swagger`) — import blank `_ "job-tracker/docs"` in router.go
 
 **Test:**
 ```bash
@@ -40,15 +40,15 @@ make swagger                  # generate initial docs (runs once to create docs/
 **Docs:** `docs/RULES.md` · `.claude/skills/patterns-go.md` · `docs/ARCHITECTURE_BACKEND.md` (DB schema + TxManager pattern)
 **Files:** `backend/internal/infrastructure/persistence/postgres.go` · `txmanager.go` · `backend/migrations/000001_init.up.sql` · `000001_init.down.sql` · `backend/pkg/ctxkey/ctxkey.go`
 
-- [ ] GORM PostgreSQL connection: `MaxOpenConns=25`, `MaxIdleConns=10`, `ConnMaxLifetime=5min`
-- [ ] `pkg/ctxkey`: typed keys + helpers `WithUserID/GetUserID · WithTx/GetTx · WithRequestID/GetRequestID`
-- [ ] `GORMTxManager` implements `domain/repository.TxManager`:
+- [x] GORM PostgreSQL connection: `MaxOpenConns=25`, `MaxIdleConns=10`, `ConnMaxLifetime=5min`
+- [x] `pkg/ctxkey`: typed keys + helpers `WithUserID/GetUserID · WithTx/GetTx · WithRequestID/GetRequestID`
+- [x] `GORMTxManager` implements `domain/repository.TxManager`:
   - `WithTransaction(ctx, fn)` wraps `db.Transaction()`
   - Injects `*gorm.DB` into context via `ctxkey.WithTx`
-- [ ] All repo `db(ctx)` helper: detects tx from context, falls back to `r.gdb.WithContext(ctx)`
-- [ ] Migration 000001: `users`, `applications`, `status_history` tables (see `docs/ARCHITECTURE_BACKEND.md`)
-- [ ] Indexes: `(user_id, status)`, `(user_id, date_applied DESC)`, `(application_id, changed_at DESC)`
-- [ ] Wire postgres + txmanager in main.go: connect on startup, run migrations
+- [x] All repo `db(ctx)` helper: detects tx from context, falls back to `r.gdb.WithContext(ctx)`
+- [x] Migration 000001: `users`, `applications`, `status_history` tables (see `docs/ARCHITECTURE_BACKEND.md`)
+- [x] Indexes: `(user_id, status)`, `(user_id, date_applied DESC)`, `(application_id, changed_at DESC)`
+- [x] Wire postgres + txmanager in main.go: connect on startup, run migrations
 
 **Test:** `make docker-up && make migrate-up` → logs "Connected to PostgreSQL" + "Migrations applied"
 
@@ -58,11 +58,11 @@ make swagger                  # generate initial docs (runs once to create docs/
 **Docs:** `docs/RULES.md` · `docs/ARCHITECTURE_BACKEND.md` (cache section)
 **Files:** `backend/internal/infrastructure/cache/redis.go`
 
-- [ ] `RedisCache` struct wrapping `go-redis/v9` client
-- [ ] Methods: `GetJSON(ctx, key, dest)` · `SetJSON(ctx, key, val, ttl)` · `Delete(ctx, key)` · `DeletePattern(ctx, pattern)` — DeletePattern uses `SCAN`, never `KEYS`
-- [ ] Cache interface defined in `infrastructure/cache/cache.go` (NOT in domain — cache is infra concept)
-- [ ] Graceful degradation: unavailable Redis → log warning, `GetJSON` returns error, decorators handle gracefully
-- [ ] Wire in main.go
+- [x] `RedisCache` struct wrapping `go-redis/v9` client
+- [x] Methods: `GetJSON(ctx, key, dest)` · `SetJSON(ctx, key, val, ttl)` · `Delete(ctx, key)` · `DeletePattern(ctx, pattern)` — DeletePattern uses `SCAN`, never `KEYS`
+- [x] Cache interface defined in `infrastructure/cache/cache.go` (NOT in domain — cache is infra concept)
+- [x] Graceful degradation: unavailable Redis → log warning, `GetJSON` returns error, decorators handle gracefully
+- [x] Wire in main.go
 
 **Test:** `make docker-up` → log "Redis connected" OR "Redis unavailable, continuing without cache"
 
@@ -72,12 +72,12 @@ make swagger                  # generate initial docs (runs once to create docs/
 **Docs:** `docs/RULES.md` · `docs/API_SPEC.md` (error response format)
 **Files:** `backend/internal/infrastructure/http/middleware/recovery.go` · `requestid.go` · `logger.go` · `cors.go` · `auth.go` (stub)
 
-- [ ] Recovery: panic → log stack trace with slog → 500 `{"success":false,"error":{"code":"INTERNAL","message":"internal error"}}`
-- [ ] RequestID: read `X-Request-ID` header or generate UUID → inject via `ctxkey.WithRequestID` → set on response header
-- [ ] Logger: slog structured `{"method","path","status","duration","request_id"}` after response
-- [ ] CORS: allow `http://localhost:5173`, standard methods/headers
-- [ ] Auth (stub): reads `Authorization: Bearer <jwt>` → inject userID (full impl in PR-07)
-- [ ] Middleware chain: Recovery → RequestID → Logger → CORS
+- [x] Recovery: panic → log stack trace with slog → 500 `{"success":false,"error":{"code":"INTERNAL","message":"internal error"}}`
+- [x] RequestID: read `X-Request-ID` header or generate UUID → inject via `ctxkey.WithRequestID` → set on response header
+- [x] Logger: slog structured `{"method","path","status","duration","request_id"}` after response
+- [x] CORS: allow `http://localhost:5173`, standard methods/headers
+- [x] Auth (stub): reads `Authorization: Bearer <jwt>` → inject userID (full impl in PR-07)
+- [x] Middleware chain: Recovery → RequestID → Logger → CORS
 
 **Test:** `curl -v localhost:3001/api/v1/health` → see `X-Request-ID` header + JSON response + slog output
 
@@ -89,17 +89,17 @@ make swagger                  # generate initial docs (runs once to create docs/
 **Docs:** `docs/RULES.md` · `docs/BA_SPEC.md` (status transition rules + business constraints) · `docs/ARCHITECTURE_BACKEND.md` (domain layer structure)
 **Files:** `backend/internal/domain/errors/errors.go` · `domain/entity/user.go` · `application.go` · `domain/valueobject/status.go` · `source.go` · `pagination.go` · `domain/repository/user.go` · `application.go` · `tx.go` · `backend/pkg/clock/clock.go`
 
-- [ ] `DomainError{Code, Entity, Message, Err}` + `Error()`, `Unwrap()` + constructors: `NotFound`, `AlreadyExists`, `InvalidStatus`, `Unauthorized`, `InvalidInput`
-- [ ] `User` entity: `NewUser(email, hash, name string) (*User, error)` — validates email format
-- [ ] `Application` entity: `NewApplication(userID, company, role, source, status, dateApplied)` + `TransitionStatus(newStatus Status) error` — encapsulates `CanTransition` logic
-- [ ] `Status` value object: enum + `CanTransition(from, to Status) bool` (Applied→Interview✓ · Applied→Rejected✓ · Interview→Offer✓ · Interview→Rejected✓ · Offer/Rejected→anything✗)
-- [ ] `Source` value object: enum + `IsValid() bool`
-- [ ] `PageRequest{Page, Size, SortBy, Order}` + `PageResponse[T any]{Items []T, Total int64, Page, Size int}`
-- [ ] `TxManager` interface in `domain/repository/tx.go`
-- [ ] `UserRepository` interface (4 methods max: Create, FindByID, FindByEmail, ExistsByEmail)
-- [ ] `ApplicationRepository` interface (Create, FindByID, List, UpdateWithHistory, Delete)
-- [ ] `pkg/clock`: `Clock` interface (`Now() time.Time`) + `RealClock` + `MockClock` (for tests)
-- [ ] Unit tests: `Status.CanTransition()` all transitions · `Application.TransitionStatus()` valid/invalid
+- [x] `DomainError{Code, Entity, Message, Err}` + `Error()`, `Unwrap()` + constructors: `NotFound`, `AlreadyExists`, `InvalidStatus`, `Unauthorized`, `InvalidInput`
+- [x] `User` entity: `NewUser(email, hash, name string) (*User, error)` — validates email format
+- [x] `Application` entity: `NewApplication(userID, company, role, source, status, dateApplied)` + `TransitionStatus(newStatus Status) error` — encapsulates `CanTransition` logic
+- [x] `Status` value object: enum + `CanTransition(from, to Status) bool` (Applied→Interview✓ · Applied→Rejected✓ · Interview→Offer✓ · Interview→Rejected✓ · Offer/Rejected→anything✗)
+- [x] `Source` value object: enum + `IsValid() bool`
+- [x] `PageRequest{Page, Size, SortBy, Order}` + `PageResponse[T any]{Items []T, Total int64, Page, Size int}`
+- [x] `TxManager` interface in `domain/repository/tx.go`
+- [x] `UserRepository` interface (4 methods max: Create, FindByID, FindByEmail, ExistsByEmail)
+- [x] `ApplicationRepository` interface (Create, FindByID, List, UpdateWithHistory, Delete)
+- [x] `pkg/clock`: `Clock` interface (`Now() time.Time`) + `RealClock` + `MockClock` (for tests)
+- [x] Unit tests: `Status.CanTransition()` all transitions · `Application.TransitionStatus()` valid/invalid
 
 **Test:** `make test` → all domain tests pass, **zero** external imports in `domain/`
 
