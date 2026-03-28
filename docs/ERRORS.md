@@ -21,4 +21,10 @@
 
 ---
 
+### 2026-03-29 — Agent forgets to mark PLAN.md `[x]` after PR merges
+**Symptom:** PR merges + CI green, but PLAN.md task header stays `[ ]`. A separate chore PR is needed every time to mark it done.
+**Root cause:** The agent queues auto-merge (`gh pr merge --auto --squash`) and then the session ends (user runs `/clear` or context resets). When the PR actually merges (often minutes/hours later), no agent is running to do the marking. The merge event is asynchronous and unobserved.
+**Fix:** After any PR merges, always create a follow-up chore commit on a new branch that marks `[x]` in PLAN.md before starting the next task. Alternatively, mark immediately after `gh pr merge --auto` fires (not waiting for CI) as a best-effort, then confirm after merge.
+**Prevention:** The prompt for the next task should always start with `git pull` + verify PLAN.md is updated. Also mark sub-task checkboxes `[x]` at end of each session, not just the PR header — this makes it obvious which items were actually completed.
+
 *(Add new entries below)*
