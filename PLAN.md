@@ -68,7 +68,7 @@ make swagger                  # generate initial docs (runs once to create docs/
 
 ---
 
-### [ ] PR-04: Middleware stack
+### [x] PR-04: Middleware stack
 **Docs:** `docs/RULES.md` · `docs/API_SPEC.md` (error response format)
 **Files:** `backend/internal/infrastructure/http/middleware/recovery.go` · `requestid.go` · `logger.go` · `cors.go` · `auth.go` (stub)
 
