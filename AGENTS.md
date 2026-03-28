@@ -103,4 +103,7 @@ NEVER import infrastructure from domain or application.
 - [ ] `make test-ui` green (if UI touched)
 - [ ] PR created with PLAN.md reference
 - [ ] CI green
-- [ ] PLAN.md task marked `[x]`
+- [ ] **PLAN.md task marked `[x]`** ← MUST do this before starting next task
+
+> ⚠️ Never skip the PLAN.md `[x]` step. After every PR merges + CI green, immediately create
+> a `chore/plan/mark-prXX-done` commit (or bundle it in the feature PR) and push to main via PR.
