@@ -85,7 +85,7 @@ make swagger                  # generate initial docs (runs once to create docs/
 
 ## Phase 1: Domain + Auth
 
-### [ ] PR-05: Domain layer
+### [x] PR-05: Domain layer
 **Docs:** `docs/RULES.md` · `docs/BA_SPEC.md` (status transition rules + business constraints) · `docs/ARCHITECTURE_BACKEND.md` (domain layer structure)
 **Files:** `backend/internal/domain/errors/errors.go` · `domain/entity/user.go` · `application.go` · `domain/valueobject/status.go` · `source.go` · `pagination.go` · `domain/repository/user.go` · `application.go` · `tx.go` · `backend/pkg/clock/clock.go`
 
