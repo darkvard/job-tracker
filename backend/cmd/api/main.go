@@ -15,10 +15,14 @@ import (
 	"job-tracker/internal/infrastructure/config"
 	httpinfra "job-tracker/internal/infrastructure/http"
 	"job-tracker/internal/infrastructure/http/handler"
+	"job-tracker/internal/infrastructure/persistence"
 )
 
 func main() {
 	cfg := config.Load()
+
+	db := persistence.NewPostgres(cfg.DBDSN)
+	_ = persistence.NewTxManager(db)
 
 	healthHandler := handler.NewHealth()
 
