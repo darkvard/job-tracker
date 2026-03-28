@@ -1,0 +1,48 @@
+# air — hot reload config
+# Docs: https://github.com/air-verse/air
+#
+# ⚠️  INFINITE LOOP PREVENTION — đọc trước khi sửa file này:
+#
+#   KHÔNG BAO GIỜ dùng pre_cmd để generate .go files (swag, mockery, protoc...).
+#   Lý do: generate → tạo file .go → air detect change → chạy lại pre_cmd → generate → ...
+#   Nếu cần generate: chạy TAY lệnh riêng (make swagger, make mock) TRƯỚC khi docker-up.
+#
+#   include_dir giới hạn air chỉ watch source code thật sự.
+#   Mọi thứ ngoài cmd/, internal/, pkg/ đều KHÔNG được watch.
+
+root = "."
+tmp_dir = "tmp"
+
+[build]
+  cmd = "go build -o ./tmp/main ./cmd/api"
+  bin = "./tmp/main"
+  delay = 1000
+
+  # ✅ Chỉ watch source code thật — không watch gì khác
+  include_dir = ["cmd", "internal", "pkg"]
+  include_ext = ["go"]
+
+  # Các thư mục chứa generated files — KHÔNG watch
+  # docs/   = swagger generated (swag init)
+  # mocks/  = mockery generated (go generate)
+  # tmp/    = air build output
+  # vendor/ = dependencies
+  # tests/  = integration/e2e (không cần hot reload)
+  exclude_dir = ["tmp", "vendor", "docs", "mocks", "tests", "migrations"]
+
+  # Files generated đặt sai chỗ vẫn bị loại
+  exclude_regex = ["_mock\\.go$", "mock_.*\\.go$"]
+
+  kill_delay = "0s"
+
+[log]
+  time = false
+
+[color]
+  main    = "magenta"
+  watcher = "cyan"
+  build   = "yellow"
+  runner  = "green"
+
+[misc]
+  clean_on_exit = true

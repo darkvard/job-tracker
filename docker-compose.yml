@@ -1,0 +1,87 @@
+services:
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev       # dev image: golang:1.25 + air hot reload
+    container_name: job-tracker-api
+    restart: unless-stopped
+    tty: true
+    env_file: .env
+    environment:
+      - DB_DSN=postgres://postgres:postgres@postgres:5432/job_tracker?sslmode=disable
+      - REDIS_ADDR=redis:6379
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./backend:/app                 # mount source → air reloads on .go file change
+      - go_cache:/root/go/pkg/mod      # cache modules between restarts (no re-download)
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - job-tracker-network
+
+  frontend:
+    image: node:24-alpine
+    container_name: job-tracker-frontend
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host"
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:3001/api/v1
+    networks:
+      - job-tracker-network
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15
+    container_name: job-tracker-postgres
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5433:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=job_tracker
+    volumes:
+      - job-tracker-postgres:/var/lib/postgresql/data
+    command: postgres -c 'timezone=UTC'
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d job_tracker"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - job-tracker-network
+
+  redis:
+    image: redis:8-alpine
+    container_name: job-tracker-redis
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6380:6379"
+    volumes:
+      - job-tracker-redis:/data
+    command: redis-server --save "" --appendonly no
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - job-tracker-network
+
+networks:
+  job-tracker-network:
+    driver: bridge
+
+volumes:
+  job-tracker-postgres:
+  job-tracker-redis:
+  go_cache:                            # shared Go module cache across container restarts

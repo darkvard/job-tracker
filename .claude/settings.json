@@ -1,0 +1,50 @@
+{
+  "model": "claude-sonnet-4-6",
+  "permissions": {
+    "allow": [
+      "Bash(git *)",
+      "Bash(gh *)",
+      "Bash(go *)",
+      "Bash(make *)",
+      "Bash(docker *)",
+      "Bash(docker-compose *)",
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "Bash(curl *)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(git push --force *)",
+      "Bash(git reset --hard *)",
+      "Bash(docker-compose down -v *)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [[ \"$CLAUDE_FILE_PATH\" == *.go ]]; then gofmt -w \"$CLAUDE_FILE_PATH\" 2>/dev/null || true; fi"
+          },
+          {
+            "type": "command",
+            "command": "if [[ \"$CLAUDE_FILE_PATH\" == *.ts ]] || [[ \"$CLAUDE_FILE_PATH\" == *.tsx ]]; then npx prettier --write \"$CLAUDE_FILE_PATH\" 2>/dev/null || true; fi"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '\n========================================\n[REMINDER] Session ending checklist:\n  - New bug / error found?  → append docs/ERRORS.md\n  - Stopped mid-task?       → write docs/WIP.md + commit wip:\n  - PR merged + CI green?   → mark [x] in PLAN.md\n========================================\n'"
+          }
+        ]
+      }
+    ]
+  }
+}
