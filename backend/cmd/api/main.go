@@ -12,6 +12,7 @@
 package main
 
 import (
+	"job-tracker/internal/infrastructure/cache"
 	"job-tracker/internal/infrastructure/config"
 	httpinfra "job-tracker/internal/infrastructure/http"
 	"job-tracker/internal/infrastructure/http/handler"
@@ -23,6 +24,7 @@ func main() {
 
 	db := persistence.NewPostgres(cfg.DBDSN)
 	_ = persistence.NewTxManager(db)
+	_ = cache.NewRedis(cfg.RedisAddr)
 
 	healthHandler := handler.NewHealth()
 
