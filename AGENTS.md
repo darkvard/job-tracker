@@ -19,10 +19,43 @@ git add <specific-files>          # NEVER git add -A or git add .
 git commit -m "type(scope): description"
 git push origin HEAD
 gh pr create --title "type(scope): description" \
-  --body "Completes PLAN.md task PR-XX. \n\n## Changes\n- ...\n\n## Test\n- ..."
+  --body "$(cat <<'EOF'
+Completes PLAN.md task PR-XX.
+
+## What this PR does
+One sentence summary.
+
+## Depends on
+none
+
+## Changes
+- ...
+
+## Test
+- [ ] `make lint` — 0 issues
+- [ ] `make test` — green
+- [ ] `make mock` ran (if interface changed)
+- [ ] Swagger annotations added → `make swagger` ran (if handler added/changed)
+- [ ] `docs/ERRORS.md` updated (if bug fixed)
+
+## Clean Architecture check
+- [ ] No business logic in handlers
+- [ ] No infrastructure imports in domain or application layers
+- [ ] Typed domain errors used (`domainerrors.*`) — no `errors.New` for domain conditions
+- [ ] No raw string context keys — always `pkg/ctxkey`
+EOF
+)"
 gh pr merge --auto --squash <n>   # queue auto-merge when CI passes
 gh pr checks <n> --watch          # monitor — do NOT start next task until merged
 ```
+
+## ⛔ NEVER push directly to main
+**ALL changes go through PRs — no exceptions, including docs and config.**
+```bash
+# ❌ WRONG: git push origin main
+# ✅ CORRECT: git checkout -b <branch> → commit → push → gh pr create
+```
+Branch protection rejects direct pushes to main.
 
 ## Branch naming
 `feat/` · `fix/` · `refactor/` · `chore/` · `docs/` + `<scope>/<short-desc>`
