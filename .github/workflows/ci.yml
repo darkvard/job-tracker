@@ -44,7 +44,7 @@ jobs:
           cache: true
 
       - name: Lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v7
         with:
           working-directory: backend
           version: v2.11.4
@@ -54,12 +54,24 @@ jobs:
 
       - name: Integration tests
         # testcontainers spawns its own postgres — no DB_DSN needed here
-        run: cd backend && go test ./tests/integration/... -count=1
+        # Skip gracefully until tests/integration/ is scaffolded (PR-19)
+        run: |
+          if [ -d "backend/tests/integration" ]; then
+            cd backend && go test ./tests/integration/... -count=1
+          else
+            echo "tests/integration not yet scaffolded — skipping"
+          fi
         env:
           REDIS_ADDR: localhost:6379
 
       - name: E2E smoke test
-        run: cd backend && go test ./tests/e2e/... -count=1
+        # Skip gracefully until tests/e2e/ is scaffolded (PR-19)
+        run: |
+          if [ -d "backend/tests/e2e" ]; then
+            cd backend && go test ./tests/e2e/... -count=1
+          else
+            echo "tests/e2e not yet scaffolded — skipping"
+          fi
         env:
           DB_DSN: postgres://postgres:postgres@localhost:5432/job_tracker_test?sslmode=disable
           REDIS_ADDR: localhost:6379
