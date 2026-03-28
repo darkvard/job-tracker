@@ -105,18 +105,18 @@ make swagger                  # generate initial docs (runs once to create docs/
 
 ---
 
-### [ ] PR-06: Auth use cases
+### [x] PR-06: Auth use cases
 **Docs:** `docs/RULES.md` · `docs/API_SPEC.md` (auth endpoints + request/response shape) · `docs/BA_SPEC.md` (auth requirements)
 **Files:** `backend/internal/application/port/hasher.go` · `token.go` · `backend/internal/application/auth/dto.go` · `register.go` · `login.go`
 
-- [ ] `PasswordHasher` interface: `Hash(plain string) (string, error)` · `Compare(hash, plain string) error`
-- [ ] `TokenService` interface: `Generate(userID int64, email string) (string, error)` · `Validate(token string) (userID int64, email string, error)`
-- [ ] `RegisterRequest{Email, Password, Name}` + `Validate()` (email format, password ≥8 chars)
-- [ ] `LoginRequest{Email, Password}` + `Validate()`
-- [ ] `AuthResponse{Token string, User UserInfo}` + `FromEntity(user, token)`
-- [ ] `RegisterUseCase.Execute()`: validate → ExistsByEmail → hash → create user → generate token
-- [ ] `LoginUseCase.Execute()`: validate → FindByEmail → Compare → generate token
-- [ ] Unit tests with mockery mocks: duplicate email → `AlreadyExists` · wrong password → `Unauthorized`
+- [x] `PasswordHasher` interface: `Hash(plain string) (string, error)` · `Compare(hash, plain string) error`
+- [x] `TokenService` interface: `Generate(userID int64, email string) (string, error)` · `Validate(token string) (userID int64, email string, error)`
+- [x] `RegisterRequest{Email, Password, Name}` + `Validate()` (email format, password ≥8 chars)
+- [x] `LoginRequest{Email, Password}` + `Validate()`
+- [x] `AuthResponse{Token string, User UserInfo}` + `FromEntity(user, token)`
+- [x] `RegisterUseCase.Execute()`: validate → ExistsByEmail → hash → create user → generate token
+- [x] `LoginUseCase.Execute()`: validate → FindByEmail → Compare → generate token
+- [x] Unit tests with mockery mocks: duplicate email → `AlreadyExists` · wrong password → `Unauthorized`
 
 **Test:** `make test` → auth use case tests pass, **zero** infrastructure imports
 
