@@ -36,7 +36,7 @@ make swagger                  # generate initial docs (runs once to create docs/
 
 ---
 
-### [ ] PR-02: PostgreSQL + GORM + TxManager + migrations
+### [x] PR-02: PostgreSQL + GORM + TxManager + migrations
 **Docs:** `docs/RULES.md` · `.claude/skills/patterns-go.md` · `docs/ARCHITECTURE_BACKEND.md` (DB schema + TxManager pattern)
 **Files:** `backend/internal/infrastructure/persistence/postgres.go` · `txmanager.go` · `backend/migrations/000001_init.up.sql` · `000001_init.down.sql` · `backend/pkg/ctxkey/ctxkey.go`
 
