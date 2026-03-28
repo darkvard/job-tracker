@@ -1,0 +1,32 @@
+# =================================================================
+# Development image - golang:1.25 full (including compiler)
+#
+# Build ONCE: create docker-build
+# When to rebuild:
+# - go.mod / go.sum changes (dependencies/deleted)
+# - This file has been changed
+# - First setup
+#
+# # Source code mounted via volume → air automatically reloads when .go is modified
+# No need to rebuild the image when editing regular code
+# =================================================================
+FROM golang:1.25
+
+WORKDIR /app
+
+# Install dev tools — baked into image, do not rerun when code changes
+RUN go install github.com/air-verse/air@latest && \
+    go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest && \
+    go install github.com/swaggo/swag/cmd/swag@latest
+
+# Cache Go module downloads to a separate layer.
+# This layer will only re-run when go.mod or go.sum changes.
+# Source code should NOT be copied here — it is mounted via volume.
+COPY go.mod go.sum ./
+RUN go mod download
+
+EXPOSE 3000
+
+# Air watch cmd/, internal/, pkg/ → recompile → restart automatically
+# See .air.toml for rules watch/exclude
+CMD ["air", "-c", ".air.toml"]
