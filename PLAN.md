@@ -54,7 +54,7 @@ make swagger                  # generate initial docs (runs once to create docs/
 
 ---
 
-### [ ] PR-03: Redis connection
+### [x] PR-03: Redis connection
 **Docs:** `docs/RULES.md` · `docs/ARCHITECTURE_BACKEND.md` (cache section)
 **Files:** `backend/internal/infrastructure/cache/redis.go`
 
