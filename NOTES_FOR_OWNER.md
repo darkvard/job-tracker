@@ -60,9 +60,14 @@ Read CLAUDE.md first, then:
 7. Execute the task following .claude/skills/feat.md
 8. After PR merges + CI green: mark [x] in PLAN.md → pull main → find next [ ] → repeat from step 5
 9. Stop when: all [ ] tasks done · OR circuit breaker triggers (3× same error) · OR WIP state reached
+10. IMPORTANT: After each PR merges + CI green, tell the user: "✅ PR merged. Run /clear then re-paste this prompt to start the next task with a fresh context."
 ```
 
-Agent sẽ tự chạy từ PR đang dở → hết. Bạn không cần làm gì thêm.
+Agent sẽ tự chạy từ PR đang dở → hết.
+
+> **Lưu ý token:** Agent không thể tự `/clear` — đó là lệnh phía client.
+> Sau mỗi PR merge, agent sẽ nhắc bạn `/clear` + paste lại prompt trên.
+> Làm vậy giúp mỗi task chạy trong context sạch, tiết kiệm token đáng kể.
 
 ---
 
