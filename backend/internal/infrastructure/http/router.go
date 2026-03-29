@@ -13,7 +13,11 @@ import (
 
 // NewRouter creates and configures the Chi router with all routes.
 // Middleware chain: Recovery → RequestID → Logger → CORS
-func NewRouter(healthHandler *handler.HealthHandler) http.Handler {
+func NewRouter(
+	healthHandler *handler.HealthHandler,
+	authHandler *handler.AuthHandler,
+	authMiddleware func(http.Handler) http.Handler,
+) http.Handler {
 	r := chi.NewRouter()
 
 	r.Use(middleware.Recovery)
@@ -26,6 +30,17 @@ func NewRouter(healthHandler *handler.HealthHandler) http.Handler {
 		r.Get("/swagger/*", httpswagger.Handler(
 			httpswagger.URL("/api/v1/swagger/doc.json"),
 		))
+
+		// Auth routes (public)
+		r.Route("/auth", func(r chi.Router) {
+			r.Post("/register", authHandler.Register)
+			r.Post("/login", authHandler.Login)
+			// Protected auth route
+			r.Group(func(r chi.Router) {
+				r.Use(authMiddleware)
+				r.Get("/me", authHandler.Me)
+			})
+		})
 	})
 
 	return r
