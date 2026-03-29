@@ -150,20 +150,20 @@ curl -H "Authorization: Bearer <token>" localhost:3001/api/v1/auth/me # → 200
 
 ## Phase 2: Job Applications CRUD
 
-### [ ] PR-08: Job use cases
+### [x] PR-08: Job use cases
 **Docs:** `docs/RULES.md` · `.claude/skills/patterns-go.md` · `docs/API_SPEC.md` (job endpoints + field names) · `docs/BA_SPEC.md` (status transitions + validation rules)
 **Files:** `backend/internal/application/job/dto.go` · `create.go` · `list.go` · `get.go` · `update.go` · `update_status.go` · `delete.go` · `usecases.go`
 
-- [ ] `dto.go`: `CreateRequest` · `UpdateRequest` · `UpdateStatusRequest` · `ListFilters` · `JobResponse` · `PaginatedJobsResponse` — all with `Validate()`, `ToEntity()`, `FromEntity()`
-- [ ] `CreateUseCase.Execute()`: validate → `entity.NewApplication(...)` → repo.Create → return DTO
-- [ ] `ListUseCase.Execute()`: validate filters → `repo.List(filters, page)` → return `PageResponse[JobResponse]`
-- [ ] `GetUseCase.Execute()`: `repo.FindByID` → verify `app.UserID == req.UserID` → return DTO
-- [ ] `UpdateUseCase.Execute()`: get → verify ownership → update fields → `repo.Update`
-- [ ] `UpdateStatusUseCase.Execute()`: uses `TxManager.WithTransaction` → `app.TransitionStatus()` → `repo.UpdateWithHistory(ctx, app, note)` (atomic)
-- [ ] `DeleteUseCase.Execute()`: get → verify ownership → `repo.Delete`
-- [ ] `usecases.go`: `JobUseCases` struct grouping all 6
-- [ ] Unit tests for all use cases with mockery mocks
-- [ ] Test cases: wrong userID → `Unauthorized` · invalid transition → `InvalidStatus`
+- [x] `dto.go`: `CreateRequest` · `UpdateRequest` · `UpdateStatusRequest` · `ListFilters` · `JobResponse` · `PaginatedJobsResponse` — all with `Validate()`, `ToEntity()`, `FromEntity()`
+- [x] `CreateUseCase.Execute()`: validate → `entity.NewApplication(...)` → repo.Create → return DTO
+- [x] `ListUseCase.Execute()`: validate filters → `repo.List(filters, page)` → return `PageResponse[JobResponse]`
+- [x] `GetUseCase.Execute()`: `repo.FindByID` → verify `app.UserID == req.UserID` → return DTO
+- [x] `UpdateUseCase.Execute()`: get → verify ownership → update fields → `repo.Update`
+- [x] `UpdateStatusUseCase.Execute()`: uses `TxManager.WithTransaction` → `app.TransitionStatus()` → `repo.UpdateWithHistory(ctx, app, note)` (atomic)
+- [x] `DeleteUseCase.Execute()`: get → verify ownership → `repo.Delete`
+- [x] `usecases.go`: `JobUseCases` struct grouping all 6
+- [x] Unit tests for all use cases with mockery mocks
+- [x] Test cases: wrong userID → `Unauthorized` · invalid transition → `InvalidStatus`
 
 **Test:** `make test` → all job use case tests pass
 
