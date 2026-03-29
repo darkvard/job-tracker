@@ -227,12 +227,12 @@ curl -X PATCH localhost:3001/api/v1/jobs/1/status -H "Authorization: Bearer $TOK
 **Docs:** `docs/RULES.md` · `.claude/skills/patterns-go.md` · `docs/API_SPEC.md` (analytics endpoints + response shapes) · `docs/BA_SPEC.md` (analytics metric definitions)
 **Files:** `backend/internal/application/analytics/analytics.go` · `backend/internal/infrastructure/cache/decorator/analytics.go` · `backend/internal/infrastructure/http/handler/analytics.go` (complete) · `backend/cmd/api/main.go` (update wiring)
 
-- [ ] 4 analytics DTOs: `WeeklyData` · `FunnelData` · `SourceData` · `KeyMetrics`
-- [ ] `GetAnalyticsUseCase`: 4 methods (Weekly, Funnel, Sources, Metrics) — pure, no cache
-- [ ] Cache decorator wraps each method (TTL 10min each)
-- [ ] 4 endpoints: `GET /api/v1/analytics/weekly` · `/funnel` · `/sources` · `/metrics`
-- [ ] Add swagger annotations to all 4 analytics handlers → `make swagger` → commit `docs/`
-- [ ] Unit tests for use cases
+- [x] 4 analytics DTOs: `WeeklyData` · `FunnelData` · `SourceData` · `KeyMetrics`
+- [x] `GetAnalyticsUseCase`: 4 methods (Weekly, Funnel, Sources, Metrics) — pure, no cache
+- [x] Cache decorator wraps each method (TTL 10min each)
+- [x] 4 endpoints: `GET /api/v1/analytics/weekly` · `/funnel` · `/sources` · `/metrics`
+- [x] Add swagger annotations to all 4 analytics handlers → `make swagger` → commit `docs/`
+- [x] Unit tests for use cases
 
 **Test:** All 4 endpoints return 200 with correct structure
 
