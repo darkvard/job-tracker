@@ -122,20 +122,20 @@ make swagger                  # generate initial docs (runs once to create docs/
 
 ---
 
-### [ ] PR-07: Auth infrastructure
+### [x] PR-07: Auth infrastructure
 **Docs:** `docs/RULES.md` · `.claude/skills/patterns-go.md` · `docs/API_SPEC.md` (auth endpoints exact request/response)
 **Files:** `backend/internal/infrastructure/auth/bcrypt.go` · `jwt.go` · `backend/internal/infrastructure/persistence/models/user.go` · `backend/internal/infrastructure/persistence/user_repo.go` · `backend/internal/infrastructure/http/handler/auth.go` · `backend/internal/infrastructure/http/middleware/auth.go` (full impl) · `backend/cmd/api/main.go` (update wiring)
 
-- [ ] `BcryptHasher` implements `application/port.PasswordHasher` (cost=12)
-- [ ] `JWTService` implements `application/port.TokenService` (HS256, claims: sub+email+iat+exp)
-- [ ] `UserModel` (GORM) + `ToEntity()` + `fromEntity()` mapping — NEVER leak model outside `persistence/`
-- [ ] `PostgresUserRepo` implements `domain/repository.UserRepository` via GORM
+- [x] `BcryptHasher` implements `application/port.PasswordHasher` (cost=12)
+- [x] `JWTService` implements `application/port.TokenService` (HS256, claims: sub+email+iat+exp)
+- [x] `UserModel` (GORM) + `ToEntity()` + `fromEntity()` mapping — NEVER leak model outside `persistence/`
+- [x] `PostgresUserRepo` implements `domain/repository.UserRepository` via GORM
   - Wrap `gorm.ErrRecordNotFound` → `domainerrors.NotFound`
   - Wrap duplicate key → `domainerrors.AlreadyExists`
-- [ ] Auth handler: `POST /api/v1/auth/register` (201) · `POST /api/v1/auth/login` (200) · `GET /api/v1/auth/me` (200, protected)
-- [ ] Auth middleware (full): validate JWT → `ctxkey.WithUserID(ctx, id)` → next handler
-- [ ] Add `// @Summary` swagger annotations to all 3 auth handler methods → `make swagger` → commit `docs/`
-- [ ] Wire everything in main.go
+- [x] Auth handler: `POST /api/v1/auth/register` (201) · `POST /api/v1/auth/login` (200) · `GET /api/v1/auth/me` (200, protected)
+- [x] Auth middleware (full): validate JWT → `ctxkey.WithUserID(ctx, id)` → next handler
+- [x] Add `// @Summary` swagger annotations to all 3 auth handler methods → `make swagger` → commit `docs/`
+- [x] Wire everything in main.go
 
 **Test:**
 ```bash
