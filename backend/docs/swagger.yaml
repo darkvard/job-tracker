@@ -1,10 +1,58 @@
 basePath: /api/v1
 definitions:
+  internal_infrastructure_http_handler.errorBody:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    type: object
+  internal_infrastructure_http_handler.errorResponse:
+    properties:
+      error:
+        $ref: '#/definitions/internal_infrastructure_http_handler.errorBody'
+      success:
+        type: boolean
+    type: object
   internal_infrastructure_http_handler.successResponse:
     properties:
       data: {}
       success:
         type: boolean
+    type: object
+  job-tracker_internal_application_auth.AuthResponse:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/job-tracker_internal_application_auth.UserInfo'
+    type: object
+  job-tracker_internal_application_auth.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  job-tracker_internal_application_auth.RegisterRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+    type: object
+  job-tracker_internal_application_auth.UserInfo:
+    properties:
+      createdAt:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
     type: object
 host: localhost:3001
 info:
@@ -13,6 +61,85 @@ info:
   title: Job Tracker API
   version: 1.0.0
 paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate with email and password, receive a JWT token
+      parameters:
+      - description: Login payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/job-tracker_internal_application_auth.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/job-tracker_internal_application_auth.AuthResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+      summary: Login
+      tags:
+      - auth
+  /auth/me:
+    get:
+      description: Returns the profile of the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/job-tracker_internal_application_auth.UserInfo'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get current user
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Create a new account and receive a JWT token
+      parameters:
+      - description: Register payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/job-tracker_internal_application_auth.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/job-tracker_internal_application_auth.AuthResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+      summary: Register a new user
+      tags:
+      - auth
   /health:
     get:
       description: Returns API health status

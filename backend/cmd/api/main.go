@@ -12,10 +12,13 @@
 package main
 
 import (
+	"job-tracker/internal/application/auth"
+	infraauth "job-tracker/internal/infrastructure/auth"
 	"job-tracker/internal/infrastructure/cache"
 	"job-tracker/internal/infrastructure/config"
 	httpinfra "job-tracker/internal/infrastructure/http"
 	"job-tracker/internal/infrastructure/http/handler"
+	"job-tracker/internal/infrastructure/http/middleware"
 	"job-tracker/internal/infrastructure/persistence"
 )
 
@@ -26,9 +29,25 @@ func main() {
 	_ = persistence.NewTxManager(db)
 	_ = cache.NewRedis(cfg.RedisAddr)
 
-	healthHandler := handler.NewHealth()
+	// Infrastructure services
+	hasher := infraauth.NewBcryptHasher()
+	tokens := infraauth.NewJWTService(cfg.JWTSecret, cfg.JWTExpiry)
 
-	router := httpinfra.NewRouter(healthHandler)
+	// Repositories
+	userRepo := persistence.NewPostgresUserRepo(db)
+
+	// Use cases
+	registerUC := auth.NewRegisterUseCase(userRepo, hasher, tokens)
+	loginUC := auth.NewLoginUseCase(userRepo, hasher, tokens)
+
+	// Handlers
+	healthHandler := handler.NewHealth()
+	authHandler := handler.NewAuthHandler(registerUC, loginUC, userRepo)
+
+	// Middleware
+	authMiddleware := middleware.NewAuth(tokens)
+
+	router := httpinfra.NewRouter(healthHandler, authHandler, authMiddleware)
 	server := httpinfra.NewServer(cfg.Port, router)
 	server.Start()
 }
