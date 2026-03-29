@@ -254,14 +254,14 @@ curl -X PATCH localhost:3001/api/v1/jobs/1/status -H "Authorization: Bearer $TOK
 
 ---
 
-### [ ] PR-13: Dashboard wiring
+### [x] PR-13: Dashboard wiring
 **Docs:** `.claude/skills/ui.md` · `docs/UI_SPEC.md` (Dashboard page spec) · `docs/API_SPEC.md` (dashboard endpoint response) · `docs/DESIGN_SYSTEM.md` · `docs/ANIMATIONS_SPEC.md` (KPI card + chart animations)
 **Files:** `frontend/src/app/components/Dashboard.tsx` (modify)
 
-- [ ] Replace mock data with `useQuery(['dashboard'], api.dashboard.getKPIs)`
-- [ ] Loading: `<Skeleton>` · Error: `<Alert>` retry · Empty: CTA when total=0
-- [ ] Pie chart from `statusBreakdown` · Recent table from `recentJobs`
-- [ ] Trend values from `trends` object → KPICard props
+- [x] Replace mock data with `useQuery(['dashboard'], api.dashboard.getKPIs)`
+- [x] Loading: `<Skeleton>` · Error: `<Alert>` retry · Empty: CTA when total=0
+- [x] Pie chart from `statusBreakdown` · Recent table from `recentJobs`
+- [x] Trend values from `trends` object → KPICard props
 
 **Test:** Real data from API, add job → KPIs reflect change
 
