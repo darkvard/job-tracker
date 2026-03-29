@@ -169,25 +169,25 @@ curl -H "Authorization: Bearer <token>" localhost:3001/api/v1/auth/me # → 200
 
 ---
 
-### [ ] PR-09: Job infrastructure
+### [x] PR-09: Job infrastructure
 **Docs:** `docs/RULES.md` · `.claude/skills/patterns-go.md` (UpdateWithHistory + cache invalidator) · `docs/API_SPEC.md` (job endpoints exact response shape) · `docs/ARCHITECTURE_BACKEND.md` (cache keys table)
 **Files:** `backend/internal/infrastructure/persistence/models/application.go` · `status_history.go` · `backend/internal/infrastructure/persistence/application_repo.go` · `backend/internal/infrastructure/http/handler/job.go` · `backend/cmd/api/main.go` (update wiring)
 
-- [ ] `ApplicationModel` + `StatusHistoryModel` (GORM) — both with `ToEntity()` + `fromEntity()`
-- [ ] `PostgresApplicationRepo` implements `domain/repository.ApplicationRepository`:
+- [x] `ApplicationModel` + `StatusHistoryModel` (GORM) — both with `ToEntity()` + `fromEntity()`
+- [x] `PostgresApplicationRepo` implements `domain/repository.ApplicationRepository`:
   - `Create`: insert app + insert first status_history row (status = Applied, from_status = NULL)
   - `FindByID`: preload status_history ordered by changed_at ASC
   - `List`: dynamic WHERE with GORM scopes (status filter, search via ILIKE), pagination, sort whitelist
   - `UpdateWithHistory`: update app + insert status_history row — repo detects tx from context via `db(ctx)`
   - `Delete`: hard-delete
-- [ ] `infrastructure/cache/invalidator.go`: `JobCacheInvalidator.InvalidateUser(ctx, userID)` — deletes `dashboard:<userID>` + `analytics:*:<userID>` (fire-and-forget, never fail mutation)
-- [ ] `JobHandler` receives `*job.UseCases` + `*cache.JobCacheInvalidator`:
+- [x] `infrastructure/cache/invalidator.go`: `JobCacheInvalidator.InvalidateUser(ctx, userID)` — deletes `dashboard:<userID>` + `analytics:*:<userID>` (fire-and-forget, never fail mutation)
+- [x] `JobHandler` receives `*job.UseCases` + `*cache.JobCacheInvalidator`:
   - `POST /api/v1/jobs` (201) · `GET /api/v1/jobs` (200, paginated) · `GET /api/v1/jobs/:id` (200) · `PUT /api/v1/jobs/:id` (200) · `PATCH /api/v1/jobs/:id/status` (200) · `DELETE /api/v1/jobs/:id` (200)
   - Call `invalidator.InvalidateUser` after every successful Create / Update / UpdateStatus / Delete
   - All routes protected by auth middleware
-- [ ] Sort column whitelist: `map[string]string{"company":"company","date_applied":"date_applied","created_at":"created_at"}`
-- [ ] Add swagger annotations to all 6 job handler methods → `make swagger` → commit `docs/`
-- [ ] Wire in main.go: `invalidator := cache.NewJobCacheInvalidator(rdb)` → pass to `handler.NewJob(jobUCs, invalidator)`
+- [x] Sort column whitelist: `map[string]string{"company":"company","date_applied":"date_applied","created_at":"created_at"}`
+- [x] Add swagger annotations to all 6 job handler methods → `make swagger` → commit `docs/`
+- [x] Wire in main.go: `invalidator := cache.NewJobCacheInvalidator(rdb)` → pass to `handler.NewJob(jobUCs, invalidator)`
 
 **Test:**
 ```bash
