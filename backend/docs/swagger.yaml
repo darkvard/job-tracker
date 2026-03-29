@@ -14,6 +14,25 @@ definitions:
       success:
         type: boolean
     type: object
+  internal_infrastructure_http_handler.paginatedResponse:
+    properties:
+      data: {}
+      meta:
+        $ref: '#/definitions/internal_infrastructure_http_handler.paginationMeta'
+      success:
+        type: boolean
+    type: object
+  internal_infrastructure_http_handler.paginationMeta:
+    properties:
+      page:
+        type: integer
+      pageSize:
+        type: integer
+      total:
+        type: integer
+      totalPages:
+        type: integer
+    type: object
   internal_infrastructure_http_handler.successResponse:
     properties:
       data: {}
@@ -53,6 +72,104 @@ definitions:
         type: integer
       name:
         type: string
+    type: object
+  job-tracker_internal_application_job.CreateRequest:
+    properties:
+      company:
+        type: string
+      dateApplied:
+        type: string
+      location:
+        type: string
+      notes:
+        type: string
+      role:
+        type: string
+      source:
+        type: string
+      status:
+        type: string
+      userID:
+        format: int64
+        type: integer
+    type: object
+  job-tracker_internal_application_job.JobResponse:
+    properties:
+      company:
+        type: string
+      createdAt:
+        type: string
+      dateApplied:
+        type: string
+      id:
+        type: integer
+      location:
+        type: string
+      notes:
+        type: string
+      role:
+        type: string
+      source:
+        type: string
+      status:
+        type: string
+      statusHistory:
+        items:
+          $ref: '#/definitions/job-tracker_internal_application_job.StatusHistoryItem'
+        type: array
+      updatedAt:
+        type: string
+      userId:
+        type: integer
+    type: object
+  job-tracker_internal_application_job.StatusHistoryItem:
+    properties:
+      changedAt:
+        type: string
+      fromStatus:
+        type: string
+      id:
+        type: integer
+      note:
+        type: string
+      toStatus:
+        type: string
+    type: object
+  job-tracker_internal_application_job.UpdateRequest:
+    properties:
+      company:
+        type: string
+      dateApplied:
+        type: string
+      id:
+        format: int64
+        type: integer
+      location:
+        type: string
+      notes:
+        type: string
+      role:
+        type: string
+      source:
+        type: string
+      status:
+        type: string
+      userID:
+        format: int64
+        type: integer
+    type: object
+  job-tracker_internal_application_job.UpdateStatusRequest:
+    properties:
+      id:
+        format: int64
+        type: integer
+      note:
+        type: string
+      status:
+        type: string
+      userID:
+        format: int64
+        type: integer
     type: object
 host: localhost:3001
 info:
@@ -153,6 +270,244 @@ paths:
       summary: Health check
       tags:
       - health
+  /jobs:
+    get:
+      description: Return a paginated, filtered list of job applications for the authenticated
+        user
+      parameters:
+      - description: Filter by status (Applied|Interview|Offer|Rejected)
+        in: query
+        name: status
+        type: string
+      - description: Search by company or role (case-insensitive)
+        in: query
+        name: search
+        type: string
+      - description: Page number (default 1)
+        in: query
+        name: page
+        type: integer
+      - description: Items per page (default 20)
+        in: query
+        name: page_size
+        type: integer
+      - description: 'Sort column: company|date_applied|created_at (default created_at)'
+        in: query
+        name: sort_by
+        type: string
+      - description: 'Sort direction: asc|desc (default desc)'
+        in: query
+        name: sort_order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.paginatedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: List job applications
+      tags:
+      - jobs
+    post:
+      consumes:
+      - application/json
+      description: Create a new job application for the authenticated user
+      parameters:
+      - description: Create job payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/job-tracker_internal_application_job.CreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/job-tracker_internal_application_job.JobResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a job application
+      tags:
+      - jobs
+  /jobs/{id}:
+    delete:
+      description: Permanently delete a job application owned by the authenticated
+        user
+      parameters:
+      - description: Application ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete a job application
+      tags:
+      - jobs
+    get:
+      description: Return a single job application by ID with status history
+      parameters:
+      - description: Application ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/job-tracker_internal_application_job.JobResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get a job application
+      tags:
+      - jobs
+    put:
+      consumes:
+      - application/json
+      description: Full-replace update of a job application (all fields required)
+      parameters:
+      - description: Application ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update job payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/job-tracker_internal_application_job.UpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/job-tracker_internal_application_job.JobResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update a job application
+      tags:
+      - jobs
+  /jobs/{id}/status:
+    patch:
+      consumes:
+      - application/json
+      description: Transition a job application to a new status (enforces valid transition
+        rules)
+      parameters:
+      - description: Application ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update status payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/job-tracker_internal_application_job.UpdateStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/job-tracker_internal_application_job.JobResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update job application status
+      tags:
+      - jobs
 securityDefinitions:
   BearerAuth:
     in: header

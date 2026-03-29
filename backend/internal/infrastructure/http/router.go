@@ -16,6 +16,7 @@ import (
 func NewRouter(
 	healthHandler *handler.HealthHandler,
 	authHandler *handler.AuthHandler,
+	jobHandler *handler.JobHandler,
 	authMiddleware func(http.Handler) http.Handler,
 ) http.Handler {
 	r := chi.NewRouter()
@@ -40,6 +41,17 @@ func NewRouter(
 				r.Use(authMiddleware)
 				r.Get("/me", authHandler.Me)
 			})
+		})
+
+		// Job routes (all protected)
+		r.Route("/jobs", func(r chi.Router) {
+			r.Use(authMiddleware)
+			r.Post("/", jobHandler.Create)
+			r.Get("/", jobHandler.List)
+			r.Get("/{id}", jobHandler.Get)
+			r.Put("/{id}", jobHandler.Update)
+			r.Patch("/{id}/status", jobHandler.UpdateStatus)
+			r.Delete("/{id}", jobHandler.Delete)
 		})
 	})
 
