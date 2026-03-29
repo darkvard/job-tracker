@@ -208,16 +208,16 @@ curl -X PATCH localhost:3001/api/v1/jobs/1/status -H "Authorization: Bearer $TOK
 
 ## Phase 3: Dashboard + Analytics
 
-### [ ] PR-10: Dashboard use case + cache decorator
+### [x] PR-10: Dashboard use case + cache decorator
 **Docs:** `docs/RULES.md` · `.claude/skills/patterns-go.md` (cache decorator pattern) · `docs/API_SPEC.md` (dashboard endpoint + KPI field names) · `docs/BA_SPEC.md` (dashboard KPI definitions)
 **Files:** `backend/internal/application/analytics/dto.go` · `dashboard.go` · `backend/internal/infrastructure/cache/decorator/dashboard.go` · `backend/internal/infrastructure/http/handler/analytics.go` (partial) · `backend/cmd/api/main.go` (update wiring)
 
-- [ ] `DashboardKPIs` DTO: total, applied, interview, offer, rejected, trends (vs prev month), statusBreakdown, recentJobs (last 5)
-- [ ] `GetDashboardUseCase.Execute(ctx, userID)`: queries repo — **ZERO** cache logic inside
-- [ ] Cache decorator `cachedDashboard`: wraps `GetDashboardUseCase`, checks Redis `dashboard:<userID>` (TTL 5min), falls back gracefully if Redis down
-- [ ] Invalidation handled by `JobCacheInvalidator` in `JobHandler` (PR-09) — decorator does GET/SET only, never DELETE
-- [ ] Handler: `GET /api/v1/dashboard/kpis` (protected) — add swagger annotation → `make swagger`
-- [ ] Unit test: assert use case never calls cache (mock shows zero cache calls)
+- [x] `DashboardKPIs` DTO: total, applied, interview, offer, rejected, trends (vs prev month), statusBreakdown, recentJobs (last 5)
+- [x] `GetDashboardUseCase.Execute(ctx, userID)`: queries repo — **ZERO** cache logic inside
+- [x] Cache decorator `cachedDashboard`: wraps `GetDashboardUseCase`, checks Redis `dashboard:<userID>` (TTL 5min), falls back gracefully if Redis down
+- [x] Invalidation handled by `JobCacheInvalidator` in `JobHandler` (PR-09) — decorator does GET/SET only, never DELETE
+- [x] Handler: `GET /api/v1/dashboard/kpis` (protected) — add swagger annotation → `make swagger`
+- [x] Unit test: assert use case never calls cache (mock shows zero cache calls)
 
 **Test:** `curl localhost:3001/api/v1/dashboard/kpis -H "Authorization: Bearer $TOKEN"` → 200 with all fields
 
