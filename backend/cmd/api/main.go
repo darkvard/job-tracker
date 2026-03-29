@@ -13,6 +13,7 @@ package main
 
 import (
 	"job-tracker/internal/application/auth"
+	"job-tracker/internal/application/job"
 	infraauth "job-tracker/internal/infrastructure/auth"
 	"job-tracker/internal/infrastructure/cache"
 	"job-tracker/internal/infrastructure/config"
@@ -26,8 +27,8 @@ func main() {
 	cfg := config.Load()
 
 	db := persistence.NewPostgres(cfg.DBDSN)
-	_ = persistence.NewTxManager(db)
-	_ = cache.NewRedis(cfg.RedisAddr)
+	txMgr := persistence.NewTxManager(db)
+	rdb := cache.NewRedis(cfg.RedisAddr)
 
 	// Infrastructure services
 	hasher := infraauth.NewBcryptHasher()
@@ -35,19 +36,27 @@ func main() {
 
 	// Repositories
 	userRepo := persistence.NewPostgresUserRepo(db)
+	appRepo := persistence.NewPostgresApplicationRepo(db)
 
-	// Use cases
+	// Auth use cases
 	registerUC := auth.NewRegisterUseCase(userRepo, hasher, tokens)
 	loginUC := auth.NewLoginUseCase(userRepo, hasher, tokens)
+
+	// Job use cases
+	jobUCs := job.NewUseCases(appRepo, txMgr)
+
+	// Cache invalidator
+	jobInvalidator := cache.NewJobCacheInvalidator(rdb)
 
 	// Handlers
 	healthHandler := handler.NewHealth()
 	authHandler := handler.NewAuthHandler(registerUC, loginUC, userRepo)
+	jobHandler := handler.NewJobHandler(jobUCs, jobInvalidator)
 
 	// Middleware
 	authMiddleware := middleware.NewAuth(tokens)
 
-	router := httpinfra.NewRouter(healthHandler, authHandler, authMiddleware)
+	router := httpinfra.NewRouter(healthHandler, authHandler, jobHandler, authMiddleware)
 	server := httpinfra.NewServer(cfg.Port, router)
 	server.Start()
 }
