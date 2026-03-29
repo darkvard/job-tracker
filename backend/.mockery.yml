@@ -22,3 +22,4 @@ packages:
       UserRepository:
       ApplicationRepository:
       TxManager:
+      DashboardRepository:

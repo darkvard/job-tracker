@@ -67,7 +67,7 @@ migrate-status: ## Show current migration version (inside container)
 # ─── Code generation ──────────────────────────────────────────────────────────
 
 mock: ## Regenerate mockery mocks (run after any interface change)
-	cd backend && go generate ./...
+	cd backend && mockery
 
 swagger: ## Generate Swagger docs from annotations (run after adding/changing handler comments)
 	cd backend && swag init -g cmd/api/main.go -o docs --parseDependency

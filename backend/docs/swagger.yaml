@@ -39,6 +39,69 @@ definitions:
       success:
         type: boolean
     type: object
+  job-tracker_internal_application_analytics.DashboardKPIs:
+    properties:
+      applied:
+        type: integer
+      interview:
+        type: integer
+      offer:
+        type: integer
+      recentJobs:
+        items:
+          $ref: '#/definitions/job-tracker_internal_application_analytics.RecentJob'
+        type: array
+      rejected:
+        type: integer
+      statusBreakdown:
+        items:
+          $ref: '#/definitions/job-tracker_internal_application_analytics.StatusBreakdownItem'
+        type: array
+      total:
+        type: integer
+      trends:
+        $ref: '#/definitions/job-tracker_internal_application_analytics.DashboardTrends'
+    type: object
+  job-tracker_internal_application_analytics.DashboardTrends:
+    properties:
+      interview:
+        $ref: '#/definitions/job-tracker_internal_application_analytics.TrendValue'
+      offer:
+        $ref: '#/definitions/job-tracker_internal_application_analytics.TrendValue'
+      rejected:
+        $ref: '#/definitions/job-tracker_internal_application_analytics.TrendValue'
+      total:
+        $ref: '#/definitions/job-tracker_internal_application_analytics.TrendValue'
+    type: object
+  job-tracker_internal_application_analytics.RecentJob:
+    properties:
+      company:
+        type: string
+      dateApplied:
+        type: string
+      id:
+        type: integer
+      role:
+        type: string
+      status:
+        type: string
+    type: object
+  job-tracker_internal_application_analytics.StatusBreakdownItem:
+    properties:
+      color:
+        type: string
+      count:
+        type: integer
+      status:
+        type: string
+    type: object
+  job-tracker_internal_application_analytics.TrendValue:
+    properties:
+      isPositive:
+        type: boolean
+      value:
+        type: number
+    type: object
   job-tracker_internal_application_auth.AuthResponse:
     properties:
       token:
@@ -257,6 +320,30 @@ paths:
       summary: Register a new user
       tags:
       - auth
+  /dashboard/kpis:
+    get:
+      description: Returns aggregated KPI metrics for the authenticated user's job
+        applications, cached per user (TTL 5 min)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/job-tracker_internal_application_analytics.DashboardKPIs'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get dashboard KPIs
+      tags:
+      - dashboard
   /health:
     get:
       description: Returns API health status
