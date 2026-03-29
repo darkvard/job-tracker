@@ -240,15 +240,15 @@ curl -X PATCH localhost:3001/api/v1/jobs/1/status -H "Authorization: Bearer $TOK
 
 ## Phase 4: Frontend Wiring
 
-### [ ] PR-12: API client + Auth context + Login page
+### [x] PR-12: API client + Auth context + Login page
 **Docs:** `docs/RULES.md` · `.claude/skills/ui.md` · `docs/ARCHITECTURE_FRONTEND.md` · `docs/UI_SPEC.md` (Login page spec) · `docs/API_SPEC.md` (auth endpoints) · `docs/DESIGN_SYSTEM.md` (colors + tokens)
 **Files:** `frontend/src/lib/api.ts` · `frontend/src/contexts/AuthContext.tsx` · `frontend/src/app/components/LoginPage.tsx` · `frontend/src/app/App.tsx` (modify) · `frontend/package.json`
 
-- [ ] Install: `@tanstack/react-query` · `axios` · `react-router-dom`
-- [ ] `api.ts`: axios instance + `VITE_API_URL` base + JWT interceptor + all endpoint functions (endpoint is `/api/v1/jobs` not `/applications`)
-- [ ] `AuthContext`: `{ user, token, login(), register(), logout(), isAuthenticated }`
-- [ ] `LoginPage`: tab-based login/register with shadcn `<Tabs>` + `<Input>` + `<Button>`
-- [ ] `App.tsx`: `<QueryClientProvider>` + `<AuthProvider>` — unauthenticated → `LoginPage`
+- [x] Install: `@tanstack/react-query` · `axios` · `react-router-dom`
+- [x] `api.ts`: axios instance + `VITE_API_URL` base + JWT interceptor + all endpoint functions (endpoint is `/api/v1/jobs` not `/applications`)
+- [x] `AuthContext`: `{ user, token, login(), register(), logout(), isAuthenticated }`
+- [x] `LoginPage`: tab-based login/register with shadcn `<Tabs>` + `<Input>` + `<Button>`
+- [x] `App.tsx`: `<QueryClientProvider>` + `<AuthProvider>` — unauthenticated → `LoginPage`
 
 **Test:** Login with test user → see dashboard
 
