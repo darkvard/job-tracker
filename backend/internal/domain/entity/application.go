@@ -19,6 +19,7 @@ type Application struct {
 	Location       string
 	Source         valueobject.Source
 	Notes          string
+	StatusHistory  []StatusHistoryEntry
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
 }
