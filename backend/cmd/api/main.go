@@ -12,15 +12,20 @@
 package main
 
 import (
+	"time"
+
+	"job-tracker/internal/application/analytics"
 	"job-tracker/internal/application/auth"
 	"job-tracker/internal/application/job"
 	infraauth "job-tracker/internal/infrastructure/auth"
 	"job-tracker/internal/infrastructure/cache"
+	cachedecorator "job-tracker/internal/infrastructure/cache/decorator"
 	"job-tracker/internal/infrastructure/config"
 	httpinfra "job-tracker/internal/infrastructure/http"
 	"job-tracker/internal/infrastructure/http/handler"
 	"job-tracker/internal/infrastructure/http/middleware"
 	"job-tracker/internal/infrastructure/persistence"
+	"job-tracker/pkg/clock"
 )
 
 func main() {
@@ -48,15 +53,20 @@ func main() {
 	// Cache invalidator
 	jobInvalidator := cache.NewJobCacheInvalidator(rdb)
 
+	// Analytics use cases + cache decorators
+	rawDashboardUC := analytics.NewGetDashboardUseCase(appRepo, clock.RealClock{})
+	dashboardUC := cachedecorator.NewDashboard(rawDashboardUC, rdb, 5*time.Minute)
+
 	// Handlers
 	healthHandler := handler.NewHealth()
 	authHandler := handler.NewAuthHandler(registerUC, loginUC, userRepo)
 	jobHandler := handler.NewJobHandler(jobUCs, jobInvalidator)
+	analyticsHandler := handler.NewAnalyticsHandler(dashboardUC)
 
 	// Middleware
 	authMiddleware := middleware.NewAuth(tokens)
 
-	router := httpinfra.NewRouter(healthHandler, authHandler, jobHandler, authMiddleware)
+	router := httpinfra.NewRouter(healthHandler, authHandler, jobHandler, analyticsHandler, authMiddleware)
 	server := httpinfra.NewServer(cfg.Port, router)
 	server.Start()
 }

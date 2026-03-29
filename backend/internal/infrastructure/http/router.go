@@ -17,6 +17,7 @@ func NewRouter(
 	healthHandler *handler.HealthHandler,
 	authHandler *handler.AuthHandler,
 	jobHandler *handler.JobHandler,
+	analyticsHandler *handler.AnalyticsHandler,
 	authMiddleware func(http.Handler) http.Handler,
 ) http.Handler {
 	r := chi.NewRouter()
@@ -52,6 +53,12 @@ func NewRouter(
 			r.Put("/{id}", jobHandler.Update)
 			r.Patch("/{id}/status", jobHandler.UpdateStatus)
 			r.Delete("/{id}", jobHandler.Delete)
+		})
+
+		// Dashboard routes (all protected)
+		r.Route("/dashboard", func(r chi.Router) {
+			r.Use(authMiddleware)
+			r.Get("/kpis", analyticsHandler.GetDashboard)
 		})
 	})
 

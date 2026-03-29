@@ -138,6 +138,43 @@ const docTemplate = `{
                 }
             }
         },
+        "/dashboard/kpis": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns aggregated KPI metrics for the authenticated user's job applications, cached per user (TTL 5 min)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "dashboard"
+                ],
+                "summary": "Get dashboard KPIs",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/job-tracker_internal_application_analytics.DashboardKPIs"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/internal_infrastructure_http_handler.errorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_infrastructure_http_handler.errorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/health": {
             "get": {
                 "description": "Returns API health status",
@@ -584,6 +621,103 @@ const docTemplate = `{
                 "data": {},
                 "success": {
                     "type": "boolean"
+                }
+            }
+        },
+        "job-tracker_internal_application_analytics.DashboardKPIs": {
+            "type": "object",
+            "properties": {
+                "applied": {
+                    "type": "integer"
+                },
+                "interview": {
+                    "type": "integer"
+                },
+                "offer": {
+                    "type": "integer"
+                },
+                "recentJobs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/job-tracker_internal_application_analytics.RecentJob"
+                    }
+                },
+                "rejected": {
+                    "type": "integer"
+                },
+                "statusBreakdown": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/job-tracker_internal_application_analytics.StatusBreakdownItem"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "trends": {
+                    "$ref": "#/definitions/job-tracker_internal_application_analytics.DashboardTrends"
+                }
+            }
+        },
+        "job-tracker_internal_application_analytics.DashboardTrends": {
+            "type": "object",
+            "properties": {
+                "interview": {
+                    "$ref": "#/definitions/job-tracker_internal_application_analytics.TrendValue"
+                },
+                "offer": {
+                    "$ref": "#/definitions/job-tracker_internal_application_analytics.TrendValue"
+                },
+                "rejected": {
+                    "$ref": "#/definitions/job-tracker_internal_application_analytics.TrendValue"
+                },
+                "total": {
+                    "$ref": "#/definitions/job-tracker_internal_application_analytics.TrendValue"
+                }
+            }
+        },
+        "job-tracker_internal_application_analytics.RecentJob": {
+            "type": "object",
+            "properties": {
+                "company": {
+                    "type": "string"
+                },
+                "dateApplied": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "job-tracker_internal_application_analytics.StatusBreakdownItem": {
+            "type": "object",
+            "properties": {
+                "color": {
+                    "type": "string"
+                },
+                "count": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "job-tracker_internal_application_analytics.TrendValue": {
+            "type": "object",
+            "properties": {
+                "isPositive": {
+                    "type": "boolean"
+                },
+                "value": {
+                    "type": "number"
                 }
             }
         },
