@@ -223,7 +223,7 @@ curl -X PATCH localhost:3001/api/v1/jobs/1/status -H "Authorization: Bearer $TOK
 
 ---
 
-### [ ] PR-11: Analytics use cases + cache decorators
+### [x] PR-11: Analytics use cases + cache decorators
 **Docs:** `docs/RULES.md` · `.claude/skills/patterns-go.md` · `docs/API_SPEC.md` (analytics endpoints + response shapes) · `docs/BA_SPEC.md` (analytics metric definitions)
 **Files:** `backend/internal/application/analytics/analytics.go` · `backend/internal/infrastructure/cache/decorator/analytics.go` · `backend/internal/infrastructure/http/handler/analytics.go` (complete) · `backend/cmd/api/main.go` (update wiring)
 
