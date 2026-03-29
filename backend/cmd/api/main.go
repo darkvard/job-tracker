@@ -57,11 +57,14 @@ func main() {
 	rawDashboardUC := analytics.NewGetDashboardUseCase(appRepo, clock.RealClock{})
 	dashboardUC := cachedecorator.NewDashboard(rawDashboardUC, rdb, 5*time.Minute)
 
+	rawAnalyticsUC := analytics.NewGetAnalyticsUseCase(appRepo, clock.RealClock{})
+	analyticsUC := cachedecorator.NewAnalytics(rawAnalyticsUC, rdb, 10*time.Minute)
+
 	// Handlers
 	healthHandler := handler.NewHealth()
 	authHandler := handler.NewAuthHandler(registerUC, loginUC, userRepo)
 	jobHandler := handler.NewJobHandler(jobUCs, jobInvalidator)
-	analyticsHandler := handler.NewAnalyticsHandler(dashboardUC)
+	analyticsHandler := handler.NewAnalyticsHandler(dashboardUC, analyticsUC)
 
 	// Middleware
 	authMiddleware := middleware.NewAuth(tokens)

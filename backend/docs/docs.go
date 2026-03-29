@@ -15,6 +15,160 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/analytics/funnel": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns Applied → Interview → Offer conversion funnel data, cached per user (TTL 10 min)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "analytics"
+                ],
+                "summary": "Get interview conversion funnel",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/job-tracker_internal_application_analytics.FunnelData"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/internal_infrastructure_http_handler.errorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_infrastructure_http_handler.errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/analytics/metrics": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns interview rate, offer rate, rejection rate and average response time, cached per user (TTL 10 min)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "analytics"
+                ],
+                "summary": "Get key metrics",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/job-tracker_internal_application_analytics.KeyMetrics"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/internal_infrastructure_http_handler.errorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_infrastructure_http_handler.errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/analytics/sources": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns application counts and percentages grouped by source, cached per user (TTL 10 min)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "analytics"
+                ],
+                "summary": "Get source performance breakdown",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/job-tracker_internal_application_analytics.SourceData"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/internal_infrastructure_http_handler.errorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_infrastructure_http_handler.errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/analytics/weekly": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns application counts per week for the last 6 weeks with a trend, cached per user (TTL 10 min)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "analytics"
+                ],
+                "summary": "Get weekly application counts",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_infrastructure_http_handler.weeklyResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/internal_infrastructure_http_handler.errorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_infrastructure_http_handler.errorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/login": {
             "post": {
                 "description": "Authenticate with email and password, receive a JWT token",
@@ -624,6 +778,23 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_infrastructure_http_handler.weeklyResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/job-tracker_internal_application_analytics.WeeklyData"
+                    }
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "trend": {
+                    "$ref": "#/definitions/job-tracker_internal_application_analytics.TrendValue"
+                }
+            }
+        },
         "job-tracker_internal_application_analytics.DashboardKPIs": {
             "type": "object",
             "properties": {
@@ -676,6 +847,37 @@ const docTemplate = `{
                 }
             }
         },
+        "job-tracker_internal_application_analytics.FunnelData": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "rate": {
+                    "type": "number"
+                },
+                "value": {
+                    "type": "integer"
+                }
+            }
+        },
+        "job-tracker_internal_application_analytics.KeyMetrics": {
+            "type": "object",
+            "properties": {
+                "avgResponseDays": {
+                    "type": "number"
+                },
+                "interviewRate": {
+                    "type": "number"
+                },
+                "offerRate": {
+                    "type": "number"
+                },
+                "rejectionRate": {
+                    "type": "number"
+                }
+            }
+        },
         "job-tracker_internal_application_analytics.RecentJob": {
             "type": "object",
             "properties": {
@@ -692,6 +894,20 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "job-tracker_internal_application_analytics.SourceData": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "percentage": {
+                    "type": "number"
+                },
+                "source": {
                     "type": "string"
                 }
             }
@@ -718,6 +934,20 @@ const docTemplate = `{
                 },
                 "value": {
                     "type": "number"
+                }
+            }
+        },
+        "job-tracker_internal_application_analytics.WeeklyData": {
+            "type": "object",
+            "properties": {
+                "applications": {
+                    "type": "integer"
+                },
+                "startDate": {
+                    "type": "string"
+                },
+                "week": {
+                    "type": "string"
                 }
             }
         },

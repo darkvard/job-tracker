@@ -60,6 +60,15 @@ func NewRouter(
 			r.Use(authMiddleware)
 			r.Get("/kpis", analyticsHandler.GetDashboard)
 		})
+
+		// Analytics routes (all protected)
+		r.Route("/analytics", func(r chi.Router) {
+			r.Use(authMiddleware)
+			r.Get("/weekly", analyticsHandler.GetWeekly)
+			r.Get("/funnel", analyticsHandler.GetFunnel)
+			r.Get("/sources", analyticsHandler.GetSources)
+			r.Get("/metrics", analyticsHandler.GetMetrics)
+		})
 	})
 
 	return r

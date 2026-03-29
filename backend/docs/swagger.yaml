@@ -39,6 +39,17 @@ definitions:
       success:
         type: boolean
     type: object
+  internal_infrastructure_http_handler.weeklyResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/job-tracker_internal_application_analytics.WeeklyData'
+        type: array
+      success:
+        type: boolean
+      trend:
+        $ref: '#/definitions/job-tracker_internal_application_analytics.TrendValue'
+    type: object
   job-tracker_internal_application_analytics.DashboardKPIs:
     properties:
       applied:
@@ -73,6 +84,26 @@ definitions:
       total:
         $ref: '#/definitions/job-tracker_internal_application_analytics.TrendValue'
     type: object
+  job-tracker_internal_application_analytics.FunnelData:
+    properties:
+      name:
+        type: string
+      rate:
+        type: number
+      value:
+        type: integer
+    type: object
+  job-tracker_internal_application_analytics.KeyMetrics:
+    properties:
+      avgResponseDays:
+        type: number
+      interviewRate:
+        type: number
+      offerRate:
+        type: number
+      rejectionRate:
+        type: number
+    type: object
   job-tracker_internal_application_analytics.RecentJob:
     properties:
       company:
@@ -84,6 +115,15 @@ definitions:
       role:
         type: string
       status:
+        type: string
+    type: object
+  job-tracker_internal_application_analytics.SourceData:
+    properties:
+      count:
+        type: integer
+      percentage:
+        type: number
+      source:
         type: string
     type: object
   job-tracker_internal_application_analytics.StatusBreakdownItem:
@@ -101,6 +141,15 @@ definitions:
         type: boolean
       value:
         type: number
+    type: object
+  job-tracker_internal_application_analytics.WeeklyData:
+    properties:
+      applications:
+        type: integer
+      startDate:
+        type: string
+      week:
+        type: string
     type: object
   job-tracker_internal_application_auth.AuthResponse:
     properties:
@@ -241,6 +290,106 @@ info:
   title: Job Tracker API
   version: 1.0.0
 paths:
+  /analytics/funnel:
+    get:
+      description: Returns Applied → Interview → Offer conversion funnel data, cached
+        per user (TTL 10 min)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/job-tracker_internal_application_analytics.FunnelData'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get interview conversion funnel
+      tags:
+      - analytics
+  /analytics/metrics:
+    get:
+      description: Returns interview rate, offer rate, rejection rate and average
+        response time, cached per user (TTL 10 min)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/job-tracker_internal_application_analytics.KeyMetrics'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get key metrics
+      tags:
+      - analytics
+  /analytics/sources:
+    get:
+      description: Returns application counts and percentages grouped by source, cached
+        per user (TTL 10 min)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/job-tracker_internal_application_analytics.SourceData'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get source performance breakdown
+      tags:
+      - analytics
+  /analytics/weekly:
+    get:
+      description: Returns application counts per week for the last 6 weeks with a
+        trend, cached per user (TTL 10 min)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.weeklyResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get weekly application counts
+      tags:
+      - analytics
   /auth/login:
     post:
       consumes:
