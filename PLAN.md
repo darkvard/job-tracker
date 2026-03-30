@@ -267,14 +267,14 @@ curl -X PATCH localhost:3001/api/v1/jobs/1/status -H "Authorization: Bearer $TOK
 
 ---
 
-### [ ] PR-14: ApplicationsList wiring
+### [x] PR-14: ApplicationsList wiring
 **Docs:** `.claude/skills/ui.md` · `docs/UI_SPEC.md` (ApplicationsList page spec) · `docs/API_SPEC.md` (list endpoint + query params) · `docs/DESIGN_SYSTEM.md`
 **Files:** `frontend/src/app/components/ApplicationsList.tsx` (modify)
 
-- [ ] `useQuery(['jobs', filters])` — re-fetches on filter/search change
-- [ ] Debounced search (300ms)
-- [ ] Delete: `<AlertDialog>` confirm → `useMutation(api.jobs.delete)` → `invalidateQueries(['jobs','dashboard'])`
-- [ ] Pagination controls
+- [x] `useQuery(['jobs', filters])` — re-fetches on filter/search change
+- [x] Debounced search (300ms)
+- [x] Delete: `<AlertDialog>` confirm → `useMutation(api.jobs.delete)` → `invalidateQueries(['jobs','dashboard'])`
+- [x] Pagination controls
 
 **Test:** Filter, search, paginate, delete with confirm dialog
 
