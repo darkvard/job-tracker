@@ -280,13 +280,13 @@ curl -X PATCH localhost:3001/api/v1/jobs/1/status -H "Authorization: Bearer $TOK
 
 ---
 
-### [ ] PR-15: AddApplicationForm wiring
+### [x] PR-15: AddApplicationForm wiring
 **Docs:** `.claude/skills/ui.md` · `docs/UI_SPEC.md` (AddApplicationForm spec) · `docs/API_SPEC.md` (create job endpoint + validation errors) · `docs/ANIMATIONS_SPEC.md` (form submit animation)
 **Files:** `frontend/src/app/components/AddApplicationForm.tsx` (modify)
 
-- [ ] `useMutation(api.jobs.create)` → on success: invalidate + show animation + redirect
-- [ ] Inline API validation errors from `error.error.message`
-- [ ] Spinner + disabled on submit button while loading
+- [x] `useMutation(api.jobs.create)` → on success: invalidate + show animation + redirect
+- [x] Inline API validation errors from `error.error.message`
+- [x] Spinner + disabled on submit button while loading
 
 **Test:** Create job → appears in list
 
