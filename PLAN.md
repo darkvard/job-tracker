@@ -305,13 +305,13 @@ curl -X PATCH localhost:3001/api/v1/jobs/1/status -H "Authorization: Bearer $TOK
 
 ---
 
-### [ ] PR-17: React Router
+### [x] PR-17: React Router
 **Docs:** `.claude/skills/ui.md` · `docs/UI_SPEC.md` (routing + page structure)
 **Files:** `frontend/src/app/App.tsx` · `ProtectedLayout.tsx` (new) · `Navbar.tsx` (modify)
 
-- [ ] Routes: `/login` · `/` · `/jobs` · `/jobs/new` · `/jobs/:id` · `/analytics`
-- [ ] `ProtectedLayout`: auth check → redirect `/login` + renders Navbar + Outlet
-- [ ] Navbar: `useNavigate()` + `useLocation()` for active state
+- [x] Routes: `/login` · `/` · `/jobs` · `/jobs/new` · `/jobs/:id` · `/analytics`
+- [x] `ProtectedLayout`: auth check → redirect `/login` + renders Navbar + Outlet
+- [x] Navbar: `useNavigate()` + `useLocation()` for active state
 
 **Test:** URL navigation, back/forward, refresh on detail page
 
