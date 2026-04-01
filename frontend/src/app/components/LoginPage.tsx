@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Navigate, useNavigate } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { Briefcase, AlertCircle } from 'lucide-react'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
@@ -9,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext'
 
 function LoginForm() {
   const { login } = useAuth()
+  const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -20,6 +22,7 @@ function LoginForm() {
     setLoading(true)
     try {
       await login(email, password)
+      navigate('/', { replace: true })
     } catch (err: unknown) {
       const message =
         err instanceof Error
@@ -74,6 +77,7 @@ function LoginForm() {
 
 function RegisterForm() {
   const { register } = useAuth()
+  const navigate = useNavigate()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -86,6 +90,7 @@ function RegisterForm() {
     setLoading(true)
     try {
       await register(email, password, name)
+      navigate('/', { replace: true })
     } catch (err: unknown) {
       const message =
         err instanceof Error
@@ -152,6 +157,9 @@ function RegisterForm() {
 }
 
 export default function LoginPage() {
+  const { isAuthenticated } = useAuth()
+  if (isAuthenticated) return <Navigate to="/" replace />
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center px-4">
       <motion.div

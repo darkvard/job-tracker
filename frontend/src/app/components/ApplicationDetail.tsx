@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion } from 'motion/react'
 import { ChevronLeft, MapPin, Calendar, ExternalLink } from 'lucide-react'
@@ -15,11 +16,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-
-interface Props {
-  id: number
-  onBack?: () => void
-}
 
 const VALID_TRANSITIONS: Record<string, string[]> = {
   Applied: ['Interview', 'Rejected'],
@@ -57,7 +53,10 @@ function DetailSkeleton() {
   )
 }
 
-export default function ApplicationDetail({ id, onBack }: Props) {
+export default function ApplicationDetail() {
+  const { id: idParam } = useParams<{ id: string }>()
+  const id = Number(idParam)
+  const navigate = useNavigate()
   const qc = useQueryClient()
   const [statusNote, setStatusNote] = useState('')
   const [selectedStatus, setSelectedStatus] = useState('')
@@ -94,7 +93,7 @@ export default function ApplicationDetail({ id, onBack }: Props) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['jobs'] })
       qc.invalidateQueries({ queryKey: ['dashboard'] })
-      onBack?.()
+      navigate('/jobs', { replace: true })
     },
   })
 
@@ -164,7 +163,7 @@ export default function ApplicationDetail({ id, onBack }: Props) {
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Back button */}
       <button
-        onClick={onBack}
+        onClick={() => navigate('/jobs')}
         className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 mb-6 transition-colors"
       >
         <ChevronLeft className="w-4 h-4" />

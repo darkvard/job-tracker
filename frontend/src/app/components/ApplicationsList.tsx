@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion } from 'motion/react'
 import { Search, Briefcase, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react'
@@ -37,13 +38,14 @@ function ApplicationCardSkeleton() {
   )
 }
 
-function ApplicationCard({ job, index, onDelete }: { job: Job; index: number; onDelete: (id: number) => void }) {
+function ApplicationCard({ job, index, onDelete, onView }: { job: Job; index: number; onDelete: (id: number) => void; onView: (id: number) => void }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
       whileHover={{ y: -4, boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}
+      onClick={() => onView(job.id)}
       className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 cursor-pointer"
     >
       <div className="flex items-start justify-between mb-3">
@@ -106,6 +108,7 @@ function ApplicationCard({ job, index, onDelete }: { job: Job; index: number; on
 }
 
 export default function ApplicationsList() {
+  const navigate = useNavigate()
   const qc = useQueryClient()
   const [statusFilter, setStatusFilter] = useState('All')
   const [searchInput, setSearchInput] = useState('')
@@ -227,6 +230,7 @@ export default function ApplicationsList() {
                 job={job}
                 index={index}
                 onDelete={(id) => deleteMutation.mutate(id)}
+                onView={(id) => navigate(`/jobs/${id}`)}
               />
             ))}
           </div>
