@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion } from 'motion/react'
 import { CircleCheck, ChevronLeft } from 'lucide-react'
@@ -19,16 +20,13 @@ interface FormData {
   notes: string
 }
 
-interface Props {
-  onBack?: () => void
-}
-
 const inputClass =
   'w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500'
 
 const labelClass = 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'
 
-export default function AddApplicationForm({ onBack }: Props) {
+export default function AddApplicationForm() {
+  const navigate = useNavigate()
   const qc = useQueryClient()
   const [step, setStep] = useState(1)
   const [showSuccess, setShowSuccess] = useState(false)
@@ -60,7 +58,7 @@ export default function AddApplicationForm({ onBack }: Props) {
       setApiError(null)
       setShowSuccess(true)
       setTimeout(() => {
-        onBack?.()
+        navigate('/jobs', { replace: true })
       }, 2000)
     },
     onError: (err: unknown) => {
@@ -109,15 +107,13 @@ export default function AddApplicationForm({ onBack }: Props) {
     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="mb-6">
-        {onBack && (
-          <button
-            onClick={onBack}
-            className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 mb-4 transition-colors"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            Back
-          </button>
-        )}
+        <button
+          onClick={() => navigate('/jobs')}
+          className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 mb-4 transition-colors"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Back
+        </button>
         <h1 className="text-3xl font-semibold text-gray-900 dark:text-white">Add Application</h1>
         <p className="text-gray-600 dark:text-gray-400 mt-1">Track a new job application</p>
       </div>

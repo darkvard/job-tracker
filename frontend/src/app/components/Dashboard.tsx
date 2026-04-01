@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { Briefcase, Users, CircleCheck, X, TrendingUp, ArrowUpRight } from 'lucide-react'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
@@ -41,6 +42,7 @@ function EmptyDashboard() {
 }
 
 export default function Dashboard() {
+  const navigate = useNavigate()
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['dashboard'],
     queryFn: () => api.dashboard.getKPIs(),
@@ -160,7 +162,10 @@ export default function Dashboard() {
         >
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Applications</h2>
-            <button className="flex items-center gap-1 text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors">
+            <button
+              onClick={() => navigate('/jobs')}
+              className="flex items-center gap-1 text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
+            >
               View all <ArrowUpRight className="w-4 h-4" />
             </button>
           </div>
@@ -179,6 +184,7 @@ export default function Dashboard() {
                   <motion.tr
                     key={job.id}
                     whileHover={{ backgroundColor: 'rgba(99, 102, 241, 0.05)' }}
+                    onClick={() => navigate(`/jobs/${job.id}`)}
                     className="border-b border-gray-50 dark:border-gray-700/50 last:border-0 cursor-pointer"
                   >
                     <td className="py-3 pr-4">
