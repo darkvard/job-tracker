@@ -292,14 +292,14 @@ curl -X PATCH localhost:3001/api/v1/jobs/1/status -H "Authorization: Bearer $TOK
 
 ---
 
-### [ ] PR-16: ApplicationDetail + Analytics wiring
+### [x] PR-16: ApplicationDetail + Analytics wiring
 **Docs:** `.claude/skills/ui.md` · `docs/UI_SPEC.md` (ApplicationDetail + Analytics page spec) · `docs/API_SPEC.md` (detail + analytics endpoints) · `docs/ANIMATIONS_SPEC.md` · `docs/DESIGN_SYSTEM.md`
 **Files:** `frontend/src/app/components/ApplicationDetail.tsx` (modify) · `Analytics.tsx` (modify)
 
-- [ ] Detail: `useQuery(['job', id])` → real data + status history timeline
-- [ ] Status update: `useMutation(api.jobs.updateStatus)` + confirm
-- [ ] Delete: `AlertDialog` → `useMutation` → navigate back
-- [ ] Analytics: 4 parallel `useQuery` calls → real Recharts data
+- [x] Detail: `useQuery(['job', id])` → real data + status history timeline
+- [x] Status update: `useMutation(api.jobs.updateStatus)` + confirm
+- [x] Delete: `AlertDialog` → `useMutation` → navigate back
+- [x] Analytics: 4 parallel `useQuery` calls → real Recharts data
 
 **Test:** View/update/delete detail; analytics charts show real data
 
