@@ -89,7 +89,10 @@ export interface WeeklyData {
   startDate: string
 }
 
-export interface WeeklyResponse {
+// WeeklyApiResponse matches the non-standard backend shape:
+// { success, data: [...], trend: {...} } — trend is at the root, not nested inside data
+export interface WeeklyApiResponse {
+  success: boolean
   data: WeeklyData[]
   trend: { value: number; isPositive: boolean }
 }
@@ -141,7 +144,7 @@ export const api = {
   },
   analytics: {
     weekly: () =>
-      client.get<ApiResponse<WeeklyResponse>>('/analytics/weekly').then((r) => r.data),
+      client.get<WeeklyApiResponse>('/analytics/weekly').then((r) => r.data),
     funnel: () =>
       client.get<ApiResponse<FunnelData[]>>('/analytics/funnel').then((r) => r.data),
     sources: () =>
