@@ -354,21 +354,21 @@ Full flow: register → login → create job → list (filter) → update status
 
 ---
 
-### [ ] PR-21: Playwright E2E — full browser automation
+### [x] PR-21: Playwright E2E — full browser automation
 **Docs:** `docs/ARCHITECTURE_FRONTEND.md` · `docs/UI_SPEC.md` · `docs/API_SPEC.md`
 **Files:** `frontend/e2e/smoke.spec.ts` · `frontend/playwright.config.ts` · `frontend/package.json` (add `@playwright/test`) · `.github/workflows/ci.yml` (add e2e job)
 
-- [ ] Install: `npm install -D @playwright/test && npx playwright install chromium`
-- [ ] `playwright.config.ts`: baseURL=`http://localhost:5173`, timeout=30s, retries=1
-- [ ] `smoke.spec.ts` — full user journey:
+- [x] Install: `npm install -D @playwright/test && npx playwright install chromium`
+- [x] `playwright.config.ts`: baseURL=`http://localhost:5173`, timeout=30s, retries=1
+- [x] `smoke.spec.ts` — full user journey:
   - Register new account → redirected to Dashboard → KPI cards visible
   - Add job (Google/SDE/LinkedIn) → appears in ApplicationsList
   - Click card → ApplicationDetail → change status Applied→Interview → status badge updates
   - Navigate to Analytics → 4 charts render (not empty)
   - Delete job → confirm dialog → job gone from list
   - Logout → redirected to Login page
-- [ ] Add to `ci.yml`: job `e2e` (needs `backend` + `frontend`) — starts both services, runs `npx playwright test`
-- [ ] Add `make test-e2e-ui` to Makefile: `cd frontend && npx playwright test`
+- [x] Add to `ci.yml`: job `e2e` (needs `backend` + `frontend`) — starts both services, runs `npx playwright test`
+- [x] Add `make test-e2e-ui` to Makefile: `cd frontend && npx playwright test`
 
 **Test:** `make test-e2e-ui` → all 6 scenarios pass in headless Chromium
 
