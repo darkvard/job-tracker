@@ -1,5 +1,5 @@
 .PHONY: run build docker-up docker-down docker-build docker-rebuild ps shell logs \
-        migrate-up migrate-down migrate-status mock test test-integration test-e2e test-ui \
+        migrate-up migrate-down migrate-status mock test test-integration test-e2e test-e2e-ui test-ui \
         lint lint-fe seed clean help
 
 # ─── Local dev (no Docker) ────────────────────────────────────────────────────
@@ -84,6 +84,9 @@ test-integration: ## Run integration tests only (spawns testcontainers — needs
 
 test-e2e: ## Run E2E smoke test against live server
 	cd backend && go test ./tests/e2e/... -count=1
+
+test-e2e-ui: ## Run Playwright browser E2E tests (requires running frontend + backend)
+	cd frontend && npx playwright test
 
 test-ui: ## Smoke check: API health + frontend build
 	@echo "→ Checking API health..."
