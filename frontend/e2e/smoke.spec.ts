@@ -1,12 +1,15 @@
 import { test, expect, type Page } from '@playwright/test'
 
-// Unique per run — avoids conflicts with demo data or parallel runs
-const email = `e2e-${Date.now()}@test.local`
+// Unique per test call — avoids AlreadyExists when multiple tests each register
+function uniqueEmail() {
+  return `e2e-${Date.now()}-${Math.random().toString(36).slice(2)}@test.local`
+}
+
 const password = 'password123'
 const name = 'E2E Tester'
-const company = `PlaywrightCo-${Date.now()}`
 
 async function register(page: Page) {
+  const email = uniqueEmail()
   await page.goto('/login')
   await page.getByRole('tab', { name: 'Create Account' }).click()
   await page.locator('#register-name').fill(name)
@@ -24,6 +27,8 @@ test.describe('Job Tracker smoke', () => {
 
   test('2 — add job → appears in ApplicationsList', async ({ page }) => {
     await register(page)
+
+    const company = `PlaywrightCo-${Date.now()}`
 
     // Navigate to add form
     await page.getByRole('button', { name: /Add Application/i }).click()
@@ -49,6 +54,8 @@ test.describe('Job Tracker smoke', () => {
   test('3 — open detail → update status Applied→Interview → badge updates', async ({ page }) => {
     await register(page)
 
+    const company = `PlaywrightCo-${Date.now()}`
+
     // Add job first
     await page.getByRole('button', { name: /Add Application/i }).click()
     await page.getByPlaceholder('e.g. Google').fill(company)
@@ -64,7 +71,7 @@ test.describe('Job Tracker smoke', () => {
 
     // Update status
     await page.getByRole('button', { name: 'Update Status' }).click()
-    // Select "Interview" in the status dialog (it's the first transition for Applied)
+    // The first available transition for Applied is Interview
     await page.locator('select').selectOption('Interview')
     await page.getByRole('button', { name: 'Confirm' }).click()
 
@@ -81,15 +88,17 @@ test.describe('Job Tracker smoke', () => {
     // Analytics page heading
     await expect(page.getByRole('heading', { name: 'Analytics' })).toBeVisible()
 
-    // At minimum: the 4 chart section titles visible after loading
-    await expect(page.getByText('Weekly Applications')).toBeVisible()
-    await expect(page.getByText('Application Funnel')).toBeVisible()
-    await expect(page.getByText('Source Breakdown')).toBeVisible()
+    // 4 chart section titles (always rendered regardless of data)
+    await expect(page.getByText('Applications per Week')).toBeVisible()
+    await expect(page.getByText('Interview Conversion')).toBeVisible()
+    await expect(page.getByText('Source Performance')).toBeVisible()
     await expect(page.getByText('Key Metrics')).toBeVisible()
   })
 
   test('5 — delete job → job gone from list', async ({ page }) => {
     await register(page)
+
+    const company = `PlaywrightCo-${Date.now()}`
 
     // Add job
     await page.getByRole('button', { name: /Add Application/i }).click()
