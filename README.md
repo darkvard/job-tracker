@@ -49,7 +49,7 @@ Arrows never reverse. GORM/Redis never imported by domain or application.
 
 ## Prerequisites
 
-- Docker + Docker Compose
+- Docker with Compose v2 plugin (`docker compose` — ships with Docker Desktop and Docker Engine ≥ 23)
 - Go 1.25
 - Node.js 24
 

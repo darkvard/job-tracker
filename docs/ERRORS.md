@@ -38,4 +38,16 @@
 **Fix 2:** Updated assertions to match actual component text.
 **Prevention:** Always grep the component source for exact text before writing `getByText()` assertions.
 
+### 2026-04-02 — `make docker-up` fails: `docker-compose: No such file or directory`
+**Symptom:** All `make docker-*` and `make migrate-*` targets fail with `docker-compose: No such file or directory`.
+**Root cause:** Makefile used `docker-compose` (Compose v1 standalone binary). Modern Docker installs only ship Compose v2 as a built-in plugin (`docker compose` with a space).
+**Fix:** Replaced every `docker-compose` → `docker compose` in the Makefile.
+**Prevention:** Always use `docker compose` (v2 syntax) in Makefiles and scripts. Never use `docker-compose` — v1 is end-of-life and not installed by default on Docker Desktop or current Docker Engine packages.
+
+### 2026-04-02 — `make seed` fails: `DB_DSN environment variable is required`
+**Symptom:** `make seed` exits with `ERROR seed: DB_DSN environment variable is required` when running with Docker Compose setup.
+**Root cause:** `make seed` ran `go run ./cmd/seed` locally, but the local shell doesn't have `DB_DSN` set (that env var lives inside the Docker container). The seed binary needs to reach the database.
+**Fix:** Changed `make seed` to run inside the API container: `docker compose exec api go run ./cmd/seed` — same pattern as `make migrate-up`.
+**Prevention:** Any make target that needs database access should run inside the container (`docker compose exec api ...`), not locally.
+
 *(Add new entries below)*

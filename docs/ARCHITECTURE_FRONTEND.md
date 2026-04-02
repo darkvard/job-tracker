@@ -150,4 +150,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 | react-router-dom | v6 | `<Outlet>`, `useNavigate`, `useLocation` |
 | motion/react | latest | NOT `framer-motion` |
 | recharts | latest | Bar, Line, Pie charts |
-| Node.js | 24 | (docker-compose + CI) |
+| Node.js | 24 | (Docker Compose + CI) |

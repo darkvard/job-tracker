@@ -13,18 +13,18 @@ build: ## Compile backend binary
 # ─── Docker lifecycle ─────────────────────────────────────────────────────────
 
 docker-up: ## Start all containers (NO rebuild — use existing images)
-	docker-compose up -d
+	docker compose up -d
 
 docker-down: ## Stop all containers
-	docker-compose down
+	docker compose down
 
 docker-build: ## Build images (run when: go.mod changes · Dockerfile.dev changes · first time)
-	docker-compose build
+	docker compose build
 
 docker-rebuild: ## Build + restart everything + re-migrate
-	docker-compose down
-	docker-compose build
-	docker-compose up -d
+	docker compose down
+	docker compose build
+	docker compose up -d
 	@sleep 5
 	$(MAKE) migrate-up
 
@@ -42,27 +42,27 @@ init: ## First-time only: copy .env, build image, start, migrate
 # ─── Container management ─────────────────────────────────────────────────────
 
 ps: ## Show container status
-	docker-compose ps
+	docker compose ps
 
 shell: ## Open shell in backend container
-	docker-compose exec api sh
+	docker compose exec api sh
 
 logs: ## Follow all logs
-	docker-compose logs -f
+	docker compose logs -f
 
 logs-api: ## Follow backend logs only
-	docker-compose logs -f api
+	docker compose logs -f api
 
 # ─── Database migrations ──────────────────────────────────────────────────────
 
 migrate-up: ## Apply pending migrations (inside container)
-	docker-compose exec api sh -c '/go/bin/migrate -path /app/migrations -database "$$DB_DSN" up'
+	docker compose exec api sh -c '/go/bin/migrate -path /app/migrations -database "$$DB_DSN" up'
 
 migrate-down: ## Roll back one migration (inside container)
-	docker-compose exec api sh -c '/go/bin/migrate -path /app/migrations -database "$$DB_DSN" down 1'
+	docker compose exec api sh -c '/go/bin/migrate -path /app/migrations -database "$$DB_DSN" down 1'
 
 migrate-status: ## Show current migration version (inside container)
-	docker-compose exec api sh -c '/go/bin/migrate -path /app/migrations -database "$$DB_DSN" version'
+	docker compose exec api sh -c '/go/bin/migrate -path /app/migrations -database "$$DB_DSN" version'
 
 # ─── Code generation ──────────────────────────────────────────────────────────
 
@@ -104,12 +104,12 @@ lint-fe: ## Run TypeScript type check on frontend
 
 # ─── Utilities ────────────────────────────────────────────────────────────────
 
-seed: ## Insert demo data (idempotent)
-	cd backend && go run ./cmd/seed
+seed: ## Insert demo data (idempotent — runs inside container)
+	docker compose exec api go run ./cmd/seed
 
 clean: ## Destroy all containers and volumes (DESTRUCTIVE)
 	@read -p "This will delete all data. Are you sure? [y/N] " confirm && [ "$$confirm" = "y" ]
-	docker-compose down -v
+	docker compose down -v
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
