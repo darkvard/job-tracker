@@ -38,4 +38,10 @@
 **Fix 2:** Updated assertions to match actual component text.
 **Prevention:** Always grep the component source for exact text before writing `getByText()` assertions.
 
+### 2026-04-02 — `make docker-up` fails: `docker-compose: No such file or directory`
+**Symptom:** All `make docker-*` and `make migrate-*` targets fail with `docker-compose: No such file or directory`.
+**Root cause:** Makefile used `docker-compose` (Compose v1 standalone binary). Modern Docker installs only ship Compose v2 as a built-in plugin (`docker compose` with a space).
+**Fix:** Replaced every `docker-compose` → `docker compose` in the Makefile.
+**Prevention:** Always use `docker compose` (v2 syntax) in Makefiles and scripts. Never use `docker-compose` — v1 is end-of-life and not installed by default on Docker Desktop or current Docker Engine packages.
+
 *(Add new entries below)*
