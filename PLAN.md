@@ -332,7 +332,7 @@ curl -X PATCH localhost:3001/api/v1/jobs/1/status -H "Authorization: Bearer $TOK
 
 ---
 
-### [ ] PR-19: E2E smoke test
+### [x] PR-19: E2E smoke test
 **Docs:** `docs/API_SPEC.md` (full endpoint list + expected responses)
 **Files:** `backend/tests/e2e/smoke_test.go`
 
