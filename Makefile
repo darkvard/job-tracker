@@ -104,8 +104,8 @@ lint-fe: ## Run TypeScript type check on frontend
 
 # ─── Utilities ────────────────────────────────────────────────────────────────
 
-seed: ## Insert demo data (idempotent)
-	cd backend && go run ./cmd/seed
+seed: ## Insert demo data (idempotent — runs inside container)
+	docker compose exec api go run ./cmd/seed
 
 clean: ## Destroy all containers and volumes (DESTRUCTIVE)
 	@read -p "This will delete all data. Are you sure? [y/N] " confirm && [ "$$confirm" = "y" ]
