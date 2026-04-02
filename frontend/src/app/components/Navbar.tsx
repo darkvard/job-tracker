@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { Briefcase, Plus, Bell, User } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import ThemeToggle from '@/app/components/ThemeToggle'
 
 const NAV_LINKS = [
   { label: 'Dashboard', to: '/' },
@@ -63,6 +64,9 @@ export default function Navbar() {
           <Plus className="w-4 h-4" />
           <span className="hidden sm:inline">Add Application</span>
         </motion.button>
+
+        {/* Theme toggle */}
+        <ThemeToggle />
 
         {/* Bell — decorative */}
         <button className="relative p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">

@@ -16,15 +16,7 @@ import {
   ResponsiveContainer,
 } from 'recharts'
 import { api } from '@/lib/api'
-
-const TOOLTIP_STYLE = {
-  contentStyle: {
-    backgroundColor: '#1f2937',
-    border: 'none',
-    borderRadius: '8px',
-    color: '#fff',
-  },
-}
+import { useTheme } from '@/contexts/ThemeContext'
 
 const SOURCE_COLORS = ['#6366f1', '#f97316', '#22c55e', '#ef4444', '#8b5cf6']
 
@@ -55,6 +47,17 @@ function ChartError({ onRetry }: { onRetry: () => void }) {
 }
 
 export default function Analytics() {
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
+  const tooltipProps = {
+    contentStyle: {
+      backgroundColor: isDark ? '#1f2937' : '#ffffff',
+      border: isDark ? 'none' : '1px solid #e5e7eb',
+      borderRadius: '8px',
+    },
+    labelStyle: { color: isDark ? '#ffffff' : '#111827' },
+    itemStyle: { color: isDark ? '#d1d5db' : '#374151' },
+  }
   const weekly = useQuery({
     queryKey: ['analytics', 'weekly'],
     queryFn: () => api.analytics.weekly(),
@@ -132,7 +135,7 @@ export default function Analytics() {
                     axisLine={false}
                     tickLine={false}
                   />
-                  <Tooltip {...TOOLTIP_STYLE} />
+                  <Tooltip {...tooltipProps} />
                   <Bar dataKey="applications" fill="#6366f1" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -173,7 +176,7 @@ export default function Analytics() {
                     axisLine={false}
                     tickLine={false}
                   />
-                  <Tooltip {...TOOLTIP_STYLE} />
+                  <Tooltip {...tooltipProps} />
                   <Line
                     type="monotone"
                     dataKey="value"
@@ -226,7 +229,7 @@ export default function Analytics() {
                         <Cell key={idx} fill={SOURCE_COLORS[idx % SOURCE_COLORS.length]} />
                       ))}
                   </Pie>
-                  <Tooltip {...TOOLTIP_STYLE} />
+                  <Tooltip {...tooltipProps} />
                 </PieChart>
               </ResponsiveContainer>
             </div>

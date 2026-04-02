@@ -374,6 +374,24 @@ Full flow: register → login → create job → list (filter) → update status
 
 ---
 
+### [ ] PR-22: Fix chart tooltip contrast + dark/light mode toggle
+**Docs:** `docs/UI_SPEC.md` · `docs/DESIGN_SYSTEM.md` · `docs/ARCHITECTURE_FRONTEND.md`
+**Files:** `frontend/src/contexts/ThemeContext.tsx` (new) · `frontend/src/app/components/ThemeToggle.tsx` (new) · `frontend/src/app/App.tsx` · `frontend/src/app/components/Navbar.tsx` · `frontend/src/app/components/Dashboard.tsx` · `frontend/src/app/components/Analytics.tsx`
+
+- [ ] `ThemeContext.tsx`: `type Theme = 'light'|'dark'`, reads localStorage + `prefers-color-scheme` on init, toggles `dark` class on `<html>`, persists to localStorage — exports `ThemeProvider` + `useTheme()`
+- [ ] `ThemeToggle.tsx`: `Sun` icon (dark mode → click→light) / `Moon` icon (light mode → click→dark) using lucide-react, same button style as Bell in Navbar
+- [ ] `App.tsx`: wrap tree with `<ThemeProvider>`
+- [ ] `Navbar.tsx`: add `<ThemeToggle />` between Add Application button and Bell icon
+- [ ] **Bug fix** `Dashboard.tsx:139`: replace inline tooltip `contentStyle` with theme-aware `tooltipProps` that adds `labelStyle` + `itemStyle` (fixes invisible text on pie/donut chart)
+- [ ] **Bug fix** `Analytics.tsx:20-27`: replace static `TOOLTIP_STYLE` constant with dynamic `tooltipProps` from `useTheme()` — applied to all 3 charts (Bar, Line, Pie)
+
+**Test:**
+- Light mode → hover donut chart (Status Distribution) → tooltip text visible
+- Click Moon/Sun toggle → full page switches theme; reload → persists
+- Dark mode charts → tooltips still readable
+
+---
+
 ## Summary
 
 | Phase | PRs | Scope |

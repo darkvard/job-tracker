@@ -6,6 +6,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
 import { api } from '@/lib/api'
 import KPICard from '@/components/KPICard'
 import StatusBadge from '@/components/StatusBadge'
+import { useTheme } from '@/contexts/ThemeContext'
 
 function DashboardSkeleton() {
   return (
@@ -43,6 +44,17 @@ function EmptyDashboard() {
 
 export default function Dashboard() {
   const navigate = useNavigate()
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
+  const tooltipProps = {
+    contentStyle: {
+      backgroundColor: isDark ? '#1f2937' : '#ffffff',
+      border: isDark ? 'none' : '1px solid #e5e7eb',
+      borderRadius: '8px',
+    },
+    labelStyle: { color: isDark ? '#ffffff' : '#111827' },
+    itemStyle: { color: isDark ? '#d1d5db' : '#374151' },
+  }
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['dashboard'],
     queryFn: () => api.dashboard.getKPIs(),
@@ -136,9 +148,7 @@ export default function Dashboard() {
                     <Cell key={entry.status} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip
-                  contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', color: '#fff' }}
-                />
+                <Tooltip {...tooltipProps} />
               </PieChart>
             </ResponsiveContainer>
           </div>
