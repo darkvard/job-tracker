@@ -342,13 +342,13 @@ Full flow: register → login → create job → list (filter) → update status
 
 ---
 
-### [ ] PR-20: README + final cleanup
+### [x] PR-20: README + final cleanup
 **Docs:** (none — write from what's already in CLAUDE.md + ARCHITECTURE_BACKEND.md + ARCHITECTURE_FRONTEND.md)
 **Files:** `README.md`
 
-- [ ] Stack table · prerequisites · `make docker-up && make migrate-up` getting started · daily workflow · ASCII architecture diagram
-- [ ] Verify `make docker-up` → `make migrate-up` → `make seed` works on clean clone
-- [ ] CI green on main
+- [x] Stack table · prerequisites · `make docker-up && make migrate-up` getting started · daily workflow · ASCII architecture diagram
+- [x] Verify `make docker-up` → `make migrate-up` → `make seed` works on clean clone
+- [x] CI green on main
 
 **Test:** Fresh clone → full flow works
 
