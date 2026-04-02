@@ -27,4 +27,15 @@
 **Fix:** After any PR merges, always create a follow-up chore commit on a new branch that marks `[x]` in PLAN.md before starting the next task. Alternatively, mark immediately after `gh pr merge --auto` fires (not waiting for CI) as a best-effort, then confirm after merge.
 **Prevention:** The prompt for the next task should always start with `git pull` + verify PLAN.md is updated. Also mark sub-task checkboxes `[x]` at end of each session, not just the PR header — this makes it obvious which items were actually completed.
 
+### 2026-04-02 — Playwright E2E: shared email + wrong analytics headings
+**Symptom 1:** Tests 2-6 all timeout at `waitForURL('/')` after register.
+**Root cause 1:** `email` was a module-level `const` using `Date.now()` evaluated once. All 6 tests shared the same email → test 1 registers OK; tests 2-6 get 409 AlreadyExists → no navigation → timeout.
+**Fix 1:** Moved email generation inside `register()` using `uniqueEmail()` so every call gets a fresh email.
+**Prevention:** Never use module-level `Date.now()` for test isolation values in Playwright specs — use a helper called at runtime.
+
+**Symptom 2:** Test 4 (Analytics) fails with "element not found" for `getByText('Weekly Applications')`.
+**Root cause 2:** Asserted wrong heading text. Actual `Analytics.tsx` headings: `Applications per Week`, `Interview Conversion`, `Source Performance`, `Key Metrics`.
+**Fix 2:** Updated assertions to match actual component text.
+**Prevention:** Always grep the component source for exact text before writing `getByText()` assertions.
+
 *(Add new entries below)*
