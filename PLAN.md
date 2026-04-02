@@ -319,14 +319,14 @@ curl -X PATCH localhost:3001/api/v1/jobs/1/status -H "Authorization: Bearer $TOK
 
 ## Phase 5: Polish
 
-### [ ] PR-18: Seed data
+### [x] PR-18: Seed data
 **Docs:** `docs/BA_SPEC.md` (demo data requirements) · `docs/API_SPEC.md` (field constraints)
 **Files:** `backend/cmd/seed/main.go`
 
-- [ ] Create demo user: `demo@tracker.com` / `demo123`
-- [ ] Create 8 jobs (Google/Meta/Apple/Amazon/Microsoft/Netflix/Airbnb/Spotify) matching Figma mock
-- [ ] Create status_history entries for each
-- [ ] Idempotent: skip if demo user exists
+- [x] Create demo user: `demo@tracker.com` / `demo123`
+- [x] Create 8 jobs (Google/Meta/Apple/Amazon/Microsoft/Netflix/Airbnb/Spotify) matching Figma mock
+- [x] Create status_history entries for each
+- [x] Idempotent: skip if demo user exists
 
 **Test:** `make seed` → login as demo → see 8 jobs + analytics
 
