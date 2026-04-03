@@ -396,15 +396,15 @@ Full flow: register → login → create job → list (filter) → update status
 **Docs:** `docs/UI_SPEC.md` · `docs/DESIGN_SYSTEM.md` · `docs/ARCHITECTURE_FRONTEND.md` · `.claude/skills/ui.md`
 **Files:** `frontend/src/i18n/index.ts` (new) · `frontend/src/i18n/locales/en.json` (new) · `frontend/src/i18n/locales/vi.json` (new) · `frontend/src/contexts/LanguageContext.tsx` (new) · `frontend/src/app/components/SettingsDropdown.tsx` (new) · `frontend/src/app/components/Navbar.tsx` · `frontend/src/app/App.tsx` · `frontend/src/main.tsx` · `frontend/src/app/components/LoginPage.tsx` · `frontend/src/app/components/Dashboard.tsx` · `frontend/src/app/components/ApplicationsList.tsx` · `frontend/src/app/components/AddApplicationForm.tsx` · `frontend/src/app/components/ApplicationDetail.tsx` · `frontend/src/app/components/Analytics.tsx` · `frontend/src/components/StatusBadge.tsx` · `frontend/src/components/KPICard.tsx` · `frontend/package.json`
 
-- [ ] Install: `i18next` · `react-i18next`
-- [ ] `src/i18n/locales/en.json` + `vi.json`: translation resource files grouped by feature (nav, settings, auth, dashboard, jobs, detail, analytics, status, common)
-- [ ] `src/i18n/index.ts`: i18next init + `initReactI18next`, reads `localStorage('job-tracker-lang')` with `'en'` fallback
-- [ ] `src/contexts/LanguageContext.tsx`: exports `Language = 'en'|'vi'` · `SUPPORTED_LANGUAGES` · `LanguageProvider` + `useLanguage()` — `changeLanguage()` calls `i18n.changeLanguage()` + saves to localStorage
-- [ ] `src/app/components/SettingsDropdown.tsx`: gear icon (`Settings2`) opens dropdown — Theme section (Light/Dark toggle) + Language section (`SUPPORTED_LANGUAGES` buttons) — active = `bg-indigo-600 text-white` — closes on outside click
-- [ ] `main.tsx`: add `import '@/i18n'` side-effect import
-- [ ] `App.tsx`: wrap with `<LanguageProvider>` (inside `<ThemeProvider>`, outside `<QueryClientProvider>`)
-- [ ] `Navbar.tsx`: replace `<ThemeToggle />` → `<SettingsDropdown />`; nav links + "Add Application" use `t()`
-- [ ] All page components + `StatusBadge` + `KPICard`: replace hardcoded strings with `t('key')`; status filter/option **values** stay English (API contract), only display text translated
+- [x] Install: `i18next` · `react-i18next`
+- [x] `src/i18n/locales/en.json` + `vi.json`: translation resource files grouped by feature (nav, settings, auth, dashboard, jobs, detail, analytics, status, common)
+- [x] `src/i18n/index.ts`: i18next init + `initReactI18next`, reads `localStorage('job-tracker-lang')` with `'en'` fallback
+- [x] `src/contexts/LanguageContext.tsx`: exports `Language = 'en'|'vi'` · `SUPPORTED_LANGUAGES` · `LanguageProvider` + `useLanguage()` — `changeLanguage()` calls `i18n.changeLanguage()` + saves to localStorage
+- [x] `src/app/components/SettingsDropdown.tsx`: gear icon (`Settings2`) opens dropdown — Theme section (Light/Dark toggle) + Language section (`SUPPORTED_LANGUAGES` buttons) — active = `bg-indigo-600 text-white` — closes on outside click
+- [x] `main.tsx`: add `import '@/i18n'` side-effect import
+- [x] `App.tsx`: wrap with `<LanguageProvider>` (inside `<ThemeProvider>`, outside `<QueryClientProvider>`)
+- [x] `Navbar.tsx`: replace `<ThemeToggle />` → `<SettingsDropdown />`; nav links + "Add Application" use `t()`
+- [x] All page components + `StatusBadge` + `KPICard`: replace hardcoded strings with `t('key')`; status filter/option **values** stay English (API contract), only display text translated
 
 **Test:**
 - Default = English; toggle to Vietnamese → all text switches immediately; reload → persists
@@ -418,14 +418,27 @@ Full flow: register → login → create job → list (filter) → update status
 **Docs:** `docs/ARCHITECTURE_FRONTEND.md` · `docs/UI_SPEC.md`
 **Files:** `frontend/e2e/i18n.spec.ts` (new)
 
-- [ ] Test 1: Default language = English — verify key strings on Dashboard, Jobs, Analytics, Settings dropdown
-- [ ] Test 2: Toggle to Vietnamese — verify all pages switch to VI strings
-- [ ] Test 3: Persistence — reload → still Vietnamese
-- [ ] Test 4: Toggle back to English — strings revert
-- [ ] Test 5: Add Application form in VI — all labels, step nav, success screen
-- [ ] Test 6: Application Detail in VI — info grid, timeline, update status dialog
+- [x] Test 1: Default language = English — verify key strings on Dashboard, Jobs, Analytics, Settings dropdown
+- [x] Test 2: Toggle to Vietnamese — verify all pages switch to VI strings
+- [x] Test 3: Persistence — reload → still Vietnamese
+- [x] Test 4: Toggle back to English — strings revert
+- [x] Test 5: Add Application form in VI — all labels, step nav, success screen
+- [x] Test 6: Application Detail in VI — info grid, timeline, update status dialog
 
 **Test:** `make test-ui` → 6 new i18n scenarios green (in addition to existing smoke tests)
+
+---
+
+---
+
+### [ ] PR-25: UX fixes — edit mode, delete bug, dashboard navigation
+**Files:** `frontend/src/app/components/ApplicationDetail.tsx` · `ApplicationsList.tsx` · `Dashboard.tsx` · `frontend/src/components/KPICard.tsx` · `frontend/src/i18n/locales/en.json` · `vi.json`
+
+- [ ] **Bug fix:** Delete from ApplicationsList navigates to detail instead of removing item — root cause: React portal event bubbling; fix: wrap AlertDialog in `onClick={stopPropagation}` div
+- [ ] **Feature:** ApplicationDetail — inline edit mode; "Edit" button unlocks all fields (company, role, location, source, dateApplied, notes, status); date field uses native calendar picker; "Save Changes" / "Cancel" buttons; status transitions still enforced
+- [ ] **Feature:** Dashboard KPI cards (Total, Interviews, Offers, Rejected) clickable → navigate to `/jobs?status=X`
+- [ ] **Feature:** Dashboard pie chart segments clickable → navigate to `/jobs?status=X`
+- [ ] **Feature:** ApplicationsList reads `?status=X` URL param on mount → pre-selects filter (enables Dashboard → filtered list navigation)
 
 ---
 
@@ -440,5 +453,6 @@ Full flow: register → login → create job → list (filter) → update status
 | 4: Frontend | PR-12 → PR-17 | React Query wiring + Router |
 | 5: Polish | PR-18 → PR-22 | Seed, API E2E, README, Browser E2E (Playwright), Dark mode toggle |
 | 6: i18n + UX | PR-23 → PR-24 | EN/VI language support + Settings dropdown + i18n E2E tests |
+| 7: UX fixes | PR-25 | Edit mode, delete fix, dashboard navigation |
 
-**Total: 24 PRs** · each 100–400 lines · strictly ordered
+**Total: 25 PRs** · each 100–400 lines · strictly ordered
