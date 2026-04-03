@@ -6,6 +6,7 @@ import { Search, Briefcase, ChevronLeft, ChevronRight, Trash2 } from 'lucide-rea
 import { useTranslation } from 'react-i18next'
 import { api, type Job, type JobFilters } from '@/lib/api'
 import StatusBadge from '@/components/StatusBadge'
+import { useToast } from '@/contexts/ToastContext'
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -117,6 +118,7 @@ export default function ApplicationsList() {
   const navigate = useNavigate()
   const qc = useQueryClient()
   const { t } = useTranslation()
+  const toast = useToast()
   const [searchParams] = useSearchParams()
   // Initialize status filter from URL param (e.g. from Dashboard card click)
   const [statusFilter, setStatusFilter] = useState(() => {
@@ -159,6 +161,13 @@ export default function ApplicationsList() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['jobs'] })
       qc.invalidateQueries({ queryKey: ['dashboard'] })
+      toast(t('toast.deleteSuccess'), 'success')
+    },
+    onError: (err: unknown) => {
+      const msg =
+        (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error
+          ?.message ?? t('jobs.somethingWentWrong')
+      toast(msg, 'error')
     },
   })
 

@@ -2,9 +2,10 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion } from 'motion/react'
-import { CircleCheck, ChevronLeft } from 'lucide-react'
+import { ChevronLeft } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
+import { useToast } from '@/contexts/ToastContext'
 
 const SOURCES = ['LinkedIn', 'Company Site', 'Referral', 'Indeed', 'Glassdoor', 'Other']
 const STATUSES = ['Applied', 'Interview', 'Offer', 'Rejected']
@@ -26,13 +27,22 @@ const inputClass =
 
 const labelClass = 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'
 
+function formatDateReadable(dateStr: string) {
+  if (!dateStr) return ''
+  return new Date(dateStr + 'T12:00:00').toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
 export default function AddApplicationForm() {
   const navigate = useNavigate()
   const qc = useQueryClient()
   const { t } = useTranslation()
+  const toast = useToast()
   const [step, setStep] = useState(1)
-  const [showSuccess, setShowSuccess] = useState(false)
-  const [apiError, setApiError] = useState<string | null>(null)
   const [form, setForm] = useState<FormData>({
     company: '',
     role: '',
@@ -57,53 +67,22 @@ export default function AddApplicationForm() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['jobs'] })
       qc.invalidateQueries({ queryKey: ['dashboard'] })
-      setApiError(null)
-      setShowSuccess(true)
-      setTimeout(() => {
-        navigate('/jobs', { replace: true })
-      }, 2000)
+      toast(t('toast.createSuccess'), 'success')
+      navigate('/jobs', { replace: true })
     },
     onError: (err: unknown) => {
       const msg =
         (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error
           ?.message ?? t('jobs.somethingWentWrong')
-      setApiError(msg)
+      toast(msg, 'error')
     },
   })
 
   function set(field: keyof FormData, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))
-    setApiError(null)
   }
 
   const canNext = step === 1 ? form.company.trim() !== '' && form.role.trim() !== '' : true
-
-  if (showSuccess) {
-    return (
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex items-center justify-center min-h-[60vh]">
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="bg-white dark:bg-gray-800 rounded-xl p-12 shadow-sm border border-gray-100 dark:border-gray-700 text-center w-full"
-        >
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2, type: 'spring' }}
-            className="w-16 h-16 bg-green-100 dark:bg-green-950/30 rounded-full flex items-center justify-center mx-auto mb-6"
-          >
-            <CircleCheck className="w-8 h-8 text-green-600" />
-          </motion.div>
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
-            {t('jobs.successTitle')}
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400">
-            {t('jobs.successSubtitle')}
-          </p>
-        </motion.div>
-      </div>
-    )
-  }
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -200,15 +179,29 @@ export default function AddApplicationForm() {
         {step === 2 && (
           <div className="space-y-4">
             <div>
-              <label className={labelClass}>
-                {t('jobs.dateApplied')} <span className="text-red-500">*</span>
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {t('jobs.dateApplied')} <span className="text-red-500">*</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => set('dateApplied', today)}
+                  className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+                >
+                  {t('common.today')}
+                </button>
+              </div>
               <input
                 type="date"
                 value={form.dateApplied}
                 onChange={(e) => set('dateApplied', e.target.value)}
                 className={inputClass}
               />
+              {form.dateApplied && (
+                <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-500">
+                  {formatDateReadable(form.dateApplied)}
+                </p>
+              )}
             </div>
             <div>
               <label className={labelClass}>
@@ -252,11 +245,6 @@ export default function AddApplicationForm() {
               className={`${inputClass} resize-none`}
             />
           </div>
-        )}
-
-        {/* API error */}
-        {apiError && (
-          <p className="mt-4 text-sm text-red-600 dark:text-red-400">{apiError}</p>
         )}
       </motion.div>
 

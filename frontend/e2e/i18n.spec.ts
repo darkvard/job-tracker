@@ -189,10 +189,10 @@ test.describe('i18n: language switching', () => {
     // Step 3 — notes label
     await expect(page.getByText('Ghi chú').first()).toBeVisible()
 
-    // Submit and confirm success screen
+    // Submit — redirects immediately to /jobs and shows success toast
     await page.getByRole('button', { name: 'Gửi' }).click()
-    await expect(page.getByText('Đã thêm đơn ứng tuyển!')).toBeVisible()
     await page.waitForURL('/jobs')
+    await expect(page.getByText('Đã tạo đơn ứng tuyển thành công')).toBeVisible()
   })
 
   // -------------------------------------------------------------------------

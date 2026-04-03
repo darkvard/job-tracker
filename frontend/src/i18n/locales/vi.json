@@ -133,7 +133,13 @@
     "next": "Tiếp theo",
     "submit": "Gửi",
     "submitting": "Đang gửi...",
+    "today": "Hôm nay",
     "trendFromLastMonth": "{{sign}}{{value}}% so với tháng trước",
     "namePlaceholder": "Nguyễn Văn A"
+  },
+  "toast": {
+    "createSuccess": "Đã tạo đơn ứng tuyển thành công",
+    "saveSuccess": "Đã lưu thay đổi",
+    "deleteSuccess": "Đã xóa đơn ứng tuyển"
   }
 }

@@ -133,7 +133,13 @@
     "next": "Next",
     "submit": "Submit",
     "submitting": "Submitting...",
+    "today": "Today",
     "trendFromLastMonth": "{{sign}}{{value}}% from last month",
     "namePlaceholder": "John Doe"
+  },
+  "toast": {
+    "createSuccess": "Application created successfully",
+    "saveSuccess": "Changes saved",
+    "deleteSuccess": "Application deleted"
   }
 }
