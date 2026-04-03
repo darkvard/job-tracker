@@ -75,8 +75,10 @@ test.describe('Job Tracker smoke', () => {
     await page.locator('select').first().selectOption('Interview')
     await page.getByRole('button', { name: 'Save Changes' }).click()
 
-    // Status badge should now show Interview
-    await expect(page.getByText('Interview').first()).toBeVisible()
+    // Wait for edit mode to exit (Edit button reappears = save succeeded)
+    await expect(page.getByRole('button', { name: 'Edit' })).toBeVisible()
+    // Status badge shows Interview — use span to avoid matching hidden <option>
+    await expect(page.locator('span').filter({ hasText: /^Interview$/ })).toBeVisible()
   })
 
   test('4 — Analytics page → 4 chart sections render', async ({ page }) => {
