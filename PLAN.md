@@ -414,6 +414,21 @@ Full flow: register → login → create job → list (filter) → update status
 
 ---
 
+### [ ] PR-24: i18n E2E tests (EN ↔ VI)
+**Docs:** `docs/ARCHITECTURE_FRONTEND.md` · `docs/UI_SPEC.md`
+**Files:** `frontend/e2e/i18n.spec.ts` (new)
+
+- [ ] Test 1: Default language = English — verify key strings on Dashboard, Jobs, Analytics, Settings dropdown
+- [ ] Test 2: Toggle to Vietnamese — verify all pages switch to VI strings
+- [ ] Test 3: Persistence — reload → still Vietnamese
+- [ ] Test 4: Toggle back to English — strings revert
+- [ ] Test 5: Add Application form in VI — all labels, step nav, success screen
+- [ ] Test 6: Application Detail in VI — info grid, timeline, update status dialog
+
+**Test:** `make test-ui` → 6 new i18n scenarios green (in addition to existing smoke tests)
+
+---
+
 ## Summary
 
 | Phase | PRs | Scope |
@@ -424,6 +439,6 @@ Full flow: register → login → create job → list (filter) → update status
 | 3: Analytics | PR-10 → PR-11 | Dashboard+Analytics (pure UCs + cache decorators) |
 | 4: Frontend | PR-12 → PR-17 | React Query wiring + Router |
 | 5: Polish | PR-18 → PR-22 | Seed, API E2E, README, Browser E2E (Playwright), Dark mode toggle |
-| 6: i18n + UX | PR-23 | EN/VI language support + Settings dropdown (theme + language) |
+| 6: i18n + UX | PR-23 → PR-24 | EN/VI language support + Settings dropdown + i18n E2E tests |
 
-**Total: 23 PRs** · each 100–400 lines · strictly ordered
+**Total: 24 PRs** · each 100–400 lines · strictly ordered
