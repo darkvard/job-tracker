@@ -222,18 +222,19 @@ test.describe('i18n: language switching', () => {
     await expect(page.getByText('Địa điểm').first()).toBeVisible()
     await expect(page.getByText('Nguồn').first()).toBeVisible()
 
-    // Update Status button (Applied status → always visible for a freshly created job)
-    const updateBtn = page.getByRole('button', { name: 'Cập nhật trạng thái' })
-    await expect(updateBtn).toBeVisible()
-    await updateBtn.click()
+    // Edit button should always be visible (replaces old "Update Status")
+    const editBtn = page.getByRole('button', { name: 'Chỉnh sửa' })
+    await expect(editBtn).toBeVisible()
+    await editBtn.click()
 
-    // Dialog labels
-    await expect(page.getByText('Trạng thái mới')).toBeVisible()
-    await expect(page.getByText('Ghi chú (tùy chọn)')).toBeVisible()
+    // Edit mode: Save Changes button visible in Vietnamese
+    await expect(page.getByRole('button', { name: 'Lưu thay đổi' })).toBeVisible()
 
-    // Cancel button
+    // Cancel button exits edit mode
     await page.getByRole('button', { name: 'Hủy' }).click()
-    await expect(updateBtn).toBeVisible()
+
+    // Back to view mode: Edit button visible again
+    await expect(editBtn).toBeVisible()
 
     // Delete button
     await expect(page.getByRole('button', { name: 'Xóa' })).toBeVisible()
