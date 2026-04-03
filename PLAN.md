@@ -414,7 +414,7 @@ Full flow: register → login → create job → list (filter) → update status
 
 ---
 
-### [ ] PR-24: i18n E2E tests (EN ↔ VI)
+### [x] PR-24: i18n E2E tests (EN ↔ VI)
 **Docs:** `docs/ARCHITECTURE_FRONTEND.md` · `docs/UI_SPEC.md`
 **Files:** `frontend/e2e/i18n.spec.ts` (new)
 
