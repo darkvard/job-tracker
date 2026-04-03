@@ -1,5 +1,6 @@
 import { motion } from 'motion/react'
 import type { LucideIcon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 interface KPICardProps {
   title: string
@@ -11,6 +12,7 @@ interface KPICardProps {
 }
 
 export default function KPICard({ title, value, icon: Icon, bgColor, iconColor, trend }: KPICardProps) {
+  const { t } = useTranslation()
   return (
     <motion.div
       whileHover={{ y: -4, boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}
@@ -30,7 +32,7 @@ export default function KPICard({ title, value, icon: Icon, bgColor, iconColor, 
       <p className="text-sm text-gray-600 dark:text-gray-400">{title}</p>
       {trend && (
         <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-          {trend.isPositive ? '+' : ''}{trend.value}% from last month
+          {t('common.trendFromLastMonth', { sign: trend.isPositive ? '+' : '', value: trend.value })}
         </p>
       )}
     </motion.div>

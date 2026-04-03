@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { motion } from 'motion/react'
 import { TrendingUp } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import {
   BarChart,
   Bar,
@@ -31,15 +32,16 @@ function ChartSkeleton() {
 }
 
 function ChartError({ onRetry }: { onRetry: () => void }) {
+  const { t } = useTranslation()
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
       <div className="h-64 flex flex-col items-center justify-center gap-3">
-        <p className="text-gray-500 dark:text-gray-400 text-sm">Failed to load chart data</p>
+        <p className="text-gray-500 dark:text-gray-400 text-sm">{t('analytics.failedToLoad')}</p>
         <button
           onClick={onRetry}
           className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
         >
-          Retry
+          {t('common.retry')}
         </button>
       </div>
     </div>
@@ -47,6 +49,7 @@ function ChartError({ onRetry }: { onRetry: () => void }) {
 }
 
 export default function Analytics() {
+  const { t } = useTranslation()
   const { theme } = useTheme()
   const isDark = theme === 'dark'
   const tooltipProps = {
@@ -81,9 +84,9 @@ export default function Analytics() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-semibold text-gray-900 dark:text-white">Analytics</h1>
+        <h1 className="text-3xl font-semibold text-gray-900 dark:text-white">{t('analytics.title')}</h1>
         <p className="text-gray-600 dark:text-gray-400 mt-1">
-          Insights into your job search performance
+          {t('analytics.subtitle')}
         </p>
       </div>
 
@@ -102,9 +105,9 @@ export default function Analytics() {
             <div className="flex items-start justify-between mb-6">
               <div>
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Applications per Week
+                  {t('analytics.applicationsPerWeek')}
                 </h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Last 6 weeks</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('analytics.last6Weeks')}</p>
               </div>
               {weekly.data?.trend && (
                 <span
@@ -157,9 +160,9 @@ export default function Analytics() {
           >
             <div className="mb-6">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Interview Conversion
+                {t('analytics.interviewConversion')}
               </h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Applied → Interview → Offer</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t('analytics.conversionSubtitle')}</p>
             </div>
             <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
@@ -204,10 +207,10 @@ export default function Analytics() {
           >
             <div className="mb-6">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Source Performance
+                {t('analytics.sourcePerformance')}
               </h2>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Applications by source
+                {t('analytics.applicationsBySource')}
               </p>
             </div>
             <div className="h-64 w-full">
@@ -249,23 +252,23 @@ export default function Analytics() {
             className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700"
           >
             <div className="mb-6">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Key Metrics</h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Conversion rates</p>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('analytics.keyMetrics')}</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t('analytics.conversionRates')}</p>
             </div>
             <div className="space-y-5">
               {[
                 {
-                  label: 'Interview Rate',
+                  label: t('analytics.interviewRate'),
                   value: metrics.data?.data?.interviewRate ?? 0,
                   color: 'bg-indigo-600',
                 },
                 {
-                  label: 'Offer Rate',
+                  label: t('analytics.offerRate'),
                   value: metrics.data?.data?.offerRate ?? 0,
                   color: 'bg-green-500',
                 },
                 {
-                  label: 'Rejection Rate',
+                  label: t('analytics.rejectionRate'),
                   value: metrics.data?.data?.rejectionRate ?? 0,
                   color: 'bg-red-500',
                 },
@@ -292,10 +295,10 @@ export default function Analytics() {
                 <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600 dark:text-gray-400">
-                      Avg. Response Time
+                      {t('analytics.avgResponseTime')}
                     </span>
                     <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                      {metrics.data.data.avgResponseDays.toFixed(1)} days
+                      {t('analytics.days', { value: metrics.data.data.avgResponseDays.toFixed(1) })}
                     </span>
                   </div>
                 </div>
