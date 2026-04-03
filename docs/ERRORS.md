@@ -50,4 +50,16 @@
 **Fix:** Changed `make seed` to run inside the API container: `docker compose exec api go run ./cmd/seed` — same pattern as `make migrate-up`.
 **Prevention:** Any make target that needs database access should run inside the container (`docker compose exec api ...`), not locally.
 
+### 2026-04-03 — Edit mode save fails: UpdateRequest missing required `status` field
+**Symptom:** Clicking "Save Changes" in ApplicationDetail edit mode silently fails — `onError` fires with `"invalid status: "`, edit mode stays open, "Edit" button never reappears.
+**Root cause:** Backend `UpdateRequest.Validate()` requires `status` to be a non-empty valid value. The frontend `api.jobs.update` call did not include `status` in the payload, so the JSON body had no `status` key, leaving `UpdateRequest.Status = ""`.
+**Fix:** Added `status: editForm.status` to the `api.jobs.update` payload in `ApplicationDetail.tsx`. The value equals the new status (already set via `updateStatus` if status changed) so no duplicate history row is inserted.
+**Prevention:** Before writing any frontend mutation, always read the backend DTO's `Validate()` method to identify required fields. The `UpdateRequest` is a "full replace" DTO — all validated fields must be present.
+
+### 2026-04-03 — E2E smoke: `getByText` matches hidden `<option>` after async save
+**Symptom:** `await expect(page.getByText('Interview').first()).toBeVisible()` fails after "Save Changes" — Playwright reports element found but `hidden`.
+**Root cause:** The save mutation is async. While in-flight, `isEditing = true` and the status `<select>` is still rendered. `getByText('Interview').first()` resolved to `<option value="Interview">` which is hidden until the dropdown opens.
+**Fix:** (1) Wait for the `Edit` button to reappear — confirms mutation succeeded and edit mode closed. (2) Use `page.locator('span').filter({ hasText: /^Interview$/ })` — targets the visible StatusBadge `<span>`.
+**Prevention:** After async form saves, always wait for a definitive UI state change (e.g., edit mode exiting) before asserting on content. Prefer scoped locators over bare `getByText` when the same text may exist in hidden form elements.
+
 *(Add new entries below)*
