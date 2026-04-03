@@ -392,7 +392,7 @@ Full flow: register → login → create job → list (filter) → update status
 
 ---
 
-### [ ] PR-23: i18n (EN/VI) + Settings dropdown
+### [x] PR-23: i18n (EN/VI) + Settings dropdown
 **Docs:** `docs/UI_SPEC.md` · `docs/DESIGN_SYSTEM.md` · `docs/ARCHITECTURE_FRONTEND.md` · `.claude/skills/ui.md`
 **Files:** `frontend/src/i18n/index.ts` (new) · `frontend/src/i18n/locales/en.json` (new) · `frontend/src/i18n/locales/vi.json` (new) · `frontend/src/contexts/LanguageContext.tsx` (new) · `frontend/src/app/components/SettingsDropdown.tsx` (new) · `frontend/src/app/components/Navbar.tsx` · `frontend/src/app/App.tsx` · `frontend/src/main.tsx` · `frontend/src/app/components/LoginPage.tsx` · `frontend/src/app/components/Dashboard.tsx` · `frontend/src/app/components/ApplicationsList.tsx` · `frontend/src/app/components/AddApplicationForm.tsx` · `frontend/src/app/components/ApplicationDetail.tsx` · `frontend/src/app/components/Analytics.tsx` · `frontend/src/components/StatusBadge.tsx` · `frontend/src/components/KPICard.tsx` · `frontend/package.json`
 
