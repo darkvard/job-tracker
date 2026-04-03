@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { ThemeProvider } from '@/contexts/ThemeContext'
 import { LanguageProvider } from '@/contexts/LanguageContext'
+import { ToastProvider } from '@/contexts/ToastContext'
 import LoginPage from '@/app/components/LoginPage'
 import ProtectedLayout from '@/app/ProtectedLayout'
 import Dashboard from '@/app/components/Dashboard'
@@ -24,6 +25,7 @@ export default function App() {
   return (
     <ThemeProvider>
     <LanguageProvider>
+    <ToastProvider>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <BrowserRouter>
@@ -41,6 +43,7 @@ export default function App() {
         </BrowserRouter>
       </AuthProvider>
     </QueryClientProvider>
+    </ToastProvider>
     </LanguageProvider>
     </ThemeProvider>
   )

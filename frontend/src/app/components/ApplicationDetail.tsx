@@ -2,10 +2,11 @@ import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion } from 'motion/react'
-import { ChevronLeft, MapPin, Calendar, ExternalLink, Pencil, X as XIcon } from 'lucide-react'
+import { ChevronLeft, MapPin, Calendar, ExternalLink, Pencil } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
 import StatusBadge from '@/components/StatusBadge'
+import { useToast } from '@/contexts/ToastContext'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -76,6 +77,7 @@ export default function ApplicationDetail() {
   const qc = useQueryClient()
   const { t } = useTranslation()
 
+  const toast = useToast()
   const [isEditing, setIsEditing] = useState(false)
   const [editForm, setEditForm] = useState<EditForm>({
     company: '',
@@ -86,8 +88,6 @@ export default function ApplicationDetail() {
     notes: '',
     status: '',
   })
-  const [editError, setEditError] = useState<string | null>(null)
-
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['job', id],
     queryFn: () => api.jobs.get(id),
@@ -117,13 +117,13 @@ export default function ApplicationDetail() {
       qc.invalidateQueries({ queryKey: ['jobs'] })
       qc.invalidateQueries({ queryKey: ['dashboard'] })
       setIsEditing(false)
-      setEditError(null)
+      toast(t('toast.saveSuccess'), 'success')
     },
     onError: (err: unknown) => {
       const msg =
         (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error
           ?.message ?? t('detail.editError')
-      setEditError(msg)
+      toast(msg, 'error')
     },
   })
 
@@ -170,18 +170,15 @@ export default function ApplicationDetail() {
       notes: job!.notes || '',
       status: job!.status,
     })
-    setEditError(null)
     setIsEditing(true)
   }
 
   function cancelEditing() {
     setIsEditing(false)
-    setEditError(null)
   }
 
   function setField(field: keyof EditForm, value: string) {
     setEditForm((prev) => ({ ...prev, [field]: value }))
-    setEditError(null)
   }
 
   // Build timeline for view mode
@@ -309,14 +306,34 @@ export default function ApplicationDetail() {
           <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
             <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
             <div className="min-w-0 flex-1">
-              <p className="text-xs text-gray-500 dark:text-gray-500">{t('detail.appliedLabel')}</p>
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-gray-500 dark:text-gray-500">{t('detail.appliedLabel')}</p>
+                {isEditing && (
+                  <button
+                    type="button"
+                    onClick={() => setField('dateApplied', new Date().toISOString().split('T')[0])}
+                    className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+                  >
+                    {t('common.today')}
+                  </button>
+                )}
+              </div>
               {isEditing ? (
-                <input
-                  type="date"
-                  value={editForm.dateApplied}
-                  onChange={(e) => setField('dateApplied', e.target.value)}
-                  className={inputClass + ' mt-0.5'}
-                />
+                <>
+                  <input
+                    type="date"
+                    value={editForm.dateApplied}
+                    onChange={(e) => setField('dateApplied', e.target.value)}
+                    className={inputClass + ' mt-0.5'}
+                  />
+                  {editForm.dateApplied && (
+                    <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
+                      {new Date(editForm.dateApplied + 'T12:00:00').toLocaleDateString('en-US', {
+                        weekday: 'short', month: 'long', day: 'numeric', year: 'numeric',
+                      })}
+                    </p>
+                  )}
+                </>
               ) : (
                 <p className={readonlyClass}>{formatDate(job.dateApplied)}</p>
               )}
@@ -418,14 +435,6 @@ export default function ApplicationDetail() {
           <p className="text-gray-400 dark:text-gray-600 text-sm italic">{t('detail.noNotes')}</p>
         )}
       </motion.div>
-
-      {/* Edit error */}
-      {editError && (
-        <div className="mb-4 px-4 py-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-2">
-          <XIcon className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-red-700 dark:text-red-400">{editError}</p>
-        </div>
-      )}
 
       {/* Action buttons */}
       {isEditing ? (
