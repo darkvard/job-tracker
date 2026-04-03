@@ -100,7 +100,8 @@ export default function ApplicationDetail() {
       if (editForm.status !== job.status) {
         await api.jobs.updateStatus(id, { status: editForm.status })
       }
-      // Update other fields unconditionally (they may or may not have changed)
+      // Update other fields — backend UpdateRequest requires status (validated),
+      // so always include it (equals editForm.status which was already set via updateStatus if changed)
       await api.jobs.update(id, {
         company: editForm.company,
         role: editForm.role,
@@ -108,6 +109,7 @@ export default function ApplicationDetail() {
         source: editForm.source,
         dateApplied: editForm.dateApplied,
         notes: editForm.notes || undefined,
+        status: editForm.status,
       })
     },
     onSuccess: () => {
