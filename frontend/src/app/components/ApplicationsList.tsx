@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion } from 'motion/react'
 import { Search, Briefcase, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { api, type Job, type JobFilters } from '@/lib/api'
 import StatusBadge from '@/components/StatusBadge'
 import {
@@ -17,7 +18,8 @@ import {
   AlertDialogCancel,
 } from '@/components/ui/alert-dialog'
 
-const STATUS_FILTERS = ['All', 'Applied', 'Interview', 'Offer', 'Rejected']
+// Status filter values stay in English (API contract)
+const STATUS_FILTER_VALUES = ['All', 'Applied', 'Interview', 'Offer', 'Rejected']
 const PAGE_SIZE = 12
 
 function ApplicationCardSkeleton() {
@@ -39,6 +41,7 @@ function ApplicationCardSkeleton() {
 }
 
 function ApplicationCard({ job, index, onDelete, onView }: { job: Job; index: number; onDelete: (id: number) => void; onView: (id: number) => void }) {
+  const { t } = useTranslation()
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -61,16 +64,16 @@ function ApplicationCard({ job, index, onDelete, onView }: { job: Job; index: nu
       <div className="space-y-1.5 text-sm">
         {job.location && (
           <div className="flex items-center justify-between">
-            <span className="text-gray-500 dark:text-gray-500">Location</span>
+            <span className="text-gray-500 dark:text-gray-500">{t('jobs.location')}</span>
             <span className="text-gray-700 dark:text-gray-300 truncate ml-2 max-w-[60%] text-right">{job.location}</span>
           </div>
         )}
         <div className="flex items-center justify-between">
-          <span className="text-gray-500 dark:text-gray-500">Source</span>
+          <span className="text-gray-500 dark:text-gray-500">{t('jobs.source')}</span>
           <span className="text-gray-700 dark:text-gray-300">{job.source}</span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-gray-500 dark:text-gray-500">Applied</span>
+          <span className="text-gray-500 dark:text-gray-500">{t('jobs.applied')}</span>
           <span className="text-gray-700 dark:text-gray-300">
             {new Date(job.dateApplied).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
           </span>
@@ -90,15 +93,14 @@ function ApplicationCard({ job, index, onDelete, onView }: { job: Job; index: nu
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete Application</AlertDialogTitle>
+              <AlertDialogTitle>{t('jobs.deleteTitle')}</AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to delete your application to <strong>{job.company}</strong> for{' '}
-                <strong>{job.role}</strong>? This action cannot be undone.
+                {t('jobs.deleteConfirmMsg', { company: job.company, role: job.role })}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={() => onDelete(job.id)}>Delete</AlertDialogAction>
+              <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+              <AlertDialogAction onClick={() => onDelete(job.id)}>{t('common.delete')}</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
@@ -110,6 +112,7 @@ function ApplicationCard({ job, index, onDelete, onView }: { job: Job; index: nu
 export default function ApplicationsList() {
   const navigate = useNavigate()
   const qc = useQueryClient()
+  const { t } = useTranslation()
   const [statusFilter, setStatusFilter] = useState('All')
   const [searchInput, setSearchInput] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -154,12 +157,18 @@ export default function ApplicationsList() {
   const meta = data?.meta
   const totalPages = meta?.totalPages ?? 1
 
+  // Map filter value → display label
+  function getFilterLabel(value: string) {
+    if (value === 'All') return t('jobs.filterAll')
+    return t(`status.${value.toLowerCase()}`)
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-semibold text-gray-900 dark:text-white">Applications</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-1">Manage and track all your job applications</p>
+        <h1 className="text-3xl font-semibold text-gray-900 dark:text-white">{t('jobs.title')}</h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-1">{t('jobs.subtitle')}</p>
       </div>
 
       {/* Filters */}
@@ -169,7 +178,7 @@ export default function ApplicationsList() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Search company or role..."
+            placeholder={t('jobs.searchPlaceholder')}
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
@@ -178,7 +187,7 @@ export default function ApplicationsList() {
 
         {/* Status pills */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 flex-shrink-0">
-          {STATUS_FILTERS.map((status) => (
+          {STATUS_FILTER_VALUES.map((status) => (
             <button
               key={status}
               onClick={() => handleStatusFilter(status)}
@@ -188,7 +197,7 @@ export default function ApplicationsList() {
                   : 'px-4 py-2 rounded-lg text-sm font-medium bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 whitespace-nowrap transition-colors'
               }
             >
-              {status}
+              {getFilterLabel(status)}
             </button>
           ))}
         </div>
@@ -203,22 +212,22 @@ export default function ApplicationsList() {
         </div>
       ) : error ? (
         <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl p-6 text-center">
-          <p className="text-red-700 dark:text-red-400 mb-4">Failed to load applications</p>
+          <p className="text-red-700 dark:text-red-400 mb-4">{t('jobs.failedToLoad')}</p>
           <button
             onClick={() => refetch()}
             className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors"
           >
-            Retry
+            {t('common.retry')}
           </button>
         </div>
       ) : jobs.length === 0 ? (
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm text-center py-12">
           <Briefcase className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-600 dark:text-gray-400">No applications found</p>
+          <p className="text-gray-600 dark:text-gray-400">{t('jobs.noApplicationsFound')}</p>
           <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
             {debouncedSearch || statusFilter !== 'All'
-              ? 'Try adjusting your filters'
-              : 'Start tracking your job applications'}
+              ? t('jobs.tryAdjustingFilters')
+              : t('jobs.startTracking')}
           </p>
         </div>
       ) : (
@@ -239,12 +248,11 @@ export default function ApplicationsList() {
           {totalPages > 1 && (
             <div className="flex items-center justify-between mt-8">
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                {meta && (
-                  <>
-                    Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, meta.total)} of{' '}
-                    {meta.total} applications
-                  </>
-                )}
+                {meta && t('jobs.showing', {
+                  from: (page - 1) * PAGE_SIZE + 1,
+                  to: Math.min(page * PAGE_SIZE, meta.total),
+                  total: meta.total,
+                })}
               </p>
               <div className="flex items-center gap-2">
                 <button

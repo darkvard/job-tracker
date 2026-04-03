@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion } from 'motion/react'
 import { ChevronLeft, MapPin, Calendar, ExternalLink } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
 import StatusBadge from '@/components/StatusBadge'
 import {
@@ -58,6 +59,7 @@ export default function ApplicationDetail() {
   const id = Number(idParam)
   const navigate = useNavigate()
   const qc = useQueryClient()
+  const { t } = useTranslation()
   const [statusNote, setStatusNote] = useState('')
   const [selectedStatus, setSelectedStatus] = useState('')
   const [showStatusDialog, setShowStatusDialog] = useState(false)
@@ -83,7 +85,7 @@ export default function ApplicationDetail() {
     onError: (err: unknown) => {
       const msg =
         (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error
-          ?.message ?? 'Failed to update status. Please try again.'
+          ?.message ?? t('detail.failedToUpdateStatus')
       setStatusError(msg)
     },
   })
@@ -103,12 +105,12 @@ export default function ApplicationDetail() {
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl p-6 text-center">
-          <p className="text-red-700 dark:text-red-400 mb-4">Failed to load application</p>
+          <p className="text-red-700 dark:text-red-400 mb-4">{t('detail.failedToLoad')}</p>
           <button
             onClick={() => refetch()}
             className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors"
           >
-            Retry
+            {t('common.retry')}
           </button>
         </div>
       </div>
@@ -167,7 +169,7 @@ export default function ApplicationDetail() {
         className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 mb-6 transition-colors"
       >
         <ChevronLeft className="w-4 h-4" />
-        Back to Applications
+        {t('detail.backToApplications')}
       </button>
 
       {/* Header card */}
@@ -192,7 +194,7 @@ export default function ApplicationDetail() {
           <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
             <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
             <div className="min-w-0">
-              <p className="text-xs text-gray-500 dark:text-gray-500">Location</p>
+              <p className="text-xs text-gray-500 dark:text-gray-500">{t('detail.locationLabel')}</p>
               <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                 {job.location || '—'}
               </p>
@@ -201,7 +203,7 @@ export default function ApplicationDetail() {
           <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
             <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
             <div>
-              <p className="text-xs text-gray-500 dark:text-gray-500">Applied</p>
+              <p className="text-xs text-gray-500 dark:text-gray-500">{t('detail.appliedLabel')}</p>
               <p className="text-sm font-medium text-gray-900 dark:text-white">
                 {formatDate(job.dateApplied)}
               </p>
@@ -210,7 +212,7 @@ export default function ApplicationDetail() {
           <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
             <ExternalLink className="w-4 h-4 text-gray-400 flex-shrink-0" />
             <div>
-              <p className="text-xs text-gray-500 dark:text-gray-500">Source</p>
+              <p className="text-xs text-gray-500 dark:text-gray-500">{t('detail.sourceLabel')}</p>
               <p className="text-sm font-medium text-gray-900 dark:text-white">{job.source}</p>
             </div>
           </div>
@@ -225,7 +227,7 @@ export default function ApplicationDetail() {
         className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 mb-6"
       >
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">
-          Application Timeline
+          {t('detail.applicationTimeline')}
         </h2>
         <div className="space-y-0">
           {timeline.map((item, idx) => (
@@ -275,7 +277,7 @@ export default function ApplicationDetail() {
           transition={{ delay: 0.2 }}
           className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 mb-6"
         >
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Notes</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">{t('detail.notesTitle')}</h2>
           <p className="text-gray-600 dark:text-gray-400 text-sm whitespace-pre-wrap">{job.notes}</p>
         </motion.div>
       )}
@@ -292,7 +294,7 @@ export default function ApplicationDetail() {
             }}
             className="flex-1 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors font-medium"
           >
-            Update Status
+            {t('detail.updateStatus')}
           </button>
         )}
 
@@ -300,25 +302,23 @@ export default function ApplicationDetail() {
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <button className="px-6 py-3 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors font-medium">
-              Delete
+              {t('detail.delete')}
             </button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete Application</AlertDialogTitle>
+              <AlertDialogTitle>{t('detail.deleteTitle')}</AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to delete your application to{' '}
-                <strong>{job.company}</strong> for <strong>{job.role}</strong>? This action cannot
-                be undone.
+                {t('detail.deleteConfirmMsg', { company: job.company, role: job.role })}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => deleteMutation.mutate()}
                 disabled={deleteMutation.isPending}
               >
-                {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+                {deleteMutation.isPending ? t('detail.deleting') : t('common.delete')}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -334,13 +334,13 @@ export default function ApplicationDetail() {
           />
           <div className="relative bg-white dark:bg-gray-800 rounded-xl p-6 shadow-xl border border-gray-100 dark:border-gray-700 w-full max-w-md mx-4">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Update Status
+              {t('detail.updateStatusTitle')}
             </h3>
 
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  New Status
+                  {t('detail.newStatus')}
                 </label>
                 <select
                   value={selectedStatus}
@@ -348,16 +348,14 @@ export default function ApplicationDetail() {
                   className={inputClass}
                 >
                   {availableTransitions.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
+                    <option key={s} value={s}>{t(`status.${s.toLowerCase()}`)}</option>
                   ))}
                 </select>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Note (optional)
+                  {t('detail.noteOptional')}
                 </label>
                 <input
                   type="text"
@@ -378,7 +376,7 @@ export default function ApplicationDetail() {
                 onClick={() => setShowStatusDialog(false)}
                 className="flex-1 px-4 py-2.5 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 onClick={() =>
@@ -409,7 +407,7 @@ export default function ApplicationDetail() {
                     />
                   </svg>
                 )}
-                {updateStatusMutation.isPending ? 'Updating...' : 'Confirm'}
+                {updateStatusMutation.isPending ? t('detail.updating') : t('detail.confirm')}
               </button>
             </div>
           </div>

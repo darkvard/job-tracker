@@ -1,19 +1,21 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { Briefcase, Plus, Bell, User } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/contexts/AuthContext'
-import ThemeToggle from '@/app/components/ThemeToggle'
-
-const NAV_LINKS = [
-  { label: 'Dashboard', to: '/' },
-  { label: 'Applications', to: '/jobs' },
-  { label: 'Analytics', to: '/analytics' },
-]
+import SettingsDropdown from '@/app/components/SettingsDropdown'
 
 export default function Navbar() {
   const location = useLocation()
   const navigate = useNavigate()
   const { logout } = useAuth()
+  const { t } = useTranslation()
+
+  const NAV_LINKS = [
+    { label: t('nav.dashboard'), to: '/' },
+    { label: t('nav.applications'), to: '/jobs' },
+    { label: t('nav.analytics'), to: '/analytics' },
+  ]
 
   function isActive(to: string) {
     if (to === '/') return location.pathname === '/'
@@ -62,11 +64,11 @@ export default function Navbar() {
           className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
         >
           <Plus className="w-4 h-4" />
-          <span className="hidden sm:inline">Add Application</span>
+          <span className="hidden sm:inline">{t('nav.addApplication')}</span>
         </motion.button>
 
-        {/* Theme toggle */}
-        <ThemeToggle />
+        {/* Settings (theme + language) */}
+        <SettingsDropdown />
 
         {/* Bell — decorative */}
         <button className="relative p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">

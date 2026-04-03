@@ -1,4 +1,5 @@
 import { Clock, Users, CircleCheck, X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 interface StatusBadgeProps {
   status: string
@@ -13,6 +14,7 @@ const STATUS_MAP: Record<string, { bg: string; text: string; Icon: typeof Clock 
 }
 
 export default function StatusBadge({ status, size = 'md' }: StatusBadgeProps) {
+  const { t } = useTranslation()
   const key = status.toLowerCase()
   const config = STATUS_MAP[key] ?? STATUS_MAP['applied']
   const { bg, text, Icon } = config
@@ -22,7 +24,7 @@ export default function StatusBadge({ status, size = 'md' }: StatusBadgeProps) {
   return (
     <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full ${bg} ${text} ${textSize} font-medium`}>
       <Icon className={iconSize} />
-      {status.charAt(0).toUpperCase() + status.slice(1).toLowerCase()}
+      {t(`status.${key}`)}
     </span>
   )
 }

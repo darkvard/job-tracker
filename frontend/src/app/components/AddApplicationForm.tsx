@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion } from 'motion/react'
 import { CircleCheck, ChevronLeft } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
 
 const SOURCES = ['LinkedIn', 'Company Site', 'Referral', 'Indeed', 'Glassdoor', 'Other']
@@ -28,6 +29,7 @@ const labelClass = 'block text-sm font-medium text-gray-700 dark:text-gray-300 m
 export default function AddApplicationForm() {
   const navigate = useNavigate()
   const qc = useQueryClient()
+  const { t } = useTranslation()
   const [step, setStep] = useState(1)
   const [showSuccess, setShowSuccess] = useState(false)
   const [apiError, setApiError] = useState<string | null>(null)
@@ -64,7 +66,7 @@ export default function AddApplicationForm() {
     onError: (err: unknown) => {
       const msg =
         (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error
-          ?.message ?? 'Something went wrong. Please try again.'
+          ?.message ?? t('jobs.somethingWentWrong')
       setApiError(msg)
     },
   })
@@ -93,10 +95,10 @@ export default function AddApplicationForm() {
             <CircleCheck className="w-8 h-8 text-green-600" />
           </motion.div>
           <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
-            Application Added!
+            {t('jobs.successTitle')}
           </h2>
           <p className="text-gray-600 dark:text-gray-400">
-            Your application has been successfully saved
+            {t('jobs.successSubtitle')}
           </p>
         </motion.div>
       </div>
@@ -112,10 +114,10 @@ export default function AddApplicationForm() {
           className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 mb-4 transition-colors"
         >
           <ChevronLeft className="w-4 h-4" />
-          Back
+          {t('common.back')}
         </button>
-        <h1 className="text-3xl font-semibold text-gray-900 dark:text-white">Add Application</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-1">Track a new job application</p>
+        <h1 className="text-3xl font-semibold text-gray-900 dark:text-white">{t('jobs.addTitle')}</h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-1">{t('jobs.addSubtitle')}</p>
       </div>
 
       {/* Progress Steps */}
@@ -144,9 +146,9 @@ export default function AddApplicationForm() {
 
       {/* Step labels */}
       <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-6 -mt-4">
-        <span>Basic Info</span>
-        <span>Details</span>
-        <span>Notes</span>
+        <span>{t('jobs.basicInfo')}</span>
+        <span>{t('jobs.details')}</span>
+        <span>{t('jobs.notes')}</span>
       </div>
 
       {/* Form card */}
@@ -160,11 +162,11 @@ export default function AddApplicationForm() {
           <div className="space-y-4">
             <div>
               <label className={labelClass}>
-                Company <span className="text-red-500">*</span>
+                {t('jobs.company')} <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
-                placeholder="e.g. Google"
+                placeholder={t('jobs.companyPlaceholder')}
                 value={form.company}
                 onChange={(e) => set('company', e.target.value)}
                 className={inputClass}
@@ -172,21 +174,21 @@ export default function AddApplicationForm() {
             </div>
             <div>
               <label className={labelClass}>
-                Role <span className="text-red-500">*</span>
+                {t('jobs.role')} <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
-                placeholder="e.g. Senior Product Designer"
+                placeholder={t('jobs.rolePlaceholder')}
                 value={form.role}
                 onChange={(e) => set('role', e.target.value)}
                 className={inputClass}
               />
             </div>
             <div>
-              <label className={labelClass}>Location</label>
+              <label className={labelClass}>{t('jobs.locationLabel')}</label>
               <input
                 type="text"
-                placeholder="e.g. San Francisco, CA (optional)"
+                placeholder={t('jobs.locationPlaceholder')}
                 value={form.location}
                 onChange={(e) => set('location', e.target.value)}
                 className={inputClass}
@@ -199,7 +201,7 @@ export default function AddApplicationForm() {
           <div className="space-y-4">
             <div>
               <label className={labelClass}>
-                Date Applied <span className="text-red-500">*</span>
+                {t('jobs.dateApplied')} <span className="text-red-500">*</span>
               </label>
               <input
                 type="date"
@@ -210,7 +212,7 @@ export default function AddApplicationForm() {
             </div>
             <div>
               <label className={labelClass}>
-                Source <span className="text-red-500">*</span>
+                {t('jobs.sourceLabel')} <span className="text-red-500">*</span>
               </label>
               <select
                 value={form.source}
@@ -218,15 +220,13 @@ export default function AddApplicationForm() {
                 className={inputClass}
               >
                 {SOURCES.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
+                  <option key={s} value={s}>{s}</option>
                 ))}
               </select>
             </div>
             <div>
               <label className={labelClass}>
-                Status <span className="text-red-500">*</span>
+                {t('jobs.statusLabel')} <span className="text-red-500">*</span>
               </label>
               <select
                 value={form.status}
@@ -234,9 +234,7 @@ export default function AddApplicationForm() {
                 className={inputClass}
               >
                 {STATUSES.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
+                  <option key={s} value={s}>{t(`status.${s.toLowerCase()}`)}</option>
                 ))}
               </select>
             </div>
@@ -245,10 +243,10 @@ export default function AddApplicationForm() {
 
         {step === 3 && (
           <div>
-            <label className={labelClass}>Notes</label>
+            <label className={labelClass}>{t('jobs.notesLabel')}</label>
             <textarea
               rows={8}
-              placeholder="Any notes about this application..."
+              placeholder={t('jobs.notesPlaceholder')}
               value={form.notes}
               onChange={(e) => set('notes', e.target.value)}
               className={`${inputClass} resize-none`}
@@ -269,7 +267,7 @@ export default function AddApplicationForm() {
           disabled={step === 1}
           className="px-6 py-3 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:text-gray-400 dark:disabled:text-gray-600 disabled:cursor-not-allowed disabled:border-gray-100 dark:disabled:border-gray-800 transition-colors"
         >
-          Back
+          {t('common.back')}
         </button>
 
         {step < 3 ? (
@@ -278,7 +276,7 @@ export default function AddApplicationForm() {
             disabled={!canNext}
             className="flex-1 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:cursor-not-allowed transition-colors"
           >
-            Next
+            {t('common.next')}
           </button>
         ) : (
           <button
@@ -308,7 +306,7 @@ export default function AddApplicationForm() {
                 />
               </svg>
             )}
-            {mutation.isPending ? 'Submitting...' : 'Submit'}
+            {mutation.isPending ? t('common.submitting') : t('common.submit')}
           </button>
         )}
       </div>

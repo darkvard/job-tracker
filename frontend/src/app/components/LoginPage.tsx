@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { Briefcase, AlertCircle } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -11,6 +12,7 @@ import { useAuth } from '@/contexts/AuthContext'
 function LoginForm() {
   const { login } = useAuth()
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -27,7 +29,7 @@ function LoginForm() {
       const message =
         err instanceof Error
           ? err.message
-          : 'Invalid email or password'
+          : t('auth.invalidCredentials')
       setError(message)
     } finally {
       setLoading(false)
@@ -43,11 +45,11 @@ function LoginForm() {
         </div>
       )}
       <div className="space-y-1.5">
-        <Label htmlFor="login-email">Email</Label>
+        <Label htmlFor="login-email">{t('auth.email')}</Label>
         <Input
           id="login-email"
           type="email"
-          placeholder="you@example.com"
+          placeholder={t('auth.emailPlaceholder')}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -55,11 +57,11 @@ function LoginForm() {
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="login-password">Password</Label>
+        <Label htmlFor="login-password">{t('auth.password')}</Label>
         <Input
           id="login-password"
           type="password"
-          placeholder="Enter your password"
+          placeholder={t('auth.passwordPlaceholder')}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
@@ -68,7 +70,7 @@ function LoginForm() {
       </div>
       <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
         <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? 'Signing in…' : 'Sign In'}
+          {loading ? t('auth.signingIn') : t('auth.signIn')}
         </Button>
       </motion.div>
     </form>
@@ -78,6 +80,7 @@ function LoginForm() {
 function RegisterForm() {
   const { register } = useAuth()
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -95,7 +98,7 @@ function RegisterForm() {
       const message =
         err instanceof Error
           ? err.message
-          : 'Registration failed'
+          : t('auth.registrationFailed')
       setError(message)
     } finally {
       setLoading(false)
@@ -111,11 +114,11 @@ function RegisterForm() {
         </div>
       )}
       <div className="space-y-1.5">
-        <Label htmlFor="register-name">Full Name</Label>
+        <Label htmlFor="register-name">{t('auth.fullName')}</Label>
         <Input
           id="register-name"
           type="text"
-          placeholder="John Doe"
+          placeholder={t('common.namePlaceholder')}
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
@@ -123,11 +126,11 @@ function RegisterForm() {
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="register-email">Email</Label>
+        <Label htmlFor="register-email">{t('auth.email')}</Label>
         <Input
           id="register-email"
           type="email"
-          placeholder="you@example.com"
+          placeholder={t('auth.emailPlaceholder')}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -135,11 +138,11 @@ function RegisterForm() {
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="register-password">Password</Label>
+        <Label htmlFor="register-password">{t('auth.password')}</Label>
         <Input
           id="register-password"
           type="password"
-          placeholder="Min. 8 characters"
+          placeholder={t('auth.passwordHint')}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
@@ -149,7 +152,7 @@ function RegisterForm() {
       </div>
       <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
         <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? 'Creating account…' : 'Create Account'}
+          {loading ? t('auth.creatingAccount') : t('auth.createAccount')}
         </Button>
       </motion.div>
     </form>
@@ -158,6 +161,7 @@ function RegisterForm() {
 
 export default function LoginPage() {
   const { isAuthenticated } = useAuth()
+  const { t } = useTranslation()
   if (isAuthenticated) return <Navigate to="/" replace />
 
   return (
@@ -180,22 +184,22 @@ export default function LoginPage() {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
           <Tabs defaultValue="login">
             <TabsList className="w-full mb-6">
-              <TabsTrigger value="login" className="flex-1">Sign In</TabsTrigger>
-              <TabsTrigger value="register" className="flex-1">Create Account</TabsTrigger>
+              <TabsTrigger value="login" className="flex-1">{t('auth.signIn')}</TabsTrigger>
+              <TabsTrigger value="register" className="flex-1">{t('auth.createAccount')}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="login">
               <div className="mb-5">
-                <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Welcome back</h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Sign in to your account</p>
+                <h1 className="text-xl font-semibold text-gray-900 dark:text-white">{t('auth.welcomeBack')}</h1>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('auth.signInToAccount')}</p>
               </div>
               <LoginForm />
             </TabsContent>
 
             <TabsContent value="register">
               <div className="mb-5">
-                <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Get started</h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Create your free account</p>
+                <h1 className="text-xl font-semibold text-gray-900 dark:text-white">{t('auth.getStarted')}</h1>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('auth.createFreeAccount')}</p>
               </div>
               <RegisterForm />
             </TabsContent>

@@ -392,6 +392,28 @@ Full flow: register → login → create job → list (filter) → update status
 
 ---
 
+### [ ] PR-23: i18n (EN/VI) + Settings dropdown
+**Docs:** `docs/UI_SPEC.md` · `docs/DESIGN_SYSTEM.md` · `docs/ARCHITECTURE_FRONTEND.md` · `.claude/skills/ui.md`
+**Files:** `frontend/src/i18n/index.ts` (new) · `frontend/src/i18n/locales/en.json` (new) · `frontend/src/i18n/locales/vi.json` (new) · `frontend/src/contexts/LanguageContext.tsx` (new) · `frontend/src/app/components/SettingsDropdown.tsx` (new) · `frontend/src/app/components/Navbar.tsx` · `frontend/src/app/App.tsx` · `frontend/src/main.tsx` · `frontend/src/app/components/LoginPage.tsx` · `frontend/src/app/components/Dashboard.tsx` · `frontend/src/app/components/ApplicationsList.tsx` · `frontend/src/app/components/AddApplicationForm.tsx` · `frontend/src/app/components/ApplicationDetail.tsx` · `frontend/src/app/components/Analytics.tsx` · `frontend/src/components/StatusBadge.tsx` · `frontend/src/components/KPICard.tsx` · `frontend/package.json`
+
+- [ ] Install: `i18next` · `react-i18next`
+- [ ] `src/i18n/locales/en.json` + `vi.json`: translation resource files grouped by feature (nav, settings, auth, dashboard, jobs, detail, analytics, status, common)
+- [ ] `src/i18n/index.ts`: i18next init + `initReactI18next`, reads `localStorage('job-tracker-lang')` with `'en'` fallback
+- [ ] `src/contexts/LanguageContext.tsx`: exports `Language = 'en'|'vi'` · `SUPPORTED_LANGUAGES` · `LanguageProvider` + `useLanguage()` — `changeLanguage()` calls `i18n.changeLanguage()` + saves to localStorage
+- [ ] `src/app/components/SettingsDropdown.tsx`: gear icon (`Settings2`) opens dropdown — Theme section (Light/Dark toggle) + Language section (`SUPPORTED_LANGUAGES` buttons) — active = `bg-indigo-600 text-white` — closes on outside click
+- [ ] `main.tsx`: add `import '@/i18n'` side-effect import
+- [ ] `App.tsx`: wrap with `<LanguageProvider>` (inside `<ThemeProvider>`, outside `<QueryClientProvider>`)
+- [ ] `Navbar.tsx`: replace `<ThemeToggle />` → `<SettingsDropdown />`; nav links + "Add Application" use `t()`
+- [ ] All page components + `StatusBadge` + `KPICard`: replace hardcoded strings with `t('key')`; status filter/option **values** stay English (API contract), only display text translated
+
+**Test:**
+- Default = English; toggle to Vietnamese → all text switches immediately; reload → persists
+- Click gear icon → dropdown shows Theme + Language sections
+- Toggle theme inside dropdown → same behavior as before
+- `make test-ui` green (Playwright tests use English selectors — default lang is EN so they still pass)
+
+---
+
 ## Summary
 
 | Phase | PRs | Scope |
@@ -401,6 +423,7 @@ Full flow: register → login → create job → list (filter) → update status
 | 2: CRUD | PR-08 → PR-09 | Job use cases (grouped, TxManager) + REST API |
 | 3: Analytics | PR-10 → PR-11 | Dashboard+Analytics (pure UCs + cache decorators) |
 | 4: Frontend | PR-12 → PR-17 | React Query wiring + Router |
-| 5: Polish | PR-18 → PR-21 | Seed, API E2E, README, Browser E2E (Playwright) |
+| 5: Polish | PR-18 → PR-22 | Seed, API E2E, README, Browser E2E (Playwright), Dark mode toggle |
+| 6: i18n + UX | PR-23 | EN/VI language support + Settings dropdown (theme + language) |
 
-**Total: 21 PRs** · each 100–400 lines · strictly ordered
+**Total: 23 PRs** · each 100–400 lines · strictly ordered
