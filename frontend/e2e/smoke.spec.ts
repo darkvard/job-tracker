@@ -69,11 +69,11 @@ test.describe('Job Tracker smoke', () => {
     await page.getByText(company).first().click()
     await page.waitForURL(/\/jobs\/\d+/)
 
-    // Update status
-    await page.getByRole('button', { name: 'Update Status' }).click()
-    // The first available transition for Applied is Interview
-    await page.locator('select').selectOption('Interview')
-    await page.getByRole('button', { name: 'Confirm' }).click()
+    // Enter inline edit mode and update status
+    await page.getByRole('button', { name: 'Edit' }).click()
+    // Status select is first select in the header (before source select in info grid)
+    await page.locator('select').first().selectOption('Interview')
+    await page.getByRole('button', { name: 'Save Changes' }).click()
 
     // Status badge should now show Interview
     await expect(page.getByText('Interview').first()).toBeVisible()
