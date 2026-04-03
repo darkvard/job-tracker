@@ -1,16 +1,29 @@
 import { test, expect, type Page } from '@playwright/test'
 
 // ---------------------------------------------------------------------------
-// Helpers
+// Auth helpers (same pattern as smoke.spec.ts — no seed data required)
 // ---------------------------------------------------------------------------
 
-async function loginAsSeed(page: Page) {
+function uniqueEmail() {
+  return `i18n-${Date.now()}-${Math.random().toString(36).slice(2)}@test.local`
+}
+
+const password = 'password123'
+const name = 'i18n Tester'
+
+async function register(page: Page) {
   await page.goto('/login')
-  await page.locator('#login-email').fill('demo@tracker.com')
-  await page.locator('#login-password').fill('demo123')
-  await page.getByRole('button', { name: 'Sign In' }).click()
+  await page.getByRole('tab', { name: 'Create Account' }).click()
+  await page.locator('#register-name').fill(name)
+  await page.locator('#register-email').fill(uniqueEmail())
+  await page.locator('#register-password').fill(password)
+  await page.getByRole('button', { name: 'Create Account' }).click()
   await page.waitForURL('/')
 }
+
+// ---------------------------------------------------------------------------
+// i18n helpers
+// ---------------------------------------------------------------------------
 
 /** Open the Settings gear-icon dropdown.
  *  The button aria-label is t('settings.title'), so it changes with language.
@@ -35,23 +48,35 @@ async function switchToVI(page: Page) {
   await page.getByRole('heading', { name: 'Bảng điều khiển' }).click()
 }
 
+/** Create a minimal job (step through Add Application form in English). */
+async function addJob(page: Page, company: string) {
+  await page.getByRole('button', { name: /Add Application/i }).click()
+  await page.waitForURL('/jobs/new')
+  await page.getByPlaceholder('e.g. Google').fill(company)
+  await page.getByPlaceholder('e.g. Senior Product Designer').fill('Engineer')
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByRole('button', { name: 'Submit' }).click()
+  await page.waitForURL('/jobs')
+}
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
 
 test.describe('i18n: language switching', () => {
   test.beforeEach(async ({ page }) => {
-    // Each test gets a fresh browser context (empty localStorage → language = 'en')
-    await loginAsSeed(page)
+    // Fresh user per test — no seed data dependency, works in CI
+    await register(page)
   })
 
   // -------------------------------------------------------------------------
   // Test 1 — Default language is English
   // -------------------------------------------------------------------------
   test('1 — default language is English on all pages', async ({ page }) => {
-    // Dashboard
+    // Dashboard (subtitle is always visible regardless of data)
     await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible()
-    await expect(page.getByText('Total Applications')).toBeVisible()
+    await expect(page.getByText('Track your job application progress')).toBeVisible()
 
     // Jobs page
     await page.getByRole('link', { name: 'Applications' }).click()
@@ -83,11 +108,10 @@ test.describe('i18n: language switching', () => {
   test('2 — toggle to Vietnamese switches all pages', async ({ page }) => {
     await switchToVI(page)
 
-    // Dashboard in VI
-    await expect(page.getByText('Tổng đơn ứng tuyển')).toBeVisible()
-    await expect(page.getByText('Đơn ứng tuyển gần đây')).toBeVisible()
+    // Dashboard in VI (subtitle always visible)
+    await expect(page.getByText('Theo dõi tiến trình ứng tuyển việc làm')).toBeVisible()
 
-    // Nav links are now in VI — click the Jobs nav link
+    // Jobs page in VI
     await page.getByRole('link', { name: 'Ứng tuyển' }).click()
     await page.waitForURL('/jobs')
     await expect(page.getByRole('heading', { name: 'Đơn ứng tuyển' })).toBeVisible()
@@ -121,7 +145,7 @@ test.describe('i18n: language switching', () => {
     await page.waitForURL('/')
 
     await expect(page.getByRole('heading', { name: 'Bảng điều khiển' })).toBeVisible()
-    await expect(page.getByText('Tổng đơn ứng tuyển')).toBeVisible()
+    await expect(page.getByText('Theo dõi tiến trình ứng tuyển việc làm')).toBeVisible()
   })
 
   // -------------------------------------------------------------------------
@@ -130,12 +154,11 @@ test.describe('i18n: language switching', () => {
   test('4 — toggle back to English reverts all strings', async ({ page }) => {
     await switchToVI(page)
 
-    // Switch back to EN
     await openSettings(page, 'Cài đặt')
     await clickLang(page, 'EN')
 
     await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible()
-    await expect(page.getByText('Total Applications')).toBeVisible()
+    await expect(page.getByText('Track your job application progress')).toBeVisible()
   })
 
   // -------------------------------------------------------------------------
@@ -158,19 +181,16 @@ test.describe('i18n: language switching', () => {
     await page.getByPlaceholder('vd: Senior Product Designer').fill('Kỹ sư phần mềm')
     await page.getByRole('button', { name: 'Tiếp theo' }).click()
 
-    // Step 2 — date applied label
+    // Step 2 — date applied + status labels
     await expect(page.getByText('Ngày ứng tuyển').first()).toBeVisible()
-    // Status label
     await expect(page.getByText('Trạng thái').first()).toBeVisible()
     await page.getByRole('button', { name: 'Tiếp theo' }).click()
 
     // Step 3 — notes label
     await expect(page.getByText('Ghi chú').first()).toBeVisible()
 
-    // Submit
+    // Submit and confirm success screen
     await page.getByRole('button', { name: 'Gửi' }).click()
-
-    // Success screen
     await expect(page.getByText('Đã thêm đơn ứng tuyển!')).toBeVisible()
     await page.waitForURL('/jobs')
   })
@@ -179,12 +199,17 @@ test.describe('i18n: language switching', () => {
   // Test 6 — Application Detail in Vietnamese
   // -------------------------------------------------------------------------
   test('6 — Application Detail labels in Vietnamese', async ({ page }) => {
+    // Create a job first (in English — no seed data needed)
+    const company = `i18nCo-${Date.now()}`
+    await addJob(page, company)
+
+    // Go to Dashboard and switch to VI
+    await page.goto('/')
     await switchToVI(page)
 
-    // Navigate to first available job in list
+    // Navigate to the created job
     await page.goto('/jobs')
-    await page.waitForSelector('text=Google', { timeout: 10000 })
-    await page.getByText('Google').first().click()
+    await page.getByText(company).first().click()
     await page.waitForURL(/\/jobs\/\d+/)
 
     // Back link
@@ -197,19 +222,18 @@ test.describe('i18n: language switching', () => {
     await expect(page.getByText('Địa điểm').first()).toBeVisible()
     await expect(page.getByText('Nguồn').first()).toBeVisible()
 
-    // Update Status button (only visible for Applied / Interview status)
+    // Update Status button (Applied status → always visible for a freshly created job)
     const updateBtn = page.getByRole('button', { name: 'Cập nhật trạng thái' })
-    if (await updateBtn.isVisible()) {
-      await updateBtn.click()
+    await expect(updateBtn).toBeVisible()
+    await updateBtn.click()
 
-      // Dialog labels
-      await expect(page.getByText('Trạng thái mới')).toBeVisible()
-      await expect(page.getByText('Ghi chú (tùy chọn)')).toBeVisible()
+    // Dialog labels
+    await expect(page.getByText('Trạng thái mới')).toBeVisible()
+    await expect(page.getByText('Ghi chú (tùy chọn)')).toBeVisible()
 
-      // Cancel button
-      await page.getByRole('button', { name: 'Hủy' }).click()
-      await expect(updateBtn).toBeVisible()
-    }
+    // Cancel button
+    await page.getByRole('button', { name: 'Hủy' }).click()
+    await expect(updateBtn).toBeVisible()
 
     // Delete button
     await expect(page.getByRole('button', { name: 'Xóa' })).toBeVisible()
