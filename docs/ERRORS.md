@@ -50,4 +50,10 @@
 **Fix:** Changed `make seed` to run inside the API container: `docker compose exec api go run ./cmd/seed` — same pattern as `make migrate-up`.
 **Prevention:** Any make target that needs database access should run inside the container (`docker compose exec api ...`), not locally.
 
+### 2026-04-03 — E2E smoke: getByText matches hidden select option after async save
+**Symptom:** `await expect(page.getByText('Interview').first()).toBeVisible()` fails after clicking "Save Changes" in inline edit mode. Playwright reports element found but `hidden`.
+**Root cause:** The save mutation is async. While mutation is in-flight, `isEditing` is still `true` and the status `<select>` remains rendered. `getByText('Interview').first()` resolves to the `<option value="Interview">` inside the select — options are hidden in DOM until the dropdown is opened.
+**Fix:** (1) Wait for the `Edit` button to reappear (`await expect(editBtn).toBeVisible()`) — this confirms the mutation succeeded and edit mode exited. (2) Use `page.locator('span').filter({ hasText: /^Interview$/ })` to target the visible StatusBadge `<span>`, not the hidden `<option>`.
+**Prevention:** After any async form save, always wait for edit-mode UI to fully exit before asserting on result content. Prefer role/semantic locators or `span/div` over `getByText` when the same text may exist in hidden form elements.
+
 *(Add new entries below)*
