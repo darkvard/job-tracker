@@ -442,18 +442,18 @@ Full flow: register → login → create job → list (filter) → update status
 
 ---
 
-### [ ] PR-26: Toast notification system + smooth create flow + date UX
+### [x] PR-26: Toast notification system + smooth create flow + date UX
 **Docs:** `.claude/skills/ui.md` · `docs/DESIGN_SYSTEM.md` · `docs/ARCHITECTURE_FRONTEND.md`
 **Files:** `frontend/src/contexts/ToastContext.tsx` (new) · `frontend/src/components/Toast.tsx` (new) · `frontend/src/app/App.tsx` · `frontend/src/app/components/AddApplicationForm.tsx` · `frontend/src/app/components/ApplicationDetail.tsx` · `frontend/src/app/components/ApplicationsList.tsx` · `frontend/src/i18n/locales/en.json` · `vi.json`
 
-- [ ] `ToastContext.tsx`: `type ToastVariant = 'success'|'error'`, `toast(message, variant, duration?)` — queue-based (max 3 visible), auto-dismiss (3s default), exports `ToastProvider` + `useToast()`
-- [ ] `Toast.tsx`: fixed `bottom-4 right-4` stack; success = green-600 icon + border; error = red-600 icon + border; slide-in from right via `motion/react`; dark mode; close button (X)
-- [ ] `App.tsx`: wrap tree with `<ToastProvider>` (inside `<ThemeProvider>`)
-- [ ] `AddApplicationForm.tsx`: remove `showSuccess` state + success screen entirely → on success: `navigate('/jobs', { replace: true })` immediately + `toast(t('toast.createSuccess'), 'success')`; on error: `toast(errorMsg, 'error')`
-- [ ] `ApplicationDetail.tsx`: save mutation `onSuccess` → `toast(t('toast.saveSuccess'), 'success')`; save `onError` → `toast(errorMsg, 'error')`; delete `onSuccess` → already navigates, no toast needed
-- [ ] `ApplicationsList.tsx`: delete mutation `onSuccess` → `toast(t('toast.deleteSuccess'), 'success')`; delete `onError` → `toast(errorMsg, 'error')`
-- [ ] **Date UX**: in `AddApplicationForm` step 2 + `ApplicationDetail` edit mode — show human-readable date label below input (`new Date(value).toLocaleDateString('en-US', {month:'long',day:'numeric',year:'numeric'})`) + "Today" quick-fill button next to label
-- [ ] i18n keys: `toast.createSuccess` · `toast.saveSuccess` · `toast.deleteSuccess` + date "Today" button label
+- [x] `ToastContext.tsx`: `type ToastVariant = 'success'|'error'`, `toast(message, variant, duration?)` — queue-based (max 3 visible), auto-dismiss (3s default), exports `ToastProvider` + `useToast()`
+- [x] `Toast.tsx`: fixed `bottom-4 right-4` stack; success = green-600 icon + border; error = red-600 icon + border; slide-in from right via `motion/react`; dark mode; close button (X)
+- [x] `App.tsx`: wrap tree with `<ToastProvider>` (inside `<ThemeProvider>`)
+- [x] `AddApplicationForm.tsx`: remove `showSuccess` state + success screen entirely → on success: `navigate('/jobs', { replace: true })` immediately + `toast(t('toast.createSuccess'), 'success')`; on error: `toast(errorMsg, 'error')`
+- [x] `ApplicationDetail.tsx`: save mutation `onSuccess` → `toast(t('toast.saveSuccess'), 'success')`; save `onError` → `toast(errorMsg, 'error')`; delete `onSuccess` → already navigates, no toast needed
+- [x] `ApplicationsList.tsx`: delete mutation `onSuccess` → `toast(t('toast.deleteSuccess'), 'success')`; delete `onError` → `toast(errorMsg, 'error')`
+- [x] **Date UX**: in `AddApplicationForm` step 2 + `ApplicationDetail` edit mode — show human-readable date label below input + "Today" quick-fill button next to label
+- [x] i18n keys: `toast.createSuccess` · `toast.saveSuccess` · `toast.deleteSuccess` + date "Today" button label
 
 **Test:**
 - Create job → form submits → redirects to list immediately → toast "Application created" appears bottom-right → auto-dismisses after 3s
