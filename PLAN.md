@@ -431,14 +431,14 @@ Full flow: register → login → create job → list (filter) → update status
 
 ---
 
-### [ ] PR-25: UX fixes — edit mode, delete bug, dashboard navigation
+### [x] PR-25: UX fixes — edit mode, delete bug, dashboard navigation
 **Files:** `frontend/src/app/components/ApplicationDetail.tsx` · `ApplicationsList.tsx` · `Dashboard.tsx` · `frontend/src/components/KPICard.tsx` · `frontend/src/i18n/locales/en.json` · `vi.json`
 
-- [ ] **Bug fix:** Delete from ApplicationsList navigates to detail instead of removing item — root cause: React portal event bubbling; fix: wrap AlertDialog in `onClick={stopPropagation}` div
-- [ ] **Feature:** ApplicationDetail — inline edit mode; "Edit" button unlocks all fields (company, role, location, source, dateApplied, notes, status); date field uses native calendar picker; "Save Changes" / "Cancel" buttons; status transitions still enforced
-- [ ] **Feature:** Dashboard KPI cards (Total, Interviews, Offers, Rejected) clickable → navigate to `/jobs?status=X`
-- [ ] **Feature:** Dashboard pie chart segments clickable → navigate to `/jobs?status=X`
-- [ ] **Feature:** ApplicationsList reads `?status=X` URL param on mount → pre-selects filter (enables Dashboard → filtered list navigation)
+- [x] **Bug fix:** Delete from ApplicationsList navigates to detail instead of removing item — root cause: React portal event bubbling; fix: wrap AlertDialog in `onClick={stopPropagation}` div
+- [x] **Feature:** ApplicationDetail — inline edit mode; "Edit" button unlocks all fields (company, role, location, source, dateApplied, notes, status); date field uses native calendar picker; "Save Changes" / "Cancel" buttons; status transitions still enforced
+- [x] **Feature:** Dashboard KPI cards (Total, Interviews, Offers, Rejected) clickable → navigate to `/jobs?status=X`
+- [x] **Feature:** Dashboard pie chart segments clickable → navigate to `/jobs?status=X`
+- [x] **Feature:** ApplicationsList reads `?status=X` URL param on mount → pre-selects filter (enables Dashboard → filtered list navigation)
 
 ---
 
