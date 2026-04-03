@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { Briefcase, Users, CircleCheck, X, TrendingUp, ArrowUpRight } from 'lucide-react'
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, type PieProps } from 'recharts'
 import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
 import KPICard from '@/components/KPICard'
@@ -100,6 +100,7 @@ export default function Dashboard() {
           bgColor="bg-blue-100 dark:bg-blue-950/50"
           iconColor="text-blue-600 dark:text-blue-400"
           trend={kpis.trends.total}
+          onClick={() => navigate('/jobs')}
         />
         <KPICard
           title={t('dashboard.interviews')}
@@ -108,6 +109,7 @@ export default function Dashboard() {
           bgColor="bg-orange-100 dark:bg-orange-950/50"
           iconColor="text-orange-600 dark:text-orange-400"
           trend={kpis.trends.interview}
+          onClick={() => navigate('/jobs?status=Interview')}
         />
         <KPICard
           title={t('dashboard.offers')}
@@ -116,6 +118,7 @@ export default function Dashboard() {
           bgColor="bg-green-100 dark:bg-green-950/50"
           iconColor="text-green-600 dark:text-green-400"
           trend={kpis.trends.offer}
+          onClick={() => navigate('/jobs?status=Offer')}
         />
         <KPICard
           title={t('dashboard.rejected')}
@@ -124,6 +127,7 @@ export default function Dashboard() {
           bgColor="bg-red-100 dark:bg-red-950/50"
           iconColor="text-red-600 dark:text-red-400"
           trend={kpis.trends.rejected}
+          onClick={() => navigate('/jobs?status=Rejected')}
         />
       </div>
 
@@ -146,6 +150,10 @@ export default function Dashboard() {
                   innerRadius={60}
                   outerRadius={80}
                   paddingAngle={5}
+                  className="cursor-pointer"
+                  onClick={((_data: { status: string }) => {
+                    navigate(`/jobs?status=${_data.status}`)
+                  }) as PieProps['onClick']}
                 >
                   {kpis.statusBreakdown.map((entry) => (
                     <Cell key={entry.status} fill={entry.color} />

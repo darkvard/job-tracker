@@ -9,14 +9,16 @@ interface KPICardProps {
   bgColor: string
   iconColor: string
   trend?: { value: number; isPositive: boolean }
+  onClick?: () => void
 }
 
-export default function KPICard({ title, value, icon: Icon, bgColor, iconColor, trend }: KPICardProps) {
+export default function KPICard({ title, value, icon: Icon, bgColor, iconColor, trend, onClick }: KPICardProps) {
   const { t } = useTranslation()
   return (
     <motion.div
+      onClick={onClick}
       whileHover={{ y: -4, boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}
-      className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700"
+      className={`bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700${onClick ? ' cursor-pointer' : ''}`}
     >
       <div className="flex items-center justify-between mb-4">
         <div className={`w-12 h-12 ${bgColor} rounded-xl flex items-center justify-center`}>

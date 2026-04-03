@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion } from 'motion/react'
 import { Search, Briefcase, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react'
@@ -80,11 +80,15 @@ function ApplicationCard({ job, index, onDelete, onView }: { job: Job; index: nu
         </div>
       </div>
 
-      <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-end">
+      {/* Wrap the entire AlertDialog in a div that stops propagation so clicks inside
+          (including the portal-rendered AlertDialogContent) don't bubble to the card's onClick. */}
+      <div
+        className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-end"
+        onClick={(e) => e.stopPropagation()}
+      >
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <button
-              onClick={(e) => e.stopPropagation()}
               className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
               aria-label="Delete application"
             >
@@ -113,7 +117,12 @@ export default function ApplicationsList() {
   const navigate = useNavigate()
   const qc = useQueryClient()
   const { t } = useTranslation()
-  const [statusFilter, setStatusFilter] = useState('All')
+  const [searchParams] = useSearchParams()
+  // Initialize status filter from URL param (e.g. from Dashboard card click)
+  const [statusFilter, setStatusFilter] = useState(() => {
+    const s = searchParams.get('status')
+    return s && STATUS_FILTER_VALUES.includes(s) ? s : 'All'
+  })
   const [searchInput, setSearchInput] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [page, setPage] = useState(1)
