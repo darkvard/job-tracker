@@ -17,6 +17,20 @@ export interface User {
   email: string
   name: string
   createdAt: string
+  currentLocation?: string
+  currentRole?: string
+  currentCompany?: string
+  currentSalary?: number
+  salaryCurrency: string
+}
+
+export interface UpdateProfilePayload {
+  name: string
+  currentLocation?: string | null
+  currentRole?: string | null
+  currentCompany?: string | null
+  currentSalary?: number | null
+  salaryCurrency: string
 }
 
 export interface Job {
@@ -123,6 +137,8 @@ export const api = {
     login: (data: { email: string; password: string }) =>
       client.post<ApiResponse<{ token: string; user: User }>>('/auth/login', data).then((r) => r.data),
     me: () => client.get<ApiResponse<User>>('/auth/me').then((r) => r.data),
+    updateProfile: (data: UpdateProfilePayload) =>
+      client.put<ApiResponse<User>>('/auth/me', data).then((r) => r.data),
   },
   jobs: {
     list: (params?: JobFilters) =>

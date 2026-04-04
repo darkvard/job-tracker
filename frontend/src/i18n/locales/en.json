@@ -3,7 +3,9 @@
     "dashboard": "Dashboard",
     "applications": "Applications",
     "analytics": "Analytics",
-    "addApplication": "Add Application"
+    "addApplication": "Add Application",
+    "profile": "Profile",
+    "logout": "Logout"
   },
   "settings": {
     "title": "Settings",
@@ -141,5 +143,26 @@
     "createSuccess": "Application created successfully",
     "saveSuccess": "Changes saved",
     "deleteSuccess": "Application deleted"
+  },
+  "profile": {
+    "title": "Profile",
+    "subtitle": "Manage your personal information",
+    "basicInfo": "Basic Info",
+    "currentPosition": "Current Position",
+    "name": "Full Name",
+    "currentRole": "Current Job Title",
+    "currentCompany": "Current Company",
+    "currentLocation": "Current Location",
+    "currentSalary": "Current Salary",
+    "salaryCurrency": "Currency",
+    "saveChanges": "Save Changes",
+    "saving": "Saving...",
+    "saveSuccess": "Profile updated",
+    "saveFailed": "Failed to save profile",
+    "logout": "Logout",
+    "rolePlaceholder": "e.g. Senior Engineer",
+    "companyPlaceholder": "e.g. VNPAY",
+    "locationPlaceholder": "e.g. Hanoi, Vietnam",
+    "salaryPlaceholder": "e.g. 30000000"
   }
 }
