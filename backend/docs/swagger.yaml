@@ -174,15 +174,41 @@ definitions:
       password:
         type: string
     type: object
+  job-tracker_internal_application_auth.UpdateProfileRequest:
+    properties:
+      currentCompany:
+        type: string
+      currentLocation:
+        type: string
+      currentRole:
+        type: string
+      currentSalary:
+        format: int64
+        type: integer
+      name:
+        type: string
+      salaryCurrency:
+        type: string
+    type: object
   job-tracker_internal_application_auth.UserInfo:
     properties:
       createdAt:
         type: string
+      currentCompany:
+        type: string
+      currentLocation:
+        type: string
+      currentRole:
+        type: string
+      currentSalary:
+        type: integer
       email:
         type: string
       id:
         type: integer
       name:
+        type: string
+      salaryCurrency:
         type: string
     type: object
   job-tracker_internal_application_job.CreateRequest:
@@ -437,6 +463,37 @@ paths:
       security:
       - BearerAuth: []
       summary: Get current user
+      tags:
+      - auth
+    put:
+      consumes:
+      - application/json
+      description: Updates the profile fields of the authenticated user
+      parameters:
+      - description: Update profile payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/job-tracker_internal_application_auth.UpdateProfileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/job-tracker_internal_application_auth.UserInfo'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update current user profile
       tags:
       - auth
   /auth/register:

@@ -244,6 +244,55 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Updates the profile fields of the authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Update current user profile",
+                "parameters": [
+                    {
+                        "description": "Update profile payload",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/job-tracker_internal_application_auth.UpdateProfileRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/job-tracker_internal_application_auth.UserInfo"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_infrastructure_http_handler.errorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/internal_infrastructure_http_handler.errorResponse"
+                        }
+                    }
+                }
             }
         },
         "/auth/register": {
@@ -987,11 +1036,47 @@ const docTemplate = `{
                 }
             }
         },
+        "job-tracker_internal_application_auth.UpdateProfileRequest": {
+            "type": "object",
+            "properties": {
+                "currentCompany": {
+                    "type": "string"
+                },
+                "currentLocation": {
+                    "type": "string"
+                },
+                "currentRole": {
+                    "type": "string"
+                },
+                "currentSalary": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "salaryCurrency": {
+                    "type": "string"
+                }
+            }
+        },
         "job-tracker_internal_application_auth.UserInfo": {
             "type": "object",
             "properties": {
                 "createdAt": {
                     "type": "string"
+                },
+                "currentCompany": {
+                    "type": "string"
+                },
+                "currentLocation": {
+                    "type": "string"
+                },
+                "currentRole": {
+                    "type": "string"
+                },
+                "currentSalary": {
+                    "type": "integer"
                 },
                 "email": {
                     "type": "string"
@@ -1000,6 +1085,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "salaryCurrency": {
                     "type": "string"
                 }
             }

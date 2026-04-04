@@ -46,6 +46,7 @@ func main() {
 	// Auth use cases
 	registerUC := auth.NewRegisterUseCase(userRepo, hasher, tokens)
 	loginUC := auth.NewLoginUseCase(userRepo, hasher, tokens)
+	updateProfileUC := auth.NewUpdateProfileUseCase(userRepo)
 
 	// Job use cases
 	jobUCs := job.NewUseCases(appRepo, txMgr)
@@ -62,7 +63,7 @@ func main() {
 
 	// Handlers
 	healthHandler := handler.NewHealth()
-	authHandler := handler.NewAuthHandler(registerUC, loginUC, userRepo)
+	authHandler := handler.NewAuthHandler(registerUC, loginUC, updateProfileUC, userRepo)
 	jobHandler := handler.NewJobHandler(jobUCs, jobInvalidator)
 	analyticsHandler := handler.NewAnalyticsHandler(dashboardUC, analyticsUC)
 

@@ -61,11 +61,6 @@ func (uc *RegisterUseCase) Execute(ctx context.Context, req RegisterRequest) (*A
 
 	return &AuthResponse{
 		Token: token,
-		User: UserInfo{
-			ID:        created.ID,
-			Email:     created.Email,
-			Name:      created.Name,
-			CreatedAt: created.CreatedAt,
-		},
+		User:  userInfoFromEntity(created),
 	}, nil
 }

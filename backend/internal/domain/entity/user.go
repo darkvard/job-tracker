@@ -11,12 +11,17 @@ var emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-
 
 // User represents an authenticated account in the system.
 type User struct {
-	ID           int64
-	Email        string
-	PasswordHash string
-	Name         string
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
+	ID              int64
+	Email           string
+	PasswordHash    string
+	Name            string
+	CurrentLocation *string
+	CurrentRole     *string
+	CurrentCompany  *string
+	CurrentSalary   *int64
+	SalaryCurrency  string
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
 }
 
 // NewUser constructs a User, validating the email format.

@@ -12,4 +12,5 @@ type UserRepository interface {
 	FindByID(ctx context.Context, id int64) (*entity.User, error)
 	FindByEmail(ctx context.Context, email string) (*entity.User, error)
 	ExistsByEmail(ctx context.Context, email string) (bool, error)
+	Update(ctx context.Context, user *entity.User) (*entity.User, error)
 }

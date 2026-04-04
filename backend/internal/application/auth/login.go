@@ -52,11 +52,6 @@ func (uc *LoginUseCase) Execute(ctx context.Context, req LoginRequest) (*AuthRes
 
 	return &AuthResponse{
 		Token: token,
-		User: UserInfo{
-			ID:        user.ID,
-			Email:     user.Email,
-			Name:      user.Name,
-			CreatedAt: user.CreatedAt,
-		},
+		User:  userInfoFromEntity(user),
 	}, nil
 }

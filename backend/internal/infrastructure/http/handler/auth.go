@@ -13,18 +13,20 @@ import (
 
 // AuthHandler handles HTTP requests for authentication endpoints.
 type AuthHandler struct {
-	register *auth.RegisterUseCase
-	login    *auth.LoginUseCase
-	userRepo repository.UserRepository
+	register      *auth.RegisterUseCase
+	login         *auth.LoginUseCase
+	updateProfile *auth.UpdateProfileUseCase
+	userRepo      repository.UserRepository
 }
 
 // NewAuthHandler constructs an AuthHandler.
 func NewAuthHandler(
 	register *auth.RegisterUseCase,
 	login *auth.LoginUseCase,
+	updateProfile *auth.UpdateProfileUseCase,
 	userRepo repository.UserRepository,
 ) *AuthHandler {
-	return &AuthHandler{register: register, login: login, userRepo: userRepo}
+	return &AuthHandler{register: register, login: login, updateProfile: updateProfile, userRepo: userRepo}
 }
 
 // Register handles POST /auth/register.
@@ -107,11 +109,51 @@ func (h *AuthHandler) Me(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondJSON(w, http.StatusOK, auth.UserInfo{
-		ID:        user.ID,
-		Email:     user.Email,
-		Name:      user.Name,
-		CreatedAt: user.CreatedAt,
+		ID:              user.ID,
+		Email:           user.Email,
+		Name:            user.Name,
+		CreatedAt:       user.CreatedAt,
+		CurrentLocation: user.CurrentLocation,
+		CurrentRole:     user.CurrentRole,
+		CurrentCompany:  user.CurrentCompany,
+		CurrentSalary:   user.CurrentSalary,
+		SalaryCurrency:  user.SalaryCurrency,
 	})
+}
+
+// UpdateMe handles PUT /auth/me.
+//
+//	@Summary		Update current user profile
+//	@Description	Updates the profile fields of the authenticated user
+//	@Tags			auth
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			body	body		auth.UpdateProfileRequest	true	"Update profile payload"
+//	@Success		200		{object}	auth.UserInfo
+//	@Failure		400		{object}	errorResponse
+//	@Failure		401		{object}	errorResponse
+//	@Router			/auth/me [put]
+func (h *AuthHandler) UpdateMe(w http.ResponseWriter, r *http.Request) {
+	userID, ok := ctxkey.GetUserID(r.Context())
+	if !ok {
+		respondError(w, http.StatusUnauthorized, "missing or invalid token", "UNAUTHORIZED")
+		return
+	}
+
+	var req auth.UpdateProfileRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		respondError(w, http.StatusBadRequest, "invalid JSON body", "BAD_REQUEST")
+		return
+	}
+
+	info, err := h.updateProfile.Execute(r.Context(), userID, req)
+	if err != nil {
+		mapDomainError(w, err)
+		return
+	}
+
+	respondJSON(w, http.StatusOK, info)
 }
 
 // mapDomainError translates a domain error to an HTTP response.
