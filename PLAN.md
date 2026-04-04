@@ -466,7 +466,7 @@ Full flow: register → login → create job → list (filter) → update status
 
 ## Phase 9: User Profile
 
-### [ ] PR-27 — feat(user): user profile API [backend]
+### [x] PR-27 — feat(user): user profile API [backend]
 **Docs:** `docs/RULES.md` · `docs/ARCHITECTURE_BACKEND.md` · `docs/API_SPEC.md`
 
 **What:** Add profile fields (current location/role/company/salary) to users table. Implement `PUT /auth/me` to update. Extend `GET /auth/me` response.
