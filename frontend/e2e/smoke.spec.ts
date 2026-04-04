@@ -128,10 +128,34 @@ test.describe('Job Tracker smoke', () => {
   test('6 — logout → redirected to Login page', async ({ page }) => {
     await register(page)
 
-    // Click the user avatar (title="Logout")
-    await page.getByTitle('Logout').click()
+    // Open the user dropdown (avatar button)
+    await page.getByTitle('Profile').click()
+    // Click Logout inside the dropdown
+    await page.getByRole('button', { name: 'Logout' }).click()
 
     await page.waitForURL('/login')
     await expect(page.getByText('JobTracker')).toBeVisible()
+  })
+
+  test('7 — profile page → edit name → save → toast visible', async ({ page }) => {
+    await register(page)
+
+    // Open user dropdown → navigate to Profile
+    await page.getByTitle('Profile').click()
+    await page.getByRole('button', { name: 'Profile' }).click()
+    await page.waitForURL('/profile')
+
+    await expect(page.getByRole('heading', { name: 'Profile' })).toBeVisible()
+
+    // Edit name
+    const nameInput = page.getByLabel('Full Name')
+    await nameInput.clear()
+    await nameInput.fill('Updated Name')
+
+    // Save
+    await page.getByRole('button', { name: 'Save Changes' }).click()
+
+    // Toast should appear
+    await expect(page.getByText('Profile updated')).toBeVisible()
   })
 })

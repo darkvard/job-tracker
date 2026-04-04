@@ -11,6 +11,7 @@ import ApplicationsList from '@/app/components/ApplicationsList'
 import AddApplicationForm from '@/app/components/AddApplicationForm'
 import ApplicationDetail from '@/app/components/ApplicationDetail'
 import Analytics from '@/app/components/Analytics'
+import ProfilePage from '@/app/components/ProfilePage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -37,6 +38,7 @@ export default function App() {
               <Route path="/jobs/new" element={<AddApplicationForm />} />
               <Route path="/jobs/:id" element={<ApplicationDetail />} />
               <Route path="/analytics" element={<Analytics />} />
+              <Route path="/profile" element={<ProfilePage />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

@@ -3,7 +3,9 @@
     "dashboard": "Bảng điều khiển",
     "applications": "Ứng tuyển",
     "analytics": "Phân tích",
-    "addApplication": "Thêm đơn"
+    "addApplication": "Thêm đơn",
+    "profile": "Hồ sơ",
+    "logout": "Đăng xuất"
   },
   "settings": {
     "title": "Cài đặt",
@@ -141,5 +143,26 @@
     "createSuccess": "Đã tạo đơn ứng tuyển thành công",
     "saveSuccess": "Đã lưu thay đổi",
     "deleteSuccess": "Đã xóa đơn ứng tuyển"
+  },
+  "profile": {
+    "title": "Hồ sơ",
+    "subtitle": "Quản lý thông tin cá nhân",
+    "basicInfo": "Thông tin cơ bản",
+    "currentPosition": "Vị trí hiện tại",
+    "name": "Họ và tên",
+    "currentRole": "Chức danh hiện tại",
+    "currentCompany": "Công ty hiện tại",
+    "currentLocation": "Địa điểm hiện tại",
+    "currentSalary": "Mức lương hiện tại",
+    "salaryCurrency": "Tiền tệ",
+    "saveChanges": "Lưu thay đổi",
+    "saving": "Đang lưu...",
+    "saveSuccess": "Đã cập nhật hồ sơ",
+    "saveFailed": "Lưu hồ sơ thất bại",
+    "logout": "Đăng xuất",
+    "rolePlaceholder": "vd: Kỹ sư cao cấp",
+    "companyPlaceholder": "vd: VNPAY",
+    "locationPlaceholder": "vd: Hà Nội, Việt Nam",
+    "salaryPlaceholder": "vd: 30000000"
   }
 }
