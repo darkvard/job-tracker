@@ -110,7 +110,7 @@ func resetSchema(db *gorm.DB) {
 			password_hash     TEXT        NOT NULL,
 			name              TEXT        NOT NULL,
 			current_location  TEXT,
-			current_role      TEXT,
+			"current_role"    TEXT,
 			current_company   TEXT,
 			current_salary    BIGINT,
 			salary_currency   TEXT        NOT NULL DEFAULT 'VND',
