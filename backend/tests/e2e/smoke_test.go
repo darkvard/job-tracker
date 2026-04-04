@@ -74,6 +74,7 @@ func TestMain(m *testing.M) {
 
 	registerUC := auth.NewRegisterUseCase(userRepo, hasher, tokens)
 	loginUC := auth.NewLoginUseCase(userRepo, hasher, tokens)
+	updateProfileUC := auth.NewUpdateProfileUseCase(userRepo)
 	jobUCs := job.NewUseCases(appRepo, txMgr)
 	jobInvalidator := cache.NewJobCacheInvalidator(rdb)
 
@@ -83,7 +84,7 @@ func TestMain(m *testing.M) {
 	analyticsUC := cachedecorator.NewAnalytics(rawAnalyticsUC, rdb, 10*time.Minute)
 
 	healthHandler := handler.NewHealth()
-	authHandler := handler.NewAuthHandler(registerUC, loginUC, userRepo)
+	authHandler := handler.NewAuthHandler(registerUC, loginUC, updateProfileUC, userRepo)
 	jobHandler := handler.NewJobHandler(jobUCs, jobInvalidator)
 	analyticsHandler := handler.NewAnalyticsHandler(dashboardUC, analyticsUC)
 	authMiddleware := middleware.NewAuth(tokens)
@@ -104,12 +105,17 @@ func resetSchema(db *gorm.DB) {
 		`DROP TABLE IF EXISTS applications CASCADE`,
 		`DROP TABLE IF EXISTS users CASCADE`,
 		`CREATE TABLE users (
-			id            BIGSERIAL   PRIMARY KEY,
-			email         TEXT        NOT NULL UNIQUE,
-			password_hash TEXT        NOT NULL,
-			name          TEXT        NOT NULL,
-			created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-			updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+			id                BIGSERIAL   PRIMARY KEY,
+			email             TEXT        NOT NULL UNIQUE,
+			password_hash     TEXT        NOT NULL,
+			name              TEXT        NOT NULL,
+			current_location  TEXT,
+			"current_role"    TEXT,
+			current_company   TEXT,
+			current_salary    BIGINT,
+			salary_currency   TEXT        NOT NULL DEFAULT 'VND',
+			created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+			updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
 		)`,
 		`CREATE TABLE applications (
 			id           BIGSERIAL   PRIMARY KEY,

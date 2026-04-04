@@ -37,10 +37,11 @@ func NewRouter(
 		r.Route("/auth", func(r chi.Router) {
 			r.Post("/register", authHandler.Register)
 			r.Post("/login", authHandler.Login)
-			// Protected auth route
+			// Protected auth routes
 			r.Group(func(r chi.Router) {
 				r.Use(authMiddleware)
 				r.Get("/me", authHandler.Me)
+				r.Put("/me", authHandler.UpdateMe)
 			})
 		})
 

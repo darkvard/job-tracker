@@ -464,6 +464,57 @@ Full flow: register → login → create job → list (filter) → update status
 
 ---
 
+## Phase 9: User Profile
+
+### [ ] PR-27 — feat(user): user profile API [backend]
+**Docs:** `docs/RULES.md` · `docs/ARCHITECTURE_BACKEND.md` · `docs/API_SPEC.md`
+
+**What:** Add profile fields (current location/role/company/salary) to users table. Implement `PUT /auth/me` to update. Extend `GET /auth/me` response.
+
+- [ ] Migration `000002`: add nullable profile columns (`current_location`, `current_role`, `current_company`, `current_salary`, `salary_currency`) to users table
+- [ ] Update `User` entity + `UserModel` with new fields
+- [ ] Add `Update()` to `UserRepository` interface + `PostgresUserRepo` implementation
+- [ ] Add `UpdateProfileRequest` DTO with `Validate()` (name non-empty, currency non-empty)
+- [ ] New `UpdateProfileUseCase` with unit test (uses `mock_user_repository`)
+- [ ] Extend `AuthHandler`: new `UpdateMe` handler, update `Me` to return full `UserInfo`
+- [ ] Router: add `r.Put("/me", authHandler.UpdateMe)` in protected auth group
+- [ ] Wire in `main.go`
+- [ ] `make mock && make swagger && make lint && make test`
+- [ ] PR + auto-merge
+
+**Test:**
+- `GET /auth/me` → returns all profile fields (nulls for unset)
+- `PUT /auth/me` `{name, currentRole, currentSalary, salaryCurrency}` → 200 with updated UserInfo
+- `PUT /auth/me` with empty name → 400 INVALID_INPUT
+- `make test` green
+
+---
+
+### [ ] PR-28 — feat(user): user profile page [frontend]
+**Docs:** `docs/ARCHITECTURE_FRONTEND.md` · `docs/UI_SPEC.md` · `.claude/skills/ui.md`
+
+**What:** Profile page at `/profile`: view + edit profile fields. Navbar avatar → dropdown (Profile / Logout).
+
+- [ ] Extend `User` interface + add `api.auth.updateProfile()` in `api.ts`
+- [ ] `AuthContext`: add `updateUser()`, fix page-refresh hydration with `useEffect`
+- [ ] New `ProfilePage.tsx`: `useQuery` + `useMutation`, 3 states, dark mode, `motion/react`
+- [ ] `Navbar.tsx`: replace logout button with user dropdown (Profile / Logout), click-outside close
+- [ ] `App.tsx`: add `/profile` route under `ProtectedLayout`
+- [ ] i18n: add `profile.*` + `nav.profile` / `nav.logout` keys to `en.json` + `vi.json`
+- [ ] Smoke test: navigate to `/profile`, edit name, save, assert toast
+- [ ] `make lint && make test-ui`
+- [ ] PR + auto-merge
+
+**Test:**
+- Click avatar → dropdown shows Profile + Logout
+- Click Profile → `/profile` page loads with current user data
+- Edit name + currentRole → Save → toast "Profile updated"
+- Refresh → data still shows (hydrated from API)
+- Switch to Vietnamese → all labels translated
+- Dark mode → renders correctly
+
+---
+
 ## Summary
 
 | Phase | PRs | Scope |
@@ -477,5 +528,6 @@ Full flow: register → login → create job → list (filter) → update status
 | 6: i18n + UX | PR-23 → PR-24 | EN/VI language support + Settings dropdown + i18n E2E tests |
 | 7: UX fixes | PR-25 | Edit mode, delete fix, dashboard navigation |
 | 8: Toast + UX polish | PR-26 | Toast system, smooth create flow, date UX |
+| 9: User Profile | PR-27 → PR-28 | Profile API (backend) + Profile UI (frontend) |
 
 **Total: 26 PRs** · each 100–400 lines · strictly ordered

@@ -77,3 +77,15 @@ func (r *PostgresUserRepo) ExistsByEmail(ctx context.Context, email string) (boo
 	}
 	return count > 0, nil
 }
+
+// Update saves all fields of an existing user and returns the updated entity.
+func (r *PostgresUserRepo) Update(ctx context.Context, user *entity.User) (*entity.User, error) {
+	m := models.FromUserEntity(user)
+	if err := r.db(ctx).Save(m).Error; err != nil {
+		if isUniqueViolation(err) {
+			return nil, domainerrors.AlreadyExists("User", "email already registered")
+		}
+		return nil, fmt.Errorf("userRepo.Update: %w", err)
+	}
+	return m.ToEntity(), nil
+}
