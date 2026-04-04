@@ -105,12 +105,17 @@ func resetSchema(db *gorm.DB) {
 		`DROP TABLE IF EXISTS applications CASCADE`,
 		`DROP TABLE IF EXISTS users CASCADE`,
 		`CREATE TABLE users (
-			id            BIGSERIAL   PRIMARY KEY,
-			email         TEXT        NOT NULL UNIQUE,
-			password_hash TEXT        NOT NULL,
-			name          TEXT        NOT NULL,
-			created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-			updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+			id                BIGSERIAL   PRIMARY KEY,
+			email             TEXT        NOT NULL UNIQUE,
+			password_hash     TEXT        NOT NULL,
+			name              TEXT        NOT NULL,
+			current_location  TEXT,
+			current_role      TEXT,
+			current_company   TEXT,
+			current_salary    BIGINT,
+			salary_currency   TEXT        NOT NULL DEFAULT 'VND',
+			created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+			updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
 		)`,
 		`CREATE TABLE applications (
 			id           BIGSERIAL   PRIMARY KEY,
