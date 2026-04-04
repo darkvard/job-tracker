@@ -140,10 +140,11 @@ export default function ProfilePage() {
             </h2>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label htmlFor="profile-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 {t('profile.name')}
               </label>
               <input
+                id="profile-name"
                 type="text"
                 required
                 value={form.name}
