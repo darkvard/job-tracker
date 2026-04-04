@@ -63,3 +63,9 @@
 **Prevention:** After async form saves, always wait for a definitive UI state change (e.g., edit mode exiting) before asserting on content. Prefer scoped locators over bare `getByText` when the same text may exist in hidden form elements.
 
 *(Add new entries below)*
+
+### 2026-04-04 — E2E resetSchema fails: `current_role` is a PostgreSQL 15 reserved keyword
+**Symptom:** E2E smoke test panics at `resetSchema()` with `ERROR: syntax error at or near "current_role" (SQLSTATE 42601)` when trying to `CREATE TABLE users (..., current_role TEXT, ...)`.
+**Root cause:** `CURRENT_ROLE` is a reserved keyword in SQL standard and PostgreSQL 15; it cannot be used as an unquoted column name in DDL statements.
+**Fix:** Quote the column name in all raw SQL: `"current_role" TEXT`. GORM automatically quotes identifiers from `gorm:"column:current_role"` tags, so no GORM changes needed.
+**Prevention:** Before naming a new column, verify it is not a PostgreSQL reserved word. Use double-quotes for any column name that could conflict with SQL keywords. Check the PostgreSQL 15 keywords table (Appendix D) when in doubt.
