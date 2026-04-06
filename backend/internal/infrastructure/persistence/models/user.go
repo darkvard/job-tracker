@@ -54,5 +54,7 @@ func FromUserEntity(u *entity.User) *UserModel {
 		CurrentCompany:  u.CurrentCompany,
 		CurrentSalary:   u.CurrentSalary,
 		SalaryCurrency:  u.SalaryCurrency,
+		CreatedAt:       u.CreatedAt,
+		UpdatedAt:       u.UpdatedAt,
 	}
 }
