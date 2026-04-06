@@ -64,6 +64,17 @@
 
 *(Add new entries below)*
 
+### 2026-04-06 — Profile update fails: migration not applied + `created_at` overwritten to zero
+**Symptom 1:** `PUT /auth/me` always returns "Failed to save profile" (500 from DB error).
+**Root cause 1:** Migration `000002_add_user_profile_fields` was never applied in the dev environment. The profile columns (`current_location`, `current_role`, etc.) didn't exist in the `users` table.
+**Fix 1:** Run `make migrate-up` after pulling a branch that adds a new migration.
+**Prevention:** Always run `make migrate-up` when checking out code that contains a new migration file.
+
+**Symptom 2:** After update succeeds, `createdAt` in response and DB is `0001-01-01T00:00:00Z`.
+**Root cause 2:** `FromUserEntity` omitted `CreatedAt`/`UpdatedAt`. GORM's `db.Save()` updates ALL columns, so it wrote zero to `created_at` in the DB.
+**Fix 2:** Include `CreatedAt` and `UpdatedAt` in `FromUserEntity`. Also re-fetch via `FindByID` after `Save` so the response always has DB-accurate values.
+**Prevention:** `FromUserEntity` (and any entity→model conversion used with `db.Save`) must include ALL time fields so GORM doesn't overwrite them with zero.
+
 ### 2026-04-04 — E2E resetSchema fails: `current_role` is a PostgreSQL 15 reserved keyword
 **Symptom:** E2E smoke test panics at `resetSchema()` with `ERROR: syntax error at or near "current_role" (SQLSTATE 42601)` when trying to `CREATE TABLE users (..., current_role TEXT, ...)`.
 **Root cause:** `CURRENT_ROLE` is a reserved keyword in SQL standard and PostgreSQL 15; it cannot be used as an unquoted column name in DDL statements.
