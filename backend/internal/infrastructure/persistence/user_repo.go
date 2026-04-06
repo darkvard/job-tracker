@@ -87,5 +87,6 @@ func (r *PostgresUserRepo) Update(ctx context.Context, user *entity.User) (*enti
 		}
 		return nil, fmt.Errorf("userRepo.Update: %w", err)
 	}
-	return m.ToEntity(), nil
+	// Re-fetch to get all DB-populated fields (e.g. created_at) correctly.
+	return r.FindByID(ctx, user.ID)
 }
