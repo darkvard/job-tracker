@@ -2,13 +2,14 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion } from 'motion/react'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, ChevronDown, ChevronUp } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
 import { useToast } from '@/contexts/ToastContext'
 
 const SOURCES = ['LinkedIn', 'Company Site', 'Referral', 'Indeed', 'Glassdoor', 'Other']
 const STATUSES = ['Applied', 'Interview', 'Offer', 'Rejected']
+const WORK_TYPES = ['Onsite', 'Hybrid', 'Remote']
 
 const today = new Date().toISOString().split('T')[0]
 
@@ -20,6 +21,17 @@ interface FormData {
   source: string
   status: string
   notes: string
+  // Extended optional fields
+  salary: string
+  bhxhPct: string
+  bhytPct: string
+  lunchAllowance: string
+  bonusAnnual: string
+  noSaturday: boolean
+  noForcedOt: boolean
+  commuteAddress: string
+  workType: string
+  interviewDate: string
 }
 
 const inputClass =
@@ -43,6 +55,7 @@ export default function AddApplicationForm() {
   const { t } = useTranslation()
   const toast = useToast()
   const [step, setStep] = useState(1)
+  const [showBenefits, setShowBenefits] = useState(false)
   const [form, setForm] = useState<FormData>({
     company: '',
     role: '',
@@ -51,6 +64,16 @@ export default function AddApplicationForm() {
     source: 'LinkedIn',
     status: 'Applied',
     notes: '',
+    salary: '',
+    bhxhPct: '',
+    bhytPct: '',
+    lunchAllowance: '',
+    bonusAnnual: '',
+    noSaturday: false,
+    noForcedOt: false,
+    commuteAddress: '',
+    workType: 'Onsite',
+    interviewDate: '',
   })
 
   const mutation = useMutation({
@@ -63,6 +86,16 @@ export default function AddApplicationForm() {
         source: form.source,
         status: form.status,
         notes: form.notes || undefined,
+        salary: form.salary ? parseInt(form.salary) : undefined,
+        bhxhPct: form.bhxhPct ? parseFloat(form.bhxhPct) : undefined,
+        bhytPct: form.bhytPct ? parseFloat(form.bhytPct) : undefined,
+        lunchAllowance: form.lunchAllowance ? parseInt(form.lunchAllowance) : undefined,
+        bonusAnnual: form.bonusAnnual ? parseInt(form.bonusAnnual) : undefined,
+        noSaturday: form.noSaturday,
+        noForcedOt: form.noForcedOt,
+        commuteAddress: form.commuteAddress || undefined,
+        workType: form.workType as 'Remote' | 'Hybrid' | 'Onsite',
+        interviewDate: form.interviewDate || undefined,
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['jobs'] })
@@ -78,7 +111,7 @@ export default function AddApplicationForm() {
     },
   })
 
-  function set(field: keyof FormData, value: string) {
+  function set(field: keyof FormData, value: string | boolean) {
     setForm((prev) => ({ ...prev, [field]: value }))
   }
 
@@ -230,6 +263,134 @@ export default function AddApplicationForm() {
                   <option key={s} value={s}>{t(`status.${s.toLowerCase()}`)}</option>
                 ))}
               </select>
+            </div>
+            <div>
+              <label className={labelClass}>{t('jobs.workType')}</label>
+              <select
+                value={form.workType}
+                onChange={(e) => set('workType', e.target.value)}
+                className={inputClass}
+              >
+                {WORK_TYPES.map((w) => (
+                  <option key={w} value={w}>{w}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Offer & Benefits — collapsible */}
+            <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setShowBenefits((v) => !v)}
+                className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              >
+                <span>{t('jobs.offerBenefits')} <span className="text-gray-400 font-normal">({t('common.optional')})</span></span>
+                {showBenefits ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </button>
+              {showBenefits && (
+                <div className="p-4 space-y-4 bg-white dark:bg-gray-800">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className={labelClass}>{t('jobs.salary')} (VND)</label>
+                      <input
+                        type="number"
+                        placeholder="e.g. 20000000"
+                        value={form.salary}
+                        onChange={(e) => set('salary', e.target.value)}
+                        className={inputClass}
+                        min="0"
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>{t('jobs.lunchAllowance')} (VND)</label>
+                      <input
+                        type="number"
+                        placeholder="e.g. 800000"
+                        value={form.lunchAllowance}
+                        onChange={(e) => set('lunchAllowance', e.target.value)}
+                        className={inputClass}
+                        min="0"
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>{t('jobs.bhxh')} (%)</label>
+                      <input
+                        type="number"
+                        placeholder="e.g. 17.5"
+                        value={form.bhxhPct}
+                        onChange={(e) => set('bhxhPct', e.target.value)}
+                        className={inputClass}
+                        min="0"
+                        max="100"
+                        step="0.5"
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>{t('jobs.bhyt')} (%)</label>
+                      <input
+                        type="number"
+                        placeholder="e.g. 3"
+                        value={form.bhytPct}
+                        onChange={(e) => set('bhytPct', e.target.value)}
+                        className={inputClass}
+                        min="0"
+                        max="100"
+                        step="0.5"
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>{t('jobs.bonus')} (VND/năm)</label>
+                      <input
+                        type="number"
+                        placeholder="e.g. 40000000"
+                        value={form.bonusAnnual}
+                        onChange={(e) => set('bonusAnnual', e.target.value)}
+                        className={inputClass}
+                        min="0"
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>{t('jobs.interviewDate')}</label>
+                      <input
+                        type="date"
+                        value={form.interviewDate}
+                        onChange={(e) => set('interviewDate', e.target.value)}
+                        className={inputClass}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className={labelClass}>{t('jobs.commuteAddress')}</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Quận 7, TP.HCM"
+                      value={form.commuteAddress}
+                      onChange={(e) => set('commuteAddress', e.target.value)}
+                      className={inputClass}
+                    />
+                  </div>
+                  <div className="flex gap-6">
+                    <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={form.noSaturday}
+                        onChange={(e) => set('noSaturday', e.target.checked)}
+                        className="w-4 h-4 text-indigo-600 rounded"
+                      />
+                      {t('jobs.noSaturday')}
+                    </label>
+                    <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={form.noForcedOt}
+                        onChange={(e) => set('noForcedOt', e.target.checked)}
+                        className="w-4 h-4 text-indigo-600 rounded"
+                      />
+                      {t('jobs.noForcedOt')}
+                    </label>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

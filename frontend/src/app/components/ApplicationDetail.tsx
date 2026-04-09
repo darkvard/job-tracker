@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion } from 'motion/react'
-import { ChevronLeft, MapPin, Calendar, ExternalLink, Pencil } from 'lucide-react'
+import { ChevronLeft, MapPin, Calendar, ExternalLink, Pencil, Check, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
 import StatusBadge from '@/components/StatusBadge'
@@ -27,6 +27,7 @@ const VALID_TRANSITIONS: Record<string, string[]> = {
 }
 
 const SOURCES = ['LinkedIn', 'Company Site', 'Referral', 'Indeed', 'Glassdoor', 'Other']
+const WORK_TYPES = ['Onsite', 'Hybrid', 'Remote']
 
 const inputClass =
   'w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-indigo-400 dark:border-indigo-500 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm'
@@ -68,6 +69,17 @@ interface EditForm {
   dateApplied: string
   notes: string
   status: string
+  // Extended fields
+  salary: string
+  bhxhPct: string
+  bhytPct: string
+  lunchAllowance: string
+  bonusAnnual: string
+  noSaturday: boolean
+  noForcedOt: boolean
+  commuteAddress: string
+  workType: string
+  interviewDate: string
 }
 
 export default function ApplicationDetail() {
@@ -87,6 +99,16 @@ export default function ApplicationDetail() {
     dateApplied: '',
     notes: '',
     status: '',
+    salary: '',
+    bhxhPct: '',
+    bhytPct: '',
+    lunchAllowance: '',
+    bonusAnnual: '',
+    noSaturday: false,
+    noForcedOt: false,
+    commuteAddress: '',
+    workType: 'Onsite',
+    interviewDate: '',
   })
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['job', id],
@@ -110,6 +132,16 @@ export default function ApplicationDetail() {
         dateApplied: editForm.dateApplied,
         notes: editForm.notes || undefined,
         status: editForm.status,
+        salary: editForm.salary ? parseInt(editForm.salary) : undefined,
+        bhxhPct: editForm.bhxhPct ? parseFloat(editForm.bhxhPct) : undefined,
+        bhytPct: editForm.bhytPct ? parseFloat(editForm.bhytPct) : undefined,
+        lunchAllowance: editForm.lunchAllowance ? parseInt(editForm.lunchAllowance) : undefined,
+        bonusAnnual: editForm.bonusAnnual ? parseInt(editForm.bonusAnnual) : undefined,
+        noSaturday: editForm.noSaturday,
+        noForcedOt: editForm.noForcedOt,
+        commuteAddress: editForm.commuteAddress || undefined,
+        workType: (editForm.workType || 'Onsite') as 'Remote' | 'Hybrid' | 'Onsite',
+        interviewDate: editForm.interviewDate || undefined,
       })
     },
     onSuccess: () => {
@@ -165,10 +197,19 @@ export default function ApplicationDetail() {
       role: job!.role,
       location: job!.location || '',
       source: job!.source,
-      // Normalize to YYYY-MM-DD for <input type="date">
       dateApplied: job!.dateApplied ? job!.dateApplied.split('T')[0] : '',
       notes: job!.notes || '',
       status: job!.status,
+      salary: job!.salary != null ? String(job!.salary) : '',
+      bhxhPct: job!.bhxhPct != null ? String(job!.bhxhPct) : '',
+      bhytPct: job!.bhytPct != null ? String(job!.bhytPct) : '',
+      lunchAllowance: job!.lunchAllowance != null ? String(job!.lunchAllowance) : '',
+      bonusAnnual: job!.bonusAnnual != null ? String(job!.bonusAnnual) : '',
+      noSaturday: job!.noSaturday ?? false,
+      noForcedOt: job!.noForcedOt ?? false,
+      commuteAddress: job!.commuteAddress || '',
+      workType: job!.workType || 'Onsite',
+      interviewDate: job!.interviewDate || '',
     })
     setIsEditing(true)
   }
@@ -177,7 +218,7 @@ export default function ApplicationDetail() {
     setIsEditing(false)
   }
 
-  function setField(field: keyof EditForm, value: string) {
+  function setField(field: keyof EditForm, value: string | boolean) {
     setEditForm((prev) => ({ ...prev, [field]: value }))
   }
 
@@ -215,6 +256,23 @@ export default function ApplicationDetail() {
       year: 'numeric',
     })
   }
+
+  function formatVND(val: number | null | undefined) {
+    if (val == null) return '—'
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val)
+  }
+
+  const hasAnyBenefitData =
+    job.salary != null ||
+    job.bhxhPct != null ||
+    job.bhytPct != null ||
+    job.lunchAllowance != null ||
+    job.bonusAnnual != null ||
+    job.noSaturday ||
+    job.noForcedOt ||
+    job.commuteAddress ||
+    (job.workType && job.workType !== 'Onsite') ||
+    job.interviewDate
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -435,6 +493,139 @@ export default function ApplicationDetail() {
           <p className="text-gray-400 dark:text-gray-600 text-sm italic">{t('detail.noNotes')}</p>
         )}
       </motion.div>
+
+      {/* Offer & Benefits card */}
+      {!isEditing && hasAnyBenefitData && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+          className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 mb-6"
+        >
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('jobs.offerBenefits')}</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
+            {job.salary != null && (
+              <div>
+                <p className="text-xs text-gray-500 dark:text-gray-500 mb-0.5">{t('jobs.salary')}</p>
+                <p className="font-medium text-gray-900 dark:text-white">{formatVND(job.salary)}</p>
+              </div>
+            )}
+            {job.lunchAllowance != null && (
+              <div>
+                <p className="text-xs text-gray-500 dark:text-gray-500 mb-0.5">{t('jobs.lunchAllowance')}</p>
+                <p className="font-medium text-gray-900 dark:text-white">{formatVND(job.lunchAllowance)}</p>
+              </div>
+            )}
+            {job.bonusAnnual != null && (
+              <div>
+                <p className="text-xs text-gray-500 dark:text-gray-500 mb-0.5">{t('jobs.bonus')}</p>
+                <p className="font-medium text-gray-900 dark:text-white">{formatVND(job.bonusAnnual)}</p>
+              </div>
+            )}
+            {job.bhxhPct != null && (
+              <div>
+                <p className="text-xs text-gray-500 dark:text-gray-500 mb-0.5">{t('jobs.bhxh')}</p>
+                <p className="font-medium text-gray-900 dark:text-white">{job.bhxhPct}%</p>
+              </div>
+            )}
+            {job.bhytPct != null && (
+              <div>
+                <p className="text-xs text-gray-500 dark:text-gray-500 mb-0.5">{t('jobs.bhyt')}</p>
+                <p className="font-medium text-gray-900 dark:text-white">{job.bhytPct}%</p>
+              </div>
+            )}
+            {job.workType && (
+              <div>
+                <p className="text-xs text-gray-500 dark:text-gray-500 mb-0.5">{t('jobs.workType')}</p>
+                <p className="font-medium text-gray-900 dark:text-white">{job.workType}</p>
+              </div>
+            )}
+            {job.commuteAddress && (
+              <div className="col-span-2">
+                <p className="text-xs text-gray-500 dark:text-gray-500 mb-0.5">{t('jobs.commuteAddress')}</p>
+                <p className="font-medium text-gray-900 dark:text-white">{job.commuteAddress}</p>
+              </div>
+            )}
+            {job.interviewDate && (
+              <div>
+                <p className="text-xs text-gray-500 dark:text-gray-500 mb-0.5">{t('jobs.interviewDate')}</p>
+                <p className="font-medium text-orange-600 dark:text-orange-400">{formatDate(job.interviewDate)}</p>
+              </div>
+            )}
+          </div>
+          {/* Boolean flags */}
+          <div className="flex gap-4 mt-4">
+            <div className={`flex items-center gap-1.5 text-sm ${job.noSaturday ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`}>
+              {job.noSaturday ? <Check className="w-4 h-4" /> : <X className="w-4 h-4" />}
+              {t('jobs.noSaturday')}
+            </div>
+            <div className={`flex items-center gap-1.5 text-sm ${job.noForcedOt ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`}>
+              {job.noForcedOt ? <Check className="w-4 h-4" /> : <X className="w-4 h-4" />}
+              {t('jobs.noForcedOt')}
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Offer & Benefits edit section */}
+      {isEditing && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+          className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 mb-6"
+        >
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            {t('jobs.offerBenefits')} <span className="text-sm font-normal text-gray-400">({t('common.optional')})</span>
+          </h2>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{t('jobs.salary')} (VND)</label>
+              <input type="number" value={editForm.salary} onChange={(e) => setField('salary', e.target.value)} placeholder="20000000" min="0" className={inputClass} />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{t('jobs.lunchAllowance')} (VND)</label>
+              <input type="number" value={editForm.lunchAllowance} onChange={(e) => setField('lunchAllowance', e.target.value)} placeholder="800000" min="0" className={inputClass} />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{t('jobs.bhxh')} (%)</label>
+              <input type="number" value={editForm.bhxhPct} onChange={(e) => setField('bhxhPct', e.target.value)} placeholder="17.5" min="0" max="100" step="0.5" className={inputClass} />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{t('jobs.bhyt')} (%)</label>
+              <input type="number" value={editForm.bhytPct} onChange={(e) => setField('bhytPct', e.target.value)} placeholder="3" min="0" max="100" step="0.5" className={inputClass} />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{t('jobs.bonus')} (VND)</label>
+              <input type="number" value={editForm.bonusAnnual} onChange={(e) => setField('bonusAnnual', e.target.value)} placeholder="40000000" min="0" className={inputClass} />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{t('jobs.interviewDate')}</label>
+              <input type="date" value={editForm.interviewDate} onChange={(e) => setField('interviewDate', e.target.value)} className={inputClass} />
+            </div>
+            <div className="col-span-2">
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{t('jobs.workType')}</label>
+              <select value={editForm.workType} onChange={(e) => setField('workType', e.target.value)} className={inputClass}>
+                {WORK_TYPES.map((w) => <option key={w} value={w}>{w}</option>)}
+              </select>
+            </div>
+            <div className="col-span-2">
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{t('jobs.commuteAddress')}</label>
+              <input type="text" value={editForm.commuteAddress} onChange={(e) => setField('commuteAddress', e.target.value)} placeholder="e.g. Quận 7, TP.HCM" className={inputClass} />
+            </div>
+          </div>
+          <div className="flex gap-6 mt-3">
+            <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+              <input type="checkbox" checked={editForm.noSaturday} onChange={(e) => setField('noSaturday', e.target.checked)} className="w-4 h-4 text-indigo-600 rounded" />
+              {t('jobs.noSaturday')}
+            </label>
+            <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+              <input type="checkbox" checked={editForm.noForcedOt} onChange={(e) => setField('noForcedOt', e.target.checked)} className="w-4 h-4 text-indigo-600 rounded" />
+              {t('jobs.noForcedOt')}
+            </label>
+          </div>
+        </motion.div>
+      )}
 
       {/* Action buttons */}
       {isEditing ? (

@@ -83,7 +83,18 @@
     "notesPlaceholder": "Ghi chú về đơn ứng tuyển này...",
     "successTitle": "Đã thêm đơn ứng tuyển!",
     "successSubtitle": "Đơn ứng tuyển của bạn đã được lưu thành công",
-    "somethingWentWrong": "Có lỗi xảy ra. Vui lòng thử lại."
+    "somethingWentWrong": "Có lỗi xảy ra. Vui lòng thử lại.",
+    "offerBenefits": "Đãi ngộ & Phúc lợi",
+    "salary": "Lương",
+    "bhxh": "Bảo hiểm xã hội (BHXH)",
+    "bhyt": "Bảo hiểm y tế (BHYT)",
+    "lunchAllowance": "Trợ cấp ăn trưa",
+    "bonus": "Thưởng hàng năm",
+    "noSaturday": "Không làm thứ 7",
+    "noForcedOt": "Không OT bắt buộc",
+    "commuteAddress": "Địa chỉ làm việc",
+    "workType": "Hình thức làm việc",
+    "interviewDate": "Ngày phỏng vấn"
   },
   "detail": {
     "backToApplications": "Quay lại danh sách",
@@ -136,6 +147,7 @@
     "submit": "Gửi",
     "submitting": "Đang gửi...",
     "today": "Hôm nay",
+    "optional": "tùy chọn",
     "trendFromLastMonth": "{{sign}}{{value}}% so với tháng trước",
     "namePlaceholder": "Nguyễn Văn A"
   },

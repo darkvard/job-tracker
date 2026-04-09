@@ -515,6 +515,19 @@ Full flow: register → login → create job → list (filter) → update status
 
 ---
 
+## Phase 10: Real-World UX Improvements
+
+- [ ] PR-29: Extended application fields (salary, benefits, interview_date) — DB + BE + FE
+- [ ] PR-30: Kanban view with @dnd-kit drag-and-drop
+- [ ] PR-31: Calendar view with date-fns month grid
+- [ ] PR-32: Job comparison — backend scoring API
+- [ ] PR-33: Job comparison — frontend compare page
+- [ ] PR-34: Notification system — domain + backend API
+- [ ] PR-35: Notification bell UI + dashboard deadline section
+- [ ] PR-36: Polish — i18n keys, Swagger annotations, E2E tests
+
+---
+
 ## Summary
 
 | Phase | PRs | Scope |
@@ -529,5 +542,6 @@ Full flow: register → login → create job → list (filter) → update status
 | 7: UX fixes | PR-25 | Edit mode, delete fix, dashboard navigation |
 | 8: Toast + UX polish | PR-26 | Toast system, smooth create flow, date UX |
 | 9: User Profile | PR-27 → PR-28 | Profile API (backend) + Profile UI (frontend) |
+| 10: Real-World UX | PR-29 → PR-36 | Extended fields, Kanban, Calendar, Comparison, Notifications |
 
-**Total: 26 PRs** · each 100–400 lines · strictly ordered
+**Total: 36 PRs** · each 100–400 lines · strictly ordered

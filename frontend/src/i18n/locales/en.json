@@ -83,7 +83,18 @@
     "notesPlaceholder": "Any notes about this application...",
     "successTitle": "Application Added!",
     "successSubtitle": "Your application has been successfully saved",
-    "somethingWentWrong": "Something went wrong. Please try again."
+    "somethingWentWrong": "Something went wrong. Please try again.",
+    "offerBenefits": "Offer & Benefits",
+    "salary": "Salary",
+    "bhxh": "Social Insurance (BHXH)",
+    "bhyt": "Health Insurance (BHYT)",
+    "lunchAllowance": "Lunch Allowance",
+    "bonus": "Annual Bonus",
+    "noSaturday": "No Saturday work",
+    "noForcedOt": "No forced OT",
+    "commuteAddress": "Work Location",
+    "workType": "Work Type",
+    "interviewDate": "Interview Date"
   },
   "detail": {
     "backToApplications": "Back to Applications",
@@ -136,6 +147,7 @@
     "submit": "Submit",
     "submitting": "Submitting...",
     "today": "Today",
+    "optional": "optional",
     "trendFromLastMonth": "{{sign}}{{value}}% from last month",
     "namePlaceholder": "John Doe"
   },

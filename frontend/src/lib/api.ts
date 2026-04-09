@@ -46,6 +46,18 @@ export interface Job {
   statusHistory?: StatusHistory[]
   createdAt: string
   updatedAt: string
+
+  // Extended optional fields
+  salary?: number | null
+  bhxhPct?: number | null
+  bhytPct?: number | null
+  lunchAllowance?: number | null
+  bonusAnnual?: number | null
+  noSaturday?: boolean
+  noForcedOt?: boolean
+  commuteAddress?: string
+  workType?: 'Remote' | 'Hybrid' | 'Onsite'
+  interviewDate?: string | null
 }
 
 export interface StatusHistory {
