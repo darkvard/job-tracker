@@ -19,6 +19,18 @@ type CreateRequest struct {
 	Location    string
 	Source      string
 	Notes       string
+
+	// Extended optional fields
+	Salary         *int64
+	BHXHPct        *float64
+	BHYTPct        *float64
+	LunchAllowance *int64
+	BonusAnnual    *int64
+	NoSaturday     bool
+	NoForcedOT     bool
+	CommuteAddress string
+	WorkType       string
+	InterviewDate  string // YYYY-MM-DD, optional
 }
 
 // Validate checks required fields and formats.
@@ -41,6 +53,14 @@ func (r CreateRequest) Validate() error {
 	if !valueobject.Source(r.Source).IsValid() {
 		return domainerrors.InvalidInput("CreateRequest", "invalid source: "+r.Source)
 	}
+	if r.WorkType != "" && !valueobject.WorkType(r.WorkType).IsValid() {
+		return domainerrors.InvalidInput("CreateRequest", "invalid workType: "+r.WorkType)
+	}
+	if r.InterviewDate != "" {
+		if _, err := time.Parse("2006-01-02", r.InterviewDate); err != nil {
+			return domainerrors.InvalidInput("CreateRequest", "interviewDate must be YYYY-MM-DD")
+		}
+	}
 	return nil
 }
 
@@ -59,6 +79,19 @@ func (r CreateRequest) ToEntity() (*entity.Application, error) {
 	}
 	app.Location = r.Location
 	app.Notes = r.Notes
+	app.Salary = r.Salary
+	app.BHXHPct = r.BHXHPct
+	app.BHYTPct = r.BHYTPct
+	app.LunchAllowance = r.LunchAllowance
+	app.BonusAnnual = r.BonusAnnual
+	app.NoSaturday = r.NoSaturday
+	app.NoForcedOT = r.NoForcedOT
+	app.CommuteAddress = r.CommuteAddress
+	app.WorkType = valueobject.WorkType(r.WorkType)
+	if r.InterviewDate != "" {
+		t, _ := time.Parse("2006-01-02", r.InterviewDate)
+		app.InterviewDate = &t
+	}
 	return app, nil
 }
 
@@ -73,6 +106,18 @@ type UpdateRequest struct {
 	Location    string
 	Source      string
 	Notes       string
+
+	// Extended optional fields
+	Salary         *int64
+	BHXHPct        *float64
+	BHYTPct        *float64
+	LunchAllowance *int64
+	BonusAnnual    *int64
+	NoSaturday     bool
+	NoForcedOT     bool
+	CommuteAddress string
+	WorkType       string
+	InterviewDate  string // YYYY-MM-DD, optional
 }
 
 // Validate checks required fields and formats.
@@ -94,6 +139,14 @@ func (r UpdateRequest) Validate() error {
 	}
 	if !valueobject.Source(r.Source).IsValid() {
 		return domainerrors.InvalidInput("UpdateRequest", "invalid source: "+r.Source)
+	}
+	if r.WorkType != "" && !valueobject.WorkType(r.WorkType).IsValid() {
+		return domainerrors.InvalidInput("UpdateRequest", "invalid workType: "+r.WorkType)
+	}
+	if r.InterviewDate != "" {
+		if _, err := time.Parse("2006-01-02", r.InterviewDate); err != nil {
+			return domainerrors.InvalidInput("UpdateRequest", "interviewDate must be YYYY-MM-DD")
+		}
 	}
 	return nil
 }
@@ -167,22 +220,50 @@ type JobResponse struct {
 	StatusHistory []StatusHistoryItem `json:"statusHistory,omitempty"`
 	CreatedAt     string              `json:"createdAt"`
 	UpdatedAt     string              `json:"updatedAt"`
+
+	// Extended optional fields
+	Salary         *int64   `json:"salary,omitempty"`
+	BHXHPct        *float64 `json:"bhxhPct,omitempty"`
+	BHYTPct        *float64 `json:"bhytPct,omitempty"`
+	LunchAllowance *int64   `json:"lunchAllowance,omitempty"`
+	BonusAnnual    *int64   `json:"bonusAnnual,omitempty"`
+	NoSaturday     bool     `json:"noSaturday"`
+	NoForcedOT     bool     `json:"noForcedOt"`
+	CommuteAddress string   `json:"commuteAddress"`
+	WorkType       string   `json:"workType"`
+	InterviewDate  *string  `json:"interviewDate,omitempty"`
 }
 
 // FromEntity maps an Application entity to a JobResponse DTO.
 func FromEntity(app *entity.Application) *JobResponse {
 	resp := &JobResponse{
-		ID:          app.ID,
-		UserID:      app.UserID,
-		Company:     app.Company,
-		Role:        app.Role,
-		Status:      app.Status.String(),
-		DateApplied: app.DateApplied.Format("2006-01-02"),
-		Location:    app.Location,
-		Source:      app.Source.String(),
-		Notes:       app.Notes,
-		CreatedAt:   app.CreatedAt.Format(time.RFC3339),
-		UpdatedAt:   app.UpdatedAt.Format(time.RFC3339),
+		ID:             app.ID,
+		UserID:         app.UserID,
+		Company:        app.Company,
+		Role:           app.Role,
+		Status:         app.Status.String(),
+		DateApplied:    app.DateApplied.Format("2006-01-02"),
+		Location:       app.Location,
+		Source:         app.Source.String(),
+		Notes:          app.Notes,
+		CreatedAt:      app.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:      app.UpdatedAt.Format(time.RFC3339),
+		Salary:         app.Salary,
+		BHXHPct:        app.BHXHPct,
+		BHYTPct:        app.BHYTPct,
+		LunchAllowance: app.LunchAllowance,
+		BonusAnnual:    app.BonusAnnual,
+		NoSaturday:     app.NoSaturday,
+		NoForcedOT:     app.NoForcedOT,
+		CommuteAddress: app.CommuteAddress,
+		WorkType:       app.WorkType.String(),
+	}
+	if app.WorkType == "" {
+		resp.WorkType = "Onsite"
+	}
+	if app.InterviewDate != nil {
+		s := app.InterviewDate.Format("2006-01-02")
+		resp.InterviewDate = &s
 	}
 	if len(app.StatusHistory) > 0 {
 		resp.StatusHistory = make([]StatusHistoryItem, len(app.StatusHistory))

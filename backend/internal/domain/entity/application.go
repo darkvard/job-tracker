@@ -22,6 +22,18 @@ type Application struct {
 	StatusHistory  []StatusHistoryEntry
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
+
+	// Extended fields — all optional (pointers for nullable DB columns)
+	Salary         *int64
+	BHXHPct        *float64
+	BHYTPct        *float64
+	LunchAllowance *int64
+	BonusAnnual    *int64
+	NoSaturday     bool
+	NoForcedOT     bool
+	CommuteAddress string
+	WorkType       valueobject.WorkType
+	InterviewDate  *time.Time
 }
 
 // NewApplication constructs a validated Application entity.

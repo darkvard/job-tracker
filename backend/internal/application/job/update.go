@@ -42,6 +42,21 @@ func (uc *UpdateUseCase) Execute(ctx context.Context, req UpdateRequest) (*JobRe
 	app.Location = req.Location
 	app.Source = valueobject.Source(req.Source)
 	app.Notes = req.Notes
+	app.Salary = req.Salary
+	app.BHXHPct = req.BHXHPct
+	app.BHYTPct = req.BHYTPct
+	app.LunchAllowance = req.LunchAllowance
+	app.BonusAnnual = req.BonusAnnual
+	app.NoSaturday = req.NoSaturday
+	app.NoForcedOT = req.NoForcedOT
+	app.CommuteAddress = req.CommuteAddress
+	app.WorkType = valueobject.WorkType(req.WorkType)
+	if req.InterviewDate != "" {
+		t, _ := time.Parse("2006-01-02", req.InterviewDate)
+		app.InterviewDate = &t
+	} else {
+		app.InterviewDate = nil
+	}
 
 	if err := uc.repo.UpdateWithHistory(ctx, app, ""); err != nil {
 		return nil, err
