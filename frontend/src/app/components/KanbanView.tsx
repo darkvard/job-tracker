@@ -15,6 +15,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Trash2 } from 'lucide-react'
 import { api, type Job } from '@/lib/api'
+import StatusBadge from '@/components/StatusBadge'
 import { useToast } from '@/contexts/ToastContext'
 import {
   AlertDialog,
@@ -116,6 +117,7 @@ function DraggableCard({ job, isDragging, onDelete }: DraggableCardProps) {
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{job.role}</p>
           </div>
+          <StatusBadge status={job.status} size="icon" />
         </div>
 
         {/* Footer: location + source + date + delete */}

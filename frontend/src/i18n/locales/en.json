@@ -55,6 +55,8 @@
     "subtitle": "Manage and track all your job applications",
     "searchPlaceholder": "Search company or role...",
     "filterAll": "All",
+    "filterUpcoming": "Upcoming",
+    "today": "Today",
     "location": "Location",
     "source": "Source",
     "applied": "Applied",
