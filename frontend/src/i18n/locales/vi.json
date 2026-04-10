@@ -156,6 +156,13 @@
     "saveSuccess": "Đã lưu thay đổi",
     "deleteSuccess": "Đã xóa đơn ứng tuyển"
   },
+  "kanban": {
+    "listView": "Dạng danh sách",
+    "kanbanView": "Dạng Kanban",
+    "dropHere": "Thả thẻ vào đây",
+    "moveHere": "Chuyển vào đây",
+    "statusUpdated": "Đã cập nhật trạng thái"
+  },
   "profile": {
     "title": "Hồ sơ",
     "subtitle": "Quản lý thông tin cá nhân",

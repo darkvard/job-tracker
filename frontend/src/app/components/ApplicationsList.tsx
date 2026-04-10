@@ -2,11 +2,12 @@ import { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion } from 'motion/react'
-import { Search, Briefcase, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react'
+import { Search, Briefcase, ChevronLeft, ChevronRight, Trash2, LayoutGrid, List } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { api, type Job, type JobFilters } from '@/lib/api'
 import StatusBadge from '@/components/StatusBadge'
 import { useToast } from '@/contexts/ToastContext'
+import KanbanView from '@/app/components/KanbanView'
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -22,6 +23,7 @@ import {
 // Status filter values stay in English (API contract)
 const STATUS_FILTER_VALUES = ['All', 'Applied', 'Interview', 'Offer', 'Rejected']
 const PAGE_SIZE = 12
+const KANBAN_PAGE_SIZE = 999
 
 function ApplicationCardSkeleton() {
   return (
@@ -128,6 +130,7 @@ export default function ApplicationsList() {
   const [searchInput, setSearchInput] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [page, setPage] = useState(1)
+  const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list')
 
   // Debounce search 300ms
   useEffect(() => {
@@ -145,9 +148,10 @@ export default function ApplicationsList() {
   }, [])
 
   const filters: JobFilters = {
-    page,
-    page_size: PAGE_SIZE,
-    ...(statusFilter !== 'All' && { status: statusFilter }),
+    page: viewMode === 'kanban' ? 1 : page,
+    page_size: viewMode === 'kanban' ? KANBAN_PAGE_SIZE : PAGE_SIZE,
+    // Status filter only applies in list mode (kanban columns cover all statuses)
+    ...(viewMode === 'list' && statusFilter !== 'All' && { status: statusFilter }),
     ...(debouncedSearch && { search: debouncedSearch }),
   }
 
@@ -184,9 +188,39 @@ export default function ApplicationsList() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-semibold text-gray-900 dark:text-white">{t('jobs.title')}</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-1">{t('jobs.subtitle')}</p>
+      <div className="flex items-start justify-between mb-6">
+        <div>
+          <h1 className="text-3xl font-semibold text-gray-900 dark:text-white">{t('jobs.title')}</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">{t('jobs.subtitle')}</p>
+        </div>
+
+        {/* View mode toggle */}
+        <div className="flex items-center gap-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-1 flex-shrink-0">
+          <button
+            onClick={() => setViewMode('list')}
+            title={t('kanban.listView')}
+            aria-label={t('kanban.listView')}
+            className={`p-2 rounded-md transition-colors ${
+              viewMode === 'list'
+                ? 'bg-indigo-600 text-white'
+                : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+            }`}
+          >
+            <List className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setViewMode('kanban')}
+            title={t('kanban.kanbanView')}
+            aria-label={t('kanban.kanbanView')}
+            className={`p-2 rounded-md transition-colors ${
+              viewMode === 'kanban'
+                ? 'bg-indigo-600 text-white'
+                : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+            }`}
+          >
+            <LayoutGrid className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -203,26 +237,30 @@ export default function ApplicationsList() {
           />
         </div>
 
-        {/* Status pills */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 flex-shrink-0">
-          {STATUS_FILTER_VALUES.map((status) => (
-            <button
-              key={status}
-              onClick={() => handleStatusFilter(status)}
-              className={
-                statusFilter === status
-                  ? 'px-4 py-2 rounded-lg text-sm font-medium bg-indigo-600 text-white whitespace-nowrap'
-                  : 'px-4 py-2 rounded-lg text-sm font-medium bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 whitespace-nowrap transition-colors'
-              }
-            >
-              {getFilterLabel(status)}
-            </button>
-          ))}
-        </div>
+        {/* Status pills — only shown in list mode */}
+        {viewMode === 'list' && (
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 flex-shrink-0">
+            {STATUS_FILTER_VALUES.map((status) => (
+              <button
+                key={status}
+                onClick={() => handleStatusFilter(status)}
+                className={
+                  statusFilter === status
+                    ? 'px-4 py-2 rounded-lg text-sm font-medium bg-indigo-600 text-white whitespace-nowrap'
+                    : 'px-4 py-2 rounded-lg text-sm font-medium bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 whitespace-nowrap transition-colors'
+                }
+              >
+                {getFilterLabel(status)}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Content */}
-      {isLoading ? (
+      {viewMode === 'kanban' && !isLoading && !error ? (
+        <KanbanView jobs={jobs} />
+      ) : isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[...Array(6)].map((_, i) => (
             <ApplicationCardSkeleton key={i} />

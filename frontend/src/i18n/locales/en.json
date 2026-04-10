@@ -156,6 +156,13 @@
     "saveSuccess": "Changes saved",
     "deleteSuccess": "Application deleted"
   },
+  "kanban": {
+    "listView": "List view",
+    "kanbanView": "Kanban view",
+    "dropHere": "Drop cards here",
+    "moveHere": "Move here",
+    "statusUpdated": "Status updated"
+  },
   "profile": {
     "title": "Profile",
     "subtitle": "Manage your personal information",
