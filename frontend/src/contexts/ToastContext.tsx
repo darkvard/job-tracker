@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useCallback, useRef, type ReactNode } from 'react'
 import ToastStack from '@/components/Toast'
 
-export type ToastVariant = 'success' | 'error'
+export type ToastVariant = 'success' | 'error' | 'loading'
 
 export interface ToastItem {
   id: number
@@ -37,7 +37,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={{ toast, items, remove }}>
       {children}
-      <ToastStack items={items} onRemove={remove} />
+      <ToastStack items={items} />
     </ToastContext.Provider>
   )
 }

@@ -27,75 +27,84 @@ const KANBAN_PAGE_SIZE = 999
 
 function ApplicationCardSkeleton() {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 animate-pulse">
-      <div className="flex items-start justify-between mb-4">
-        <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-lg" />
-        <div className="h-6 w-20 bg-gray-200 dark:bg-gray-700 rounded-full" />
+    <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 animate-pulse">
+      <div className="flex items-start gap-3 mb-3">
+        <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg flex-shrink-0" />
+        <div className="flex-1">
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-1.5" />
+          <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
+        </div>
       </div>
-      <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2" />
-      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-4" />
-      <div className="space-y-2">
-        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-full" />
+      <div className="pt-3 border-t border-gray-100 dark:border-gray-700 space-y-1.5">
         <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3" />
-        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
+        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
       </div>
     </div>
   )
 }
 
-function ApplicationCard({ job, index, onDelete, onView }: { job: Job; index: number; onDelete: (id: number) => void; onView: (id: number) => void }) {
+function ApplicationCard({
+  job,
+  index,
+  onDelete,
+  onView,
+  showStatus,
+}: {
+  job: Job
+  index: number
+  onDelete: (id: number) => void
+  onView: (id: number) => void
+  showStatus: boolean
+}) {
   const { t } = useTranslation()
+  const dateStr = new Date(job.dateApplied).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05 }}
-      whileHover={{ y: -4, boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}
+      transition={{ delay: index * 0.04 }}
+      whileHover={{ y: -2, boxShadow: '0 6px 20px rgba(0,0,0,0.08)' }}
       onClick={() => onView(job.id)}
-      className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 cursor-pointer"
+      className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 cursor-pointer"
     >
-      <div className="flex items-start justify-between mb-3">
-        <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-semibold text-lg flex-shrink-0">
+      {/* Header: avatar + company/role + status */}
+      <div className="flex items-start gap-3 mb-3">
+        <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-semibold text-base flex-shrink-0">
           {job.company.charAt(0)}
         </div>
-        <StatusBadge status={job.status} size="sm" />
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">{job.company}</p>
+          <p className="text-gray-500 dark:text-gray-400 text-xs truncate">{job.role}</p>
+        </div>
+        {showStatus && <StatusBadge status={job.status} size="sm" />}
       </div>
 
-      <p className="font-semibold text-gray-900 dark:text-white mb-1">{job.company}</p>
-      <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">{job.role}</p>
-
-      <div className="space-y-1.5 text-sm">
-        {job.location && (
-          <div className="flex items-center justify-between">
-            <span className="text-gray-500 dark:text-gray-500">{t('jobs.location')}</span>
-            <span className="text-gray-700 dark:text-gray-300 truncate ml-2 max-w-[60%] text-right">{job.location}</span>
-          </div>
-        )}
-        <div className="flex items-center justify-between">
-          <span className="text-gray-500 dark:text-gray-500">{t('jobs.source')}</span>
-          <span className="text-gray-700 dark:text-gray-300">{job.source}</span>
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="text-gray-500 dark:text-gray-500">{t('jobs.applied')}</span>
-          <span className="text-gray-700 dark:text-gray-300">
-            {new Date(job.dateApplied).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-          </span>
-        </div>
-      </div>
-
-      {/* Wrap the entire AlertDialog in a div that stops propagation so clicks inside
-          (including the portal-rendered AlertDialogContent) don't bubble to the card's onClick. */}
+      {/* Footer: location/source + date + delete */}
       <div
-        className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-end"
+        className="flex items-center justify-between gap-2 pt-3 border-t border-gray-100 dark:border-gray-700"
         onClick={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
       >
+        <div className="flex-1 min-w-0">
+          {job.location ? (
+            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{job.location}</p>
+          ) : (
+            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{job.source}</p>
+          )}
+          <p className="text-xs text-gray-400 dark:text-gray-500">{dateStr}</p>
+        </div>
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <button
-              className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+              className="p-1.5 rounded-lg text-gray-300 dark:text-gray-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors flex-shrink-0"
               aria-label="Delete application"
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash2 className="w-3.5 h-3.5" />
             </button>
           </AlertDialogTrigger>
           <AlertDialogContent>
@@ -187,7 +196,7 @@ export default function ApplicationsList() {
 
   return (
     <div className={viewMode === 'kanban'
-      ? 'w-full px-4 sm:px-6 lg:px-8 py-8'
+      ? 'max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8'
       : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'
     }>
       {/* Header */}
@@ -264,8 +273,8 @@ export default function ApplicationsList() {
       {viewMode === 'kanban' && !isLoading && !error ? (
         <KanbanView jobs={jobs} />
       ) : isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => (
+        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {[...Array(8)].map((_, i) => (
             <ApplicationCardSkeleton key={i} />
           ))}
         </div>
@@ -291,7 +300,7 @@ export default function ApplicationsList() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {jobs.map((job, index) => (
               <ApplicationCard
                 key={job.id}
@@ -299,6 +308,7 @@ export default function ApplicationsList() {
                 index={index}
                 onDelete={(id) => deleteMutation.mutate(id)}
                 onView={(id) => navigate(`/jobs/${id}`)}
+                showStatus={statusFilter === 'All'}
               />
             ))}
           </div>

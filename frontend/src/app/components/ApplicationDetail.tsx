@@ -30,7 +30,7 @@ const SOURCES = ['LinkedIn', 'Company Site', 'Referral', 'Indeed', 'Glassdoor', 
 const WORK_TYPES = ['Onsite', 'Hybrid', 'Remote']
 
 const inputClass =
-  'w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-indigo-400 dark:border-indigo-500 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm'
+  'w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg focus:border-indigo-500 dark:focus:border-indigo-400 outline-none transition-colors text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm'
 
 const readonlyClass =
   'text-sm font-medium text-gray-900 dark:text-white'

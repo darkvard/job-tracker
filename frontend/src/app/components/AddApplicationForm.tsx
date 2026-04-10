@@ -35,7 +35,9 @@ interface FormData {
 }
 
 const inputClass =
-  'w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500'
+  'w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg focus:border-indigo-500 dark:focus:border-indigo-400 outline-none transition-colors text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500'
+
+const dateInputClass = inputClass + ' dark:[color-scheme:dark]'
 
 const labelClass = 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'
 
@@ -228,7 +230,7 @@ export default function AddApplicationForm() {
                 type="date"
                 value={form.dateApplied}
                 onChange={(e) => set('dateApplied', e.target.value)}
-                className={inputClass}
+                className={dateInputClass}
               />
               {form.dateApplied && (
                 <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-500">
@@ -355,7 +357,7 @@ export default function AddApplicationForm() {
                         type="date"
                         value={form.interviewDate}
                         onChange={(e) => set('interviewDate', e.target.value)}
-                        className={inputClass}
+                        className={dateInputClass}
                       />
                     </div>
                   </div>
