@@ -7,9 +7,46 @@ on:
     branches: [main]
 
 jobs:
+  # ── Detect if this PR/push only touches docs (*.md) ──────────────────────────
+  # When docs_only=true all heavy jobs are skipped.
+  # GitHub treats skipped jobs as "passing" for required-status-check purposes,
+  # so auto-merge fires immediately instead of waiting 12+ minutes.
+  detect-changes:
+    name: Detect changes
+    runs-on: ubuntu-latest
+    outputs:
+      docs_only: ${{ steps.check.outputs.docs_only }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if only .md files changed
+        id: check
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            changed=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          else
+            # push to main: compare against previous commit
+            changed=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || git diff --name-only HEAD)
+          fi
+          echo "Changed files:"
+          echo "$changed"
+          non_docs=$(echo "$changed" | grep -vE '\.md$' || true)
+          if [ -z "$non_docs" ]; then
+            echo "docs_only=true"  >> $GITHUB_OUTPUT
+            echo "→ docs-only change, heavy jobs will be skipped"
+          else
+            echo "docs_only=false" >> $GITHUB_OUTPUT
+            echo "→ code change detected, running full CI"
+          fi
+
+  # ── Backend ──────────────────────────────────────────────────────────────────
   backend:
     name: Backend (Go)
     runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.docs_only != 'true'
 
     services:
       # Used by E2E tests; integration tests use testcontainers (self-contained)
@@ -82,9 +119,12 @@ jobs:
       - name: Build binary
         run: cd backend && CGO_ENABLED=0 GOOS=linux go build -o /dev/null ./cmd/api
 
+  # ── Frontend ─────────────────────────────────────────────────────────────────
   frontend:
     name: Frontend (React + TypeScript)
     runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.docs_only != 'true'
 
     steps:
       - uses: actions/checkout@v4
@@ -118,10 +158,12 @@ jobs:
         if: steps.frontend-check.outputs.exists == 'true'
         run: cd frontend && npm run build
 
+  # ── E2E (Playwright) ─────────────────────────────────────────────────────────
   e2e:
     name: E2E (Playwright)
     runs-on: ubuntu-latest
-    needs: [backend, frontend]
+    needs: [detect-changes, backend, frontend]
+    if: needs.detect-changes.outputs.docs_only != 'true'
 
     services:
       postgres:
@@ -212,6 +254,7 @@ jobs:
           path: frontend/playwright-report/
           retention-days: 7
 
+  # ── Auto-merge dependabot PRs ─────────────────────────────────────────────────
   auto-merge:
     name: Auto-merge dependabot PRs
     runs-on: ubuntu-latest
