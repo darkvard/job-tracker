@@ -105,7 +105,7 @@ function DraggableCard({ job, isDragging, onDelete }: DraggableCardProps) {
         <div
           {...listeners}
           {...attributes}
-          className="flex items-center gap-3 px-4 pt-4 pb-3 cursor-grab active:cursor-grabbing"
+          className="flex items-start gap-3 px-4 pt-4 pb-3 cursor-grab active:cursor-grabbing"
           onClick={() => { if (!transform) navigate(`/jobs/${job.id}`) }}
         >
           <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-semibold text-base flex-shrink-0">

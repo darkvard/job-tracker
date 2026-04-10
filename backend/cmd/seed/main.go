@@ -28,17 +28,18 @@ type userRow struct {
 func (userRow) TableName() string { return "users" }
 
 type applicationRow struct {
-	ID          int64     `gorm:"primaryKey;autoIncrement"`
-	UserID      int64     `gorm:"not null;index"`
-	Company     string    `gorm:"not null;size:100"`
-	Role        string    `gorm:"not null;size:200"`
-	Status      string    `gorm:"not null;size:20"`
-	DateApplied time.Time `gorm:"column:date_applied;not null"`
-	Location    string    `gorm:"not null;default:''"`
-	Source      string    `gorm:"not null;size:50"`
-	Notes       string    `gorm:"not null;default:''"`
-	CreatedAt   time.Time `gorm:"autoCreateTime"`
-	UpdatedAt   time.Time `gorm:"autoUpdateTime"`
+	ID            int64      `gorm:"primaryKey;autoIncrement"`
+	UserID        int64      `gorm:"not null;index"`
+	Company       string     `gorm:"not null;size:100"`
+	Role          string     `gorm:"not null;size:200"`
+	Status        string     `gorm:"not null;size:20"`
+	DateApplied   time.Time  `gorm:"column:date_applied;not null"`
+	Location      string     `gorm:"not null;default:''"`
+	Source        string     `gorm:"not null;size:50"`
+	Notes         string     `gorm:"not null;default:''"`
+	InterviewDate *time.Time `gorm:"column:interview_date"`
+	CreatedAt     time.Time  `gorm:"autoCreateTime"`
+	UpdatedAt     time.Time  `gorm:"autoUpdateTime"`
 }
 
 func (applicationRow) TableName() string { return "applications" }
@@ -60,19 +61,26 @@ const (
 	demoEmail    = "demo@tracker.com"
 	demoPassword = "demo123"
 	demoName     = "Demo User"
-	minApps      = 20 // skip seeding apps if user already has this many
+	minApps      = 40 // skip seeding apps if user already has this many
 )
 
 func ptr(s string) *string { return &s }
 
+// iday returns a pointer to a time that is n days from now (UTC midnight).
+func iday(n int) *time.Time {
+	t := time.Now().UTC().Truncate(24 * time.Hour).AddDate(0, 0, n)
+	return &t
+}
+
 type appSeed struct {
-	company     string
-	role        string
-	location    string
-	source      string
-	notes       string
-	dateApplied time.Time
-	transitions []transition
+	company       string
+	role          string
+	location      string
+	source        string
+	notes         string
+	dateApplied   time.Time
+	interviewDate *time.Time
+	transitions   []transition
 }
 
 type transition struct {
@@ -351,20 +359,193 @@ func main() {
 				{from: nil, to: "Applied", changedAt: day(33)},
 			},
 		},
+		// ── Wave 3: local + upcoming interview dates for calendar / filter testing ─
+		{
+			company: "VNG Corporation", role: "Backend Engineer",
+			location: "Ho Chi Minh City", source: "LinkedIn",
+			notes:         "Strong Go team. Applied via LinkedIn.",
+			dateApplied:   day(35),
+			interviewDate: iday(1),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(35)},
+				{from: ptr("Applied"), to: "Interview", note: "Passed CV screening.", changedAt: day(38)},
+			},
+		},
+		{
+			company: "VNPAY", role: "Java Developer",
+			location: "Ha Noi", source: "Company Site",
+			notes:         "Fintech role, good compensation.",
+			dateApplied:   day(36),
+			interviewDate: iday(3),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(36)},
+				{from: ptr("Applied"), to: "Interview", note: "Technical screen scheduled.", changedAt: day(39)},
+			},
+		},
+		{
+			company: "Tiki", role: "Senior Backend Developer",
+			location: "Ho Chi Minh City", source: "Referral",
+			dateApplied:   day(34),
+			interviewDate: iday(5),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(34)},
+				{from: ptr("Applied"), to: "Interview", note: "Referred by ex-colleague.", changedAt: day(37)},
+			},
+		},
+		{
+			company: "Shopee", role: "Software Engineer",
+			location: "Ho Chi Minh City", source: "LinkedIn",
+			notes:         "E-commerce platform, good growth.",
+			dateApplied:   day(30),
+			interviewDate: iday(-1),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(30)},
+				{from: ptr("Applied"), to: "Interview", note: "Recruiter call done.", changedAt: day(34)},
+				{from: ptr("Interview"), to: "Offer", note: "Offer received, reviewing.", changedAt: day(39)},
+			},
+		},
+		{
+			company: "Grab", role: "Backend Engineer",
+			location: "Ho Chi Minh City", source: "LinkedIn",
+			dateApplied:   day(37),
+			interviewDate: iday(7),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(37)},
+				{from: ptr("Applied"), to: "Interview", note: "System design round booked.", changedAt: day(40)},
+			},
+		},
+		{
+			company: "MoMo", role: "Software Engineer",
+			location: "Ho Chi Minh City", source: "Company Site",
+			notes:         "Mobile payment leader in Vietnam.",
+			dateApplied:   day(38),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(38)},
+			},
+		},
+		{
+			company: "Zalo", role: "Backend Developer",
+			location: "Ho Chi Minh City", source: "Referral",
+			dateApplied:   day(36),
+			interviewDate: iday(0),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(36)},
+				{from: ptr("Applied"), to: "Interview", note: "Interview today!", changedAt: day(39)},
+			},
+		},
+		{
+			company: "Be Group", role: "Mobile Developer",
+			location: "Ho Chi Minh City", source: "LinkedIn",
+			dateApplied: day(39),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(39)},
+			},
+		},
+		{
+			company: "FPT Software", role: "Go Engineer",
+			location: "Ha Noi", source: "Company Site",
+			notes:         "Offshore software division.",
+			dateApplied:   day(33),
+			interviewDate: iday(10),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(33)},
+				{from: ptr("Applied"), to: "Interview", note: "Online assessment passed.", changedAt: day(38)},
+			},
+		},
+		{
+			company: "FPTIS", role: "Java Developer",
+			location: "Ha Noi", source: "Indeed",
+			dateApplied:   day(25),
+			interviewDate: iday(-3),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(25)},
+				{from: ptr("Applied"), to: "Interview", note: "Interview held.", changedAt: day(30)},
+				{from: ptr("Interview"), to: "Rejected", note: "Went with another candidate.", changedAt: day(36)},
+			},
+		},
+		{
+			company: "Viettel Digital", role: "Backend Developer",
+			location: "Ha Noi", source: "Company Site",
+			notes:         "Telecom giant digital division.",
+			dateApplied:   day(35),
+			interviewDate: iday(14),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(35)},
+				{from: ptr("Applied"), to: "Interview", note: "HR screening passed.", changedAt: day(39)},
+			},
+		},
+		{
+			company: "KiotViet", role: "Go Developer",
+			location: "Ha Noi", source: "Company Site",
+			notes:         "POS & retail management SaaS.",
+			dateApplied:   day(38),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(38)},
+			},
+		},
+		{
+			company: "Cốc Cốc", role: "Software Engineer",
+			location: "Ha Noi", source: "Glassdoor",
+			dateApplied: day(32),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(32)},
+				{from: ptr("Applied"), to: "Rejected", note: "Position on hold.", changedAt: day(37)},
+			},
+		},
+		{
+			company: "SoundCloud", role: "Full Stack Engineer",
+			location: "Berlin, Germany", source: "LinkedIn",
+			notes:         "Music streaming, remote-friendly.",
+			dateApplied:   day(36),
+			interviewDate: iday(4),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(36)},
+				{from: ptr("Applied"), to: "Interview", note: "Take-home task submitted.", changedAt: day(39)},
+			},
+		},
+		{
+			company: "Klarna", role: "Backend Developer",
+			location: "Stockholm, Sweden", source: "Indeed",
+			dateApplied:   day(28),
+			interviewDate: iday(-2),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(28)},
+				{from: ptr("Applied"), to: "Interview", note: "Technical round.", changedAt: day(33)},
+				{from: ptr("Interview"), to: "Offer", note: "Offer letter received.", changedAt: day(38)},
+			},
+		},
+		{
+			company: "Wise", role: "Software Engineer",
+			location: "Tallinn, Estonia", source: "Company Site",
+			notes:         "Fintech, remote work available.",
+			dateApplied:   day(37),
+			interviewDate: iday(6),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(37)},
+				{from: ptr("Applied"), to: "Interview", note: "Values interview done.", changedAt: day(40)},
+			},
+		},
 	}
 
 	inserted := 0
 	for _, a := range apps {
+		// Skip if this (company, role) pair already exists for this user.
+		var existing applicationRow
+		if db.Where("user_id = ? AND company = ? AND role = ?", user.ID, a.company, a.role).First(&existing).Error == nil {
+			continue
+		}
+
 		finalStatus := a.transitions[len(a.transitions)-1].to
 		app := applicationRow{
-			UserID:      user.ID,
-			Company:     a.company,
-			Role:        a.role,
-			Status:      finalStatus,
-			DateApplied: a.dateApplied,
-			Location:    a.location,
-			Source:      a.source,
-			Notes:       a.notes,
+			UserID:        user.ID,
+			Company:       a.company,
+			Role:          a.role,
+			Status:        finalStatus,
+			DateApplied:   a.dateApplied,
+			Location:      a.location,
+			Source:        a.source,
+			Notes:         a.notes,
+			InterviewDate: a.interviewDate,
 		}
 		if err := db.Create(&app).Error; err != nil {
 			slog.Error("seed: failed to create application", "company", a.company, "error", err)

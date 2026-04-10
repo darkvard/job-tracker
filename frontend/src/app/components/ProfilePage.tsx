@@ -243,7 +243,7 @@ export default function ProfilePage() {
                   <select
                     value={form.salaryCurrency}
                     onChange={(e) => handleChange('salaryCurrency', e.target.value)}
-                    className="px-3 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="px-3 pr-8 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   >
                     {CURRENCIES.map((c) => (
                       <option key={c} value={c}>{c}</option>

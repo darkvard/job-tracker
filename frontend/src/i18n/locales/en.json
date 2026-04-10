@@ -158,6 +158,9 @@
     "saveSuccess": "Changes saved",
     "deleteSuccess": "Application deleted"
   },
+  "calendar": {
+    "title": "Calendar"
+  },
   "kanban": {
     "listView": "List view",
     "kanbanView": "Kanban view",

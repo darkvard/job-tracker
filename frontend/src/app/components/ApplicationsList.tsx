@@ -2,12 +2,13 @@ import { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion } from 'motion/react'
-import { Search, Briefcase, ChevronLeft, ChevronRight, Trash2, LayoutGrid, List, Clock } from 'lucide-react'
+import { Search, Briefcase, ChevronLeft, ChevronRight, Trash2, LayoutGrid, List, Clock, CalendarDays } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { api, type Job, type JobFilters } from '@/lib/api'
 import StatusBadge from '@/components/StatusBadge'
 import { useToast } from '@/contexts/ToastContext'
 import KanbanView from '@/app/components/KanbanView'
+import CalendarView from '@/app/components/CalendarView'
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -87,7 +88,7 @@ function ApplicationCard({
       className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 cursor-pointer select-none overflow-hidden"
     >
       {/* Header: avatar + company/role + status icon */}
-      <div className="flex items-center gap-3 px-4 pt-4 pb-3">
+      <div className="flex items-start gap-3 px-4 pt-4 pb-3">
         <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-semibold text-base flex-shrink-0">
           {job.company.charAt(0)}
         </div>
@@ -166,9 +167,10 @@ export default function ApplicationsList() {
   const [searchInput, setSearchInput] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [page, setPage] = useState(1)
-  const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list')
+  const [viewMode, setViewMode] = useState<'list' | 'kanban' | 'calendar'>('list')
 
   const isUpcomingFilter = statusFilter === 'Upcoming'
+  const isCalendarOrKanban = viewMode === 'kanban' || viewMode === 'calendar'
 
   // Debounce search 300ms
   useEffect(() => {
@@ -186,8 +188,8 @@ export default function ApplicationsList() {
   }, [])
 
   const filters: JobFilters = {
-    page: viewMode === 'kanban' || isUpcomingFilter ? 1 : page,
-    page_size: viewMode === 'kanban' || isUpcomingFilter ? KANBAN_PAGE_SIZE : PAGE_SIZE,
+    page: isCalendarOrKanban || isUpcomingFilter ? 1 : page,
+    page_size: isCalendarOrKanban || isUpcomingFilter ? KANBAN_PAGE_SIZE : PAGE_SIZE,
     // Upcoming filter: fetch all, filter client-side by interviewDate
     ...(viewMode === 'list' && statusFilter !== 'All' && !isUpcomingFilter && { status: statusFilter }),
     ...(debouncedSearch && { search: debouncedSearch }),
@@ -233,10 +235,7 @@ export default function ApplicationsList() {
   }
 
   return (
-    <div className={viewMode === 'kanban'
-      ? 'max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8'
-      : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'
-    }>
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
@@ -269,6 +268,18 @@ export default function ApplicationsList() {
             }`}
           >
             <LayoutGrid className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setViewMode('calendar')}
+            title={t('calendar.title')}
+            aria-label={t('calendar.title')}
+            className={`p-2 rounded-md transition-colors ${
+              viewMode === 'calendar'
+                ? 'bg-indigo-600 text-white'
+                : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+            }`}
+          >
+            <CalendarDays className="w-4 h-4" />
           </button>
         </div>
       </div>
@@ -312,6 +323,8 @@ export default function ApplicationsList() {
       {/* Content */}
       {viewMode === 'kanban' && !isLoading && !error ? (
         <KanbanView jobs={allJobs} />
+      ) : viewMode === 'calendar' && !isLoading && !error ? (
+        <CalendarView jobs={allJobs} />
       ) : isLoading ? (
         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {[...Array(8)].map((_, i) => (

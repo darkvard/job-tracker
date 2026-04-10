@@ -158,6 +158,9 @@
     "saveSuccess": "Đã lưu thay đổi",
     "deleteSuccess": "Đã xóa đơn ứng tuyển"
   },
+  "calendar": {
+    "title": "Lịch"
+  },
   "kanban": {
     "listView": "Dạng danh sách",
     "kanbanView": "Dạng Kanban",

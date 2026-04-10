@@ -38,6 +38,7 @@ const inputClass =
   'w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg focus:border-indigo-500 dark:focus:border-indigo-400 outline-none transition-colors text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500'
 
 const dateInputClass = inputClass + ' dark:[color-scheme:dark]'
+const selectClass = inputClass + ' pr-8'
 
 const labelClass = 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'
 
@@ -245,7 +246,7 @@ export default function AddApplicationForm() {
               <select
                 value={form.source}
                 onChange={(e) => set('source', e.target.value)}
-                className={inputClass}
+                className={selectClass}
               >
                 {SOURCES.map((s) => (
                   <option key={s} value={s}>{s}</option>
@@ -259,7 +260,7 @@ export default function AddApplicationForm() {
               <select
                 value={form.status}
                 onChange={(e) => set('status', e.target.value)}
-                className={inputClass}
+                className={selectClass}
               >
                 {STATUSES.map((s) => (
                   <option key={s} value={s}>{t(`status.${s.toLowerCase()}`)}</option>
@@ -271,7 +272,7 @@ export default function AddApplicationForm() {
               <select
                 value={form.workType}
                 onChange={(e) => set('workType', e.target.value)}
-                className={inputClass}
+                className={selectClass}
               >
                 {WORK_TYPES.map((w) => (
                   <option key={w} value={w}>{w}</option>
