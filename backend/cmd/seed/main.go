@@ -68,7 +68,7 @@ func ptr(s string) *string { return &s }
 
 // iday returns a pointer to a time that is n days from now (UTC midnight).
 func iday(n int) *time.Time {
-	t := time.Now().UTC().Truncate(24 * time.Hour).AddDate(0, 0, n)
+	t := time.Now().UTC().Truncate(24*time.Hour).AddDate(0, 0, n)
 	return &t
 }
 
@@ -417,8 +417,8 @@ func main() {
 		{
 			company: "MoMo", role: "Software Engineer",
 			location: "Ho Chi Minh City", source: "Company Site",
-			notes:         "Mobile payment leader in Vietnam.",
-			dateApplied:   day(38),
+			notes:       "Mobile payment leader in Vietnam.",
+			dateApplied: day(38),
 			transitions: []transition{
 				{from: nil, to: "Applied", changedAt: day(38)},
 			},
@@ -477,8 +477,8 @@ func main() {
 		{
 			company: "KiotViet", role: "Go Developer",
 			location: "Ha Noi", source: "Company Site",
-			notes:         "POS & retail management SaaS.",
-			dateApplied:   day(38),
+			notes:       "POS & retail management SaaS.",
+			dateApplied: day(38),
 			transitions: []transition{
 				{from: nil, to: "Applied", changedAt: day(38)},
 			},
