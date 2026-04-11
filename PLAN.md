@@ -519,6 +519,7 @@ Full flow: register → login → create job → list (filter) → update status
 
 - [x] PR-29: Extended application fields (salary, benefits, interview_date) — DB + BE + FE
 - [x] PR-30: Kanban view with @dnd-kit drag-and-drop
+- [ ] PR-37: Sheet-based create/detail/edit + URL state persistence [frontend]
 - [ ] PR-31: Calendar view with date-fns month grid
 - [ ] PR-32: Job comparison — backend scoring API
 - [ ] PR-33: Job comparison — frontend compare page

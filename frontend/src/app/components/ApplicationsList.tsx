@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion } from 'motion/react'
 import { Search, Briefcase, ChevronLeft, ChevronRight, Trash2, LayoutGrid, List, Clock, CalendarDays } from 'lucide-react'
@@ -9,6 +9,8 @@ import StatusBadge from '@/components/StatusBadge'
 import { useToast } from '@/contexts/ToastContext'
 import KanbanView from '@/app/components/KanbanView'
 import CalendarView from '@/app/components/CalendarView'
+import JobFormSheet from '@/app/components/JobFormSheet'
+import JobDetailSheet from '@/app/components/JobDetailSheet'
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -154,43 +156,96 @@ function ApplicationCard({
 }
 
 export default function ApplicationsList() {
-  const navigate = useNavigate()
   const qc = useQueryClient()
   const { t } = useTranslation()
   const toast = useToast()
-  const [searchParams] = useSearchParams()
-  // Initialize status filter from URL param (e.g. from Dashboard card click)
-  const [statusFilter, setStatusFilter] = useState(() => {
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  // All list state lives in URL params — survives navigation, refresh, back/forward
+  const statusFilter = (() => {
     const s = searchParams.get('status')
     return s && STATUS_FILTER_VALUES.includes(s) ? s : 'All'
-  })
-  const [searchInput, setSearchInput] = useState('')
-  const [debouncedSearch, setDebouncedSearch] = useState('')
-  const [page, setPage] = useState(1)
-  const [viewMode, setViewMode] = useState<'list' | 'kanban' | 'calendar'>('list')
+  })()
+  const page = Math.max(1, parseInt(searchParams.get('page') ?? '1') || 1)
+  const viewMode = (() => {
+    const v = searchParams.get('viewMode')
+    return (v === 'kanban' || v === 'calendar' ? v : 'list') as 'list' | 'kanban' | 'calendar'
+  })()
+  // ?open=new → create sheet | ?open={id} → detail sheet
+  const openParam = searchParams.get('open')
+
+  // Search input uses local state + debounce to avoid URL spam on every keystroke
+  const [searchInput, setSearchInput] = useState(() => searchParams.get('search') ?? '')
+
+  // Helpers: replace current history entry (no back-button noise for filter changes)
+  const setParam = useCallback(
+    (key: string, value: string | null) => {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev)
+          if (value === null || value === '') next.delete(key)
+          else next.set(key, value)
+          return next
+        },
+        { replace: true },
+      )
+    },
+    [setSearchParams],
+  )
+
+  // Open sheet: push a new history entry so browser Back closes the sheet
+  const openSheet = useCallback(
+    (val: string) => {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev)
+        next.set('open', val)
+        return next
+      })
+    },
+    [setSearchParams],
+  )
+
+  // Close sheet: go back (removes ?open from URL naturally)
+  const closeSheet = useCallback(() => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      next.delete('open')
+      return next
+    })
+  }, [setSearchParams])
+
+  // Debounce search input → URL param (300ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setParam('search', searchInput || null)
+      setParam('page', null) // reset page on new search
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [searchInput, setParam])
+
+  const handleStatusFilter = useCallback(
+    (status: string) => {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev)
+          if (status === 'All') next.delete('status')
+          else next.set('status', status)
+          next.delete('page') // reset page
+          return next
+        },
+        { replace: true },
+      )
+    },
+    [setSearchParams],
+  )
 
   const isUpcomingFilter = statusFilter === 'Upcoming'
   const isCalendarOrKanban = viewMode === 'kanban' || viewMode === 'calendar'
-
-  // Debounce search 300ms
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchInput)
-      setPage(1)
-    }, 300)
-    return () => clearTimeout(timer)
-  }, [searchInput])
-
-  // Reset page when filter changes
-  const handleStatusFilter = useCallback((status: string) => {
-    setStatusFilter(status)
-    setPage(1)
-  }, [])
+  const debouncedSearch = searchParams.get('search') ?? ''
 
   const filters: JobFilters = {
     page: isCalendarOrKanban || isUpcomingFilter ? 1 : page,
     page_size: isCalendarOrKanban || isUpcomingFilter ? KANBAN_PAGE_SIZE : PAGE_SIZE,
-    // Upcoming filter: fetch all, filter client-side by interviewDate
     ...(viewMode === 'list' && statusFilter !== 'All' && !isUpcomingFilter && { status: statusFilter }),
     ...(debouncedSearch && { search: debouncedSearch }),
   }
@@ -234,6 +289,8 @@ export default function ApplicationsList() {
     return t(`status.${value.toLowerCase()}`)
   }
 
+  const detailJobId = openParam && openParam !== 'new' ? parseInt(openParam) : null
+
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
@@ -246,7 +303,7 @@ export default function ApplicationsList() {
         {/* View mode toggle */}
         <div className="flex items-center gap-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-1 flex-shrink-0">
           <button
-            onClick={() => setViewMode('list')}
+            onClick={() => setParam('viewMode', null)}
             title={t('kanban.listView')}
             aria-label={t('kanban.listView')}
             className={`p-2 rounded-md transition-colors ${
@@ -258,7 +315,7 @@ export default function ApplicationsList() {
             <List className="w-4 h-4" />
           </button>
           <button
-            onClick={() => setViewMode('kanban')}
+            onClick={() => setParam('viewMode', 'kanban')}
             title={t('kanban.kanbanView')}
             aria-label={t('kanban.kanbanView')}
             className={`p-2 rounded-md transition-colors ${
@@ -270,7 +327,7 @@ export default function ApplicationsList() {
             <LayoutGrid className="w-4 h-4" />
           </button>
           <button
-            onClick={() => setViewMode('calendar')}
+            onClick={() => setParam('viewMode', 'calendar')}
             title={t('calendar.title')}
             aria-label={t('calendar.title')}
             className={`p-2 rounded-md transition-colors ${
@@ -360,7 +417,7 @@ export default function ApplicationsList() {
                 job={job}
                 index={index}
                 onDelete={(id) => deleteMutation.mutate(id)}
-                onView={(id) => navigate(`/jobs/${id}`)}
+                onView={(id) => openSheet(String(id))}
               />
             ))}
           </div>
@@ -377,7 +434,7 @@ export default function ApplicationsList() {
               </p>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setPage((p) => p - 1)}
+                  onClick={() => setParam('page', String(page - 1))}
                   disabled={page === 1}
                   className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                   aria-label="Previous page"
@@ -400,7 +457,7 @@ export default function ApplicationsList() {
                       ) : (
                         <button
                           key={p}
-                          onClick={() => setPage(p)}
+                          onClick={() => setParam('page', String(p))}
                           className={
                             page === p
                               ? 'w-9 h-9 rounded-lg bg-indigo-600 text-white text-sm font-medium'
@@ -413,7 +470,7 @@ export default function ApplicationsList() {
                     )}
                 </div>
                 <button
-                  onClick={() => setPage((p) => p + 1)}
+                  onClick={() => setParam('page', String(page + 1))}
                   disabled={page === totalPages}
                   className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                   aria-label="Next page"
@@ -425,6 +482,19 @@ export default function ApplicationsList() {
           )}
         </>
       )}
+
+      {/* Create sheet */}
+      <JobFormSheet
+        open={openParam === 'new'}
+        onClose={closeSheet}
+      />
+
+      {/* Detail / Edit sheet */}
+      <JobDetailSheet
+        jobId={detailJobId}
+        open={detailJobId !== null}
+        onClose={closeSheet}
+      />
     </div>
   )
 }

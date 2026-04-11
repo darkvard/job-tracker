@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { ThemeProvider } from '@/contexts/ThemeContext'
@@ -8,8 +8,6 @@ import LoginPage from '@/app/components/LoginPage'
 import ProtectedLayout from '@/app/ProtectedLayout'
 import Dashboard from '@/app/components/Dashboard'
 import ApplicationsList from '@/app/components/ApplicationsList'
-import AddApplicationForm from '@/app/components/AddApplicationForm'
-import ApplicationDetail from '@/app/components/ApplicationDetail'
 import Analytics from '@/app/components/Analytics'
 import ProfilePage from '@/app/components/ProfilePage'
 
@@ -21,6 +19,12 @@ const queryClient = new QueryClient({
     },
   },
 })
+
+// Redirect /jobs/:id → /jobs?open={id} so bookmarked URLs still work
+function JobDetailRedirect() {
+  const { id } = useParams<{ id: string }>()
+  return <Navigate to={`/jobs?open=${id}`} replace />
+}
 
 export default function App() {
   return (
@@ -35,8 +39,9 @@ export default function App() {
             <Route element={<ProtectedLayout />}>
               <Route path="/" element={<Dashboard />} />
               <Route path="/jobs" element={<ApplicationsList />} />
-              <Route path="/jobs/new" element={<AddApplicationForm />} />
-              <Route path="/jobs/:id" element={<ApplicationDetail />} />
+              {/* Legacy routes → redirect to sheet-based URLs */}
+              <Route path="/jobs/new" element={<Navigate to="/jobs?open=new" replace />} />
+              <Route path="/jobs/:id" element={<JobDetailRedirect />} />
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/profile" element={<ProfilePage />} />
             </Route>

@@ -84,9 +84,16 @@ interface EditForm {
   interviewDate: string
 }
 
-export default function ApplicationDetail() {
+interface ApplicationDetailProps {
+  /** When provided, renders in sheet mode: hides back button, uses onClose() on delete */
+  jobId?: number
+  onClose?: () => void
+}
+
+export default function ApplicationDetail({ jobId: jobIdProp, onClose }: ApplicationDetailProps = {}) {
   const { id: idParam } = useParams<{ id: string }>()
-  const id = Number(idParam)
+  const id = jobIdProp ?? Number(idParam)
+  const isSheetMode = Boolean(onClose)
   const navigate = useNavigate()
   const qc = useQueryClient()
   const { t } = useTranslation()
@@ -166,7 +173,11 @@ export default function ApplicationDetail() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['jobs'] })
       qc.invalidateQueries({ queryKey: ['dashboard'] })
-      navigate('/jobs', { replace: true })
+      if (onClose) {
+        onClose()
+      } else {
+        navigate('/jobs', { replace: true })
+      }
     },
   })
 
@@ -265,15 +276,17 @@ export default function ApplicationDetail() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Back button */}
-      <button
-        onClick={() => navigate('/jobs')}
-        className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 mb-6 transition-colors"
-      >
-        <ChevronLeft className="w-4 h-4" />
-        {t('detail.backToApplications')}
-      </button>
+    <div className={isSheetMode ? 'px-6 py-6' : 'max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8'}>
+      {/* Back button — hidden in sheet mode (sheet X button handles close) */}
+      {!isSheetMode && (
+        <button
+          onClick={() => navigate('/jobs')}
+          className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 mb-6 transition-colors"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          {t('detail.backToApplications')}
+        </button>
+      )}
 
       {/* Header card */}
       <motion.div
