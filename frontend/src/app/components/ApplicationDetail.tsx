@@ -30,10 +30,12 @@ const SOURCES = ['LinkedIn', 'Company Site', 'Referral', 'Indeed', 'Glassdoor', 
 const WORK_TYPES = ['Onsite', 'Hybrid', 'Remote']
 
 const inputClass =
-  'w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-indigo-400 dark:border-indigo-500 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm'
+  'w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg focus:border-indigo-500 dark:focus:border-indigo-400 outline-none transition-colors text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm'
 
 const readonlyClass =
   'text-sm font-medium text-gray-900 dark:text-white'
+
+const selectClass = inputClass + ' pr-8'
 
 function DetailSkeleton() {
   return (
@@ -262,18 +264,6 @@ export default function ApplicationDetail() {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val)
   }
 
-  const hasAnyBenefitData =
-    job.salary != null ||
-    job.bhxhPct != null ||
-    job.bhytPct != null ||
-    job.lunchAllowance != null ||
-    job.bonusAnnual != null ||
-    job.noSaturday ||
-    job.noForcedOt ||
-    job.commuteAddress ||
-    (job.workType && job.workType !== 'Onsite') ||
-    job.interviewDate
-
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Back button */}
@@ -313,7 +303,7 @@ export default function ApplicationDetail() {
                 <select
                   value={editForm.status}
                   onChange={(e) => setField('status', e.target.value)}
-                  className={inputClass}
+                  className={selectClass}
                 >
                   {statusOptions.map((s) => (
                     <option key={s} value={s}>{t(`status.${s.toLowerCase()}`)}</option>
@@ -341,7 +331,7 @@ export default function ApplicationDetail() {
         </div>
 
         {/* Info grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {/* Location */}
           <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
             <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
@@ -407,7 +397,7 @@ export default function ApplicationDetail() {
                 <select
                   value={editForm.source}
                   onChange={(e) => setField('source', e.target.value)}
-                  className={inputClass + ' mt-0.5'}
+                  className={selectClass + ' mt-0.5'}
                 >
                   {SOURCES.map((s) => (
                     <option key={s} value={s}>{s}</option>
@@ -415,6 +405,26 @@ export default function ApplicationDetail() {
                 </select>
               ) : (
                 <p className={readonlyClass}>{job.source}</p>
+              )}
+            </div>
+          </div>
+
+          {/* Interview date */}
+          <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+            <Calendar className="w-4 h-4 text-amber-400 flex-shrink-0" />
+            <div className="min-w-0 flex-1">
+              <p className="text-xs text-gray-500 dark:text-gray-500">{t('jobs.interviewDate')}</p>
+              {isEditing ? (
+                <input
+                  type="date"
+                  value={editForm.interviewDate}
+                  onChange={(e) => setField('interviewDate', e.target.value)}
+                  className={inputClass + ' mt-0.5 dark:[color-scheme:dark]'}
+                />
+              ) : (
+                <p className={job.interviewDate ? 'text-sm font-medium text-amber-600 dark:text-amber-400' : readonlyClass}>
+                  {job.interviewDate ? formatDate(job.interviewDate) : '—'}
+                </p>
               )}
             </div>
           </div>
@@ -495,7 +505,7 @@ export default function ApplicationDetail() {
       </motion.div>
 
       {/* Offer & Benefits card */}
-      {!isEditing && hasAnyBenefitData && (
+      {!isEditing && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -504,52 +514,34 @@ export default function ApplicationDetail() {
         >
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('jobs.offerBenefits')}</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
-            {job.salary != null && (
-              <div>
-                <p className="text-xs text-gray-500 dark:text-gray-500 mb-0.5">{t('jobs.salary')}</p>
-                <p className="font-medium text-gray-900 dark:text-white">{formatVND(job.salary)}</p>
-              </div>
-            )}
-            {job.lunchAllowance != null && (
-              <div>
-                <p className="text-xs text-gray-500 dark:text-gray-500 mb-0.5">{t('jobs.lunchAllowance')}</p>
-                <p className="font-medium text-gray-900 dark:text-white">{formatVND(job.lunchAllowance)}</p>
-              </div>
-            )}
-            {job.bonusAnnual != null && (
-              <div>
-                <p className="text-xs text-gray-500 dark:text-gray-500 mb-0.5">{t('jobs.bonus')}</p>
-                <p className="font-medium text-gray-900 dark:text-white">{formatVND(job.bonusAnnual)}</p>
-              </div>
-            )}
-            {job.bhxhPct != null && (
-              <div>
-                <p className="text-xs text-gray-500 dark:text-gray-500 mb-0.5">{t('jobs.bhxh')}</p>
-                <p className="font-medium text-gray-900 dark:text-white">{job.bhxhPct}%</p>
-              </div>
-            )}
-            {job.bhytPct != null && (
-              <div>
-                <p className="text-xs text-gray-500 dark:text-gray-500 mb-0.5">{t('jobs.bhyt')}</p>
-                <p className="font-medium text-gray-900 dark:text-white">{job.bhytPct}%</p>
-              </div>
-            )}
-            {job.workType && (
-              <div>
-                <p className="text-xs text-gray-500 dark:text-gray-500 mb-0.5">{t('jobs.workType')}</p>
-                <p className="font-medium text-gray-900 dark:text-white">{job.workType}</p>
-              </div>
-            )}
+            <div>
+              <p className="text-xs text-gray-500 dark:text-gray-500 mb-0.5">{t('jobs.salary')}</p>
+              <p className="font-medium text-gray-900 dark:text-white">{formatVND(job.salary)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 dark:text-gray-500 mb-0.5">{t('jobs.lunchAllowance')}</p>
+              <p className="font-medium text-gray-900 dark:text-white">{formatVND(job.lunchAllowance)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 dark:text-gray-500 mb-0.5">{t('jobs.bonus')}</p>
+              <p className="font-medium text-gray-900 dark:text-white">{formatVND(job.bonusAnnual)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 dark:text-gray-500 mb-0.5">{t('jobs.bhxh')}</p>
+              <p className="font-medium text-gray-900 dark:text-white">{job.bhxhPct != null ? `${job.bhxhPct}%` : '—'}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 dark:text-gray-500 mb-0.5">{t('jobs.bhyt')}</p>
+              <p className="font-medium text-gray-900 dark:text-white">{job.bhytPct != null ? `${job.bhytPct}%` : '—'}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 dark:text-gray-500 mb-0.5">{t('jobs.workType')}</p>
+              <p className="font-medium text-gray-900 dark:text-white">{job.workType || '—'}</p>
+            </div>
             {job.commuteAddress && (
               <div className="col-span-2">
                 <p className="text-xs text-gray-500 dark:text-gray-500 mb-0.5">{t('jobs.commuteAddress')}</p>
                 <p className="font-medium text-gray-900 dark:text-white">{job.commuteAddress}</p>
-              </div>
-            )}
-            {job.interviewDate && (
-              <div>
-                <p className="text-xs text-gray-500 dark:text-gray-500 mb-0.5">{t('jobs.interviewDate')}</p>
-                <p className="font-medium text-orange-600 dark:text-orange-400">{formatDate(job.interviewDate)}</p>
               </div>
             )}
           </div>
@@ -599,13 +591,9 @@ export default function ApplicationDetail() {
               <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{t('jobs.bonus')} (VND)</label>
               <input type="number" value={editForm.bonusAnnual} onChange={(e) => setField('bonusAnnual', e.target.value)} placeholder="40000000" min="0" className={inputClass} />
             </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{t('jobs.interviewDate')}</label>
-              <input type="date" value={editForm.interviewDate} onChange={(e) => setField('interviewDate', e.target.value)} className={inputClass} />
-            </div>
             <div className="col-span-2">
               <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{t('jobs.workType')}</label>
-              <select value={editForm.workType} onChange={(e) => setField('workType', e.target.value)} className={inputClass}>
+              <select value={editForm.workType} onChange={(e) => setField('workType', e.target.value)} className={selectClass}>
                 {WORK_TYPES.map((w) => <option key={w} value={w}>{w}</option>)}
               </select>
             </div>

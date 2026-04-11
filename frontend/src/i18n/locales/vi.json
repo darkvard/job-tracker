@@ -55,6 +55,8 @@
     "subtitle": "Quản lý và theo dõi tất cả đơn ứng tuyển",
     "searchPlaceholder": "Tìm công ty hoặc vị trí...",
     "filterAll": "Tất cả",
+    "filterUpcoming": "Sắp hết hạn",
+    "today": "Hôm nay",
     "location": "Địa điểm",
     "source": "Nguồn",
     "applied": "Ngày nộp",
@@ -155,6 +157,9 @@
     "createSuccess": "Đã tạo đơn ứng tuyển thành công",
     "saveSuccess": "Đã lưu thay đổi",
     "deleteSuccess": "Đã xóa đơn ứng tuyển"
+  },
+  "calendar": {
+    "title": "Lịch"
   },
   "kanban": {
     "listView": "Dạng danh sách",

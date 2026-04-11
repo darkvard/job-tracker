@@ -55,6 +55,8 @@
     "subtitle": "Manage and track all your job applications",
     "searchPlaceholder": "Search company or role...",
     "filterAll": "All",
+    "filterUpcoming": "Upcoming",
+    "today": "Today",
     "location": "Location",
     "source": "Source",
     "applied": "Applied",
@@ -155,6 +157,9 @@
     "createSuccess": "Application created successfully",
     "saveSuccess": "Changes saved",
     "deleteSuccess": "Application deleted"
+  },
+  "calendar": {
+    "title": "Calendar"
   },
   "kanban": {
     "listView": "List view",

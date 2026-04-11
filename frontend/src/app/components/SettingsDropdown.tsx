@@ -35,7 +35,7 @@ export default function SettingsDropdown() {
       {open && (
         <div className="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg py-3 z-50">
           {/* Theme section */}
-          <div className="px-3 mb-3">
+          <div className="px-4 mb-3">
             <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">
               {t('settings.theme')}
             </p>
@@ -68,7 +68,7 @@ export default function SettingsDropdown() {
           <div className="border-t border-gray-100 dark:border-gray-700 mb-3" />
 
           {/* Language section */}
-          <div className="px-3">
+          <div className="px-4">
             <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">
               {t('settings.language')}
             </p>

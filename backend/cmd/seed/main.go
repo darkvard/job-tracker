@@ -1,4 +1,5 @@
-// Package main seeds the database with demo data (idempotent).
+// Package main seeds the database with demo data.
+// Idempotent: skips if demo user already has ≥ 20 applications.
 // Usage: DB_DSN=<dsn> go run ./cmd/seed
 package main
 
@@ -27,17 +28,18 @@ type userRow struct {
 func (userRow) TableName() string { return "users" }
 
 type applicationRow struct {
-	ID          int64     `gorm:"primaryKey;autoIncrement"`
-	UserID      int64     `gorm:"not null;index"`
-	Company     string    `gorm:"not null;size:100"`
-	Role        string    `gorm:"not null;size:200"`
-	Status      string    `gorm:"not null;size:20"`
-	DateApplied time.Time `gorm:"column:date_applied;not null"`
-	Location    string    `gorm:"not null;default:''"`
-	Source      string    `gorm:"not null;size:50"`
-	Notes       string    `gorm:"not null;default:''"`
-	CreatedAt   time.Time `gorm:"autoCreateTime"`
-	UpdatedAt   time.Time `gorm:"autoUpdateTime"`
+	ID            int64      `gorm:"primaryKey;autoIncrement"`
+	UserID        int64      `gorm:"not null;index"`
+	Company       string     `gorm:"not null;size:100"`
+	Role          string     `gorm:"not null;size:200"`
+	Status        string     `gorm:"not null;size:20"`
+	DateApplied   time.Time  `gorm:"column:date_applied;not null"`
+	Location      string     `gorm:"not null;default:''"`
+	Source        string     `gorm:"not null;size:50"`
+	Notes         string     `gorm:"not null;default:''"`
+	InterviewDate *time.Time `gorm:"column:interview_date"`
+	CreatedAt     time.Time  `gorm:"autoCreateTime"`
+	UpdatedAt     time.Time  `gorm:"autoUpdateTime"`
 }
 
 func (applicationRow) TableName() string { return "applications" }
@@ -59,18 +61,26 @@ const (
 	demoEmail    = "demo@tracker.com"
 	demoPassword = "demo123"
 	demoName     = "Demo User"
+	minApps      = 40 // skip seeding apps if user already has this many
 )
 
 func ptr(s string) *string { return &s }
 
+// iday returns a pointer to a time that is n days from now (UTC midnight).
+func iday(n int) *time.Time {
+	t := time.Now().UTC().Truncate(24*time.Hour).AddDate(0, 0, n)
+	return &t
+}
+
 type appSeed struct {
-	company     string
-	role        string
-	location    string
-	source      string
-	notes       string
-	dateApplied time.Time
-	transitions []transition
+	company       string
+	role          string
+	location      string
+	source        string
+	notes         string
+	dateApplied   time.Time
+	interviewDate *time.Time
+	transitions   []transition
 }
 
 type transition struct {
@@ -95,152 +105,452 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Idempotency check — skip if demo user already exists.
-	var existing userRow
-	if err := db.Where("email = ?", demoEmail).First(&existing).Error; err == nil {
-		slog.Info("seed: demo user already exists — skipping", "email", demoEmail)
+	// Get or create demo user.
+	var user userRow
+	if err := db.Where("email = ?", demoEmail).First(&user).Error; err != nil {
+		hash, err := bcrypt.GenerateFromPassword([]byte(demoPassword), 12)
+		if err != nil {
+			slog.Error("seed: failed to hash password", "error", err)
+			os.Exit(1)
+		}
+		user = userRow{Email: demoEmail, PasswordHash: string(hash), Name: demoName}
+		if err := db.Create(&user).Error; err != nil {
+			slog.Error("seed: failed to create demo user", "error", err)
+			os.Exit(1)
+		}
+		slog.Info("seed: created demo user", "email", demoEmail, "id", user.ID)
+	} else {
+		slog.Info("seed: demo user exists", "email", demoEmail, "id", user.ID)
+	}
+
+	// Check current app count — skip if already well-seeded.
+	var count int64
+	db.Model(&applicationRow{}).Where("user_id = ?", user.ID).Count(&count)
+	if count >= minApps {
+		slog.Info("seed: already has enough applications — skipping", "count", count)
 		return
 	}
-
-	// Hash password.
-	hash, err := bcrypt.GenerateFromPassword([]byte(demoPassword), 12)
-	if err != nil {
-		slog.Error("seed: failed to hash password", "error", err)
-		os.Exit(1)
-	}
-
-	// Create demo user.
-	user := userRow{
-		Email:        demoEmail,
-		PasswordHash: string(hash),
-		Name:         demoName,
-	}
-	if err := db.Create(&user).Error; err != nil {
-		slog.Error("seed: failed to create demo user", "error", err)
-		os.Exit(1)
-	}
-	slog.Info("seed: created demo user", "email", demoEmail, "id", user.ID)
 
 	// Reference dates (anchor around 2026-03-01 so analytics look populated).
 	base := time.Date(2026, 3, 1, 10, 0, 0, 0, time.UTC)
 	day := func(n int) time.Time { return base.AddDate(0, 0, n) }
 
 	apps := []appSeed{
+		// ── Wave 1: originals ──────────────────────────────────────────────────
 		{
-			company:     "Google",
-			role:        "Software Engineer",
-			location:    "Mountain View, CA",
-			source:      "LinkedIn",
+			company: "Google", role: "Software Engineer",
+			location: "Mountain View, CA", source: "LinkedIn",
 			notes:       "Applied via LinkedIn Easy Apply. Strong match with JD requirements.",
 			dateApplied: day(0),
 			transitions: []transition{
-				{from: nil, to: "Applied", note: "", changedAt: day(0)},
+				{from: nil, to: "Applied", changedAt: day(0)},
 				{from: ptr("Applied"), to: "Interview", note: "Recruiter reached out for phone screen.", changedAt: day(5)},
 			},
 		},
 		{
-			company:     "Meta",
-			role:        "Product Designer",
-			location:    "Menlo Park, CA",
-			source:      "Company Site",
+			company: "Meta", role: "Product Designer",
+			location: "Menlo Park, CA", source: "Company Site",
 			notes:       "Submitted through Meta Careers portal.",
 			dateApplied: day(3),
 			transitions: []transition{
-				{from: nil, to: "Applied", note: "", changedAt: day(3)},
+				{from: nil, to: "Applied", changedAt: day(3)},
 			},
 		},
 		{
-			company:     "Apple",
-			role:        "iOS Developer",
-			location:    "Cupertino, CA",
-			source:      "Referral",
+			company: "Apple", role: "iOS Developer",
+			location: "Cupertino, CA", source: "Referral",
 			notes:       "Referred by a friend on the iPhone team.",
 			dateApplied: day(6),
 			transitions: []transition{
-				{from: nil, to: "Applied", note: "", changedAt: day(6)},
+				{from: nil, to: "Applied", changedAt: day(6)},
 				{from: ptr("Applied"), to: "Interview", note: "Technical screen scheduled.", changedAt: day(11)},
 			},
 		},
 		{
-			company:     "Amazon",
-			role:        "SDE II",
-			location:    "Seattle, WA",
-			source:      "Indeed",
+			company: "Amazon", role: "SDE II",
+			location: "Seattle, WA", source: "Indeed",
 			notes:       "Applied to the Ads team position.",
 			dateApplied: day(-10),
 			transitions: []transition{
-				{from: nil, to: "Applied", note: "", changedAt: day(-10)},
+				{from: nil, to: "Applied", changedAt: day(-10)},
 				{from: ptr("Applied"), to: "Rejected", note: "Not moving forward at this time.", changedAt: day(-2)},
 			},
 		},
 		{
-			company:     "Microsoft",
-			role:        "Software Engineer",
-			location:    "Redmond, WA",
-			source:      "LinkedIn",
+			company: "Microsoft", role: "Software Engineer",
+			location: "Redmond, WA", source: "LinkedIn",
 			notes:       "Applied to the Azure team opening.",
 			dateApplied: day(9),
 			transitions: []transition{
-				{from: nil, to: "Applied", note: "", changedAt: day(9)},
+				{from: nil, to: "Applied", changedAt: day(9)},
 			},
 		},
 		{
-			company:     "Netflix",
-			role:        "Senior Software Engineer",
-			location:    "Los Gatos, CA",
-			source:      "Glassdoor",
+			company: "Netflix", role: "Senior Software Engineer",
+			location: "Los Gatos, CA", source: "Glassdoor",
 			notes:       "Found on Glassdoor. Great culture fit.",
 			dateApplied: day(-14),
 			transitions: []transition{
-				{from: nil, to: "Applied", note: "", changedAt: day(-14)},
+				{from: nil, to: "Applied", changedAt: day(-14)},
 				{from: ptr("Applied"), to: "Interview", note: "Virtual interview round 1.", changedAt: day(-9)},
 				{from: ptr("Interview"), to: "Offer", note: "Offer received! Reviewing details.", changedAt: day(1)},
 			},
 		},
 		{
-			company:     "Airbnb",
-			role:        "Full Stack Developer",
-			location:    "San Francisco, CA",
-			source:      "Company Site",
-			notes:       "",
+			company: "Airbnb", role: "Full Stack Developer",
+			location: "San Francisco, CA", source: "Company Site",
 			dateApplied: day(13),
 			transitions: []transition{
-				{from: nil, to: "Applied", note: "", changedAt: day(13)},
+				{from: nil, to: "Applied", changedAt: day(13)},
 			},
 		},
 		{
-			company:     "Spotify",
-			role:        "Backend Developer",
-			location:    "New York, NY",
-			source:      "Referral",
+			company: "Spotify", role: "Backend Developer",
+			location: "New York, NY", source: "Referral",
 			notes:       "Referred by a former colleague.",
 			dateApplied: day(10),
 			transitions: []transition{
-				{from: nil, to: "Applied", note: "", changedAt: day(10)},
+				{from: nil, to: "Applied", changedAt: day(10)},
 				{from: ptr("Applied"), to: "Interview", note: "Coding challenge passed.", changedAt: day(16)},
+			},
+		},
+		// ── Wave 2: extra for pagination testing (need >12 total) ─────────────
+		{
+			company: "Stripe", role: "Backend Engineer",
+			location: "San Francisco, CA", source: "LinkedIn",
+			notes:       "Applied to payments infrastructure team.",
+			dateApplied: day(15),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(15)},
+			},
+		},
+		{
+			company: "Shopify", role: "Rails Developer",
+			location: "Ottawa, Canada", source: "Company Site",
+			dateApplied: day(17),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(17)},
+				{from: ptr("Applied"), to: "Rejected", note: "Position filled internally.", changedAt: day(22)},
+			},
+		},
+		{
+			company: "Figma", role: "Frontend Engineer",
+			location: "San Francisco, CA", source: "Glassdoor",
+			notes:       "Strong design background — good fit.",
+			dateApplied: day(19),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(19)},
+				{from: ptr("Applied"), to: "Interview", note: "Design system discussion.", changedAt: day(24)},
+				{from: ptr("Interview"), to: "Offer", note: "Competitive offer received.", changedAt: day(30)},
+			},
+		},
+		{
+			company: "Notion", role: "Product Engineer",
+			location: "San Francisco, CA", source: "LinkedIn",
+			dateApplied: day(20),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(20)},
+			},
+		},
+		{
+			company: "Vercel", role: "DevRel Engineer",
+			location: "Remote", source: "Twitter/X",
+			notes:       "Found via @vercel tweet about openings.",
+			dateApplied: day(21),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(21)},
+			},
+		},
+		{
+			company: "Linear", role: "Software Engineer",
+			location: "Remote", source: "Company Site",
+			dateApplied: day(22),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(22)},
+				{from: ptr("Applied"), to: "Interview", note: "Culture fit call.", changedAt: day(26)},
+			},
+		},
+		{
+			company: "Canva", role: "Senior Frontend Engineer",
+			location: "Sydney, Australia", source: "Indeed",
+			dateApplied: day(23),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(23)},
+			},
+		},
+		{
+			company: "Datadog", role: "Backend Engineer",
+			location: "New York, NY", source: "Referral",
+			notes:       "Referred by a college friend working there.",
+			dateApplied: day(25),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(25)},
+				{from: ptr("Applied"), to: "Rejected", note: "Went with internal candidate.", changedAt: day(30)},
+			},
+		},
+		{
+			company: "Anthropic", role: "Software Engineer",
+			location: "San Francisco, CA", source: "Company Site",
+			notes:       "Dream job application.",
+			dateApplied: day(26),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(26)},
+			},
+		},
+		{
+			company: "OpenAI", role: "Research Engineer",
+			location: "San Francisco, CA", source: "LinkedIn",
+			dateApplied: day(27),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(27)},
+				{from: ptr("Applied"), to: "Interview", note: "Technical assessment scheduled.", changedAt: day(32)},
+			},
+		},
+		{
+			company: "Cloudflare", role: "Network Engineer",
+			location: "Austin, TX", source: "Glassdoor",
+			dateApplied: day(28),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(28)},
+			},
+		},
+		{
+			company: "HashiCorp", role: "Go Engineer",
+			location: "Remote", source: "LinkedIn",
+			notes:       "Infrastructure tooling role — strong match.",
+			dateApplied: day(29),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(29)},
+			},
+		},
+		{
+			company: "PlanetScale", role: "Database Engineer",
+			location: "Remote", source: "Company Site",
+			dateApplied: day(30),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(30)},
+				{from: ptr("Applied"), to: "Interview", note: "System design round.", changedAt: day(35)},
+				{from: ptr("Interview"), to: "Offer", note: "Great offer with equity.", changedAt: day(40)},
+			},
+		},
+		{
+			company: "Supabase", role: "Fullstack Engineer",
+			location: "Remote", source: "Twitter/X",
+			notes:       "Open source first culture.",
+			dateApplied: day(31),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(31)},
+			},
+		},
+		{
+			company: "Railway", role: "Infrastructure Engineer",
+			location: "Remote", source: "Company Site",
+			dateApplied: day(32),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(32)},
+				{from: ptr("Applied"), to: "Rejected", note: "Role cancelled.", changedAt: day(36)},
+			},
+		},
+		{
+			company: "Resend", role: "Developer Advocate",
+			location: "Remote", source: "LinkedIn",
+			dateApplied: day(33),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(33)},
+			},
+		},
+		// ── Wave 3: local + upcoming interview dates for calendar / filter testing ─
+		{
+			company: "VNG Corporation", role: "Backend Engineer",
+			location: "Ho Chi Minh City", source: "LinkedIn",
+			notes:         "Strong Go team. Applied via LinkedIn.",
+			dateApplied:   day(35),
+			interviewDate: iday(1),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(35)},
+				{from: ptr("Applied"), to: "Interview", note: "Passed CV screening.", changedAt: day(38)},
+			},
+		},
+		{
+			company: "VNPAY", role: "Java Developer",
+			location: "Ha Noi", source: "Company Site",
+			notes:         "Fintech role, good compensation.",
+			dateApplied:   day(36),
+			interviewDate: iday(3),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(36)},
+				{from: ptr("Applied"), to: "Interview", note: "Technical screen scheduled.", changedAt: day(39)},
+			},
+		},
+		{
+			company: "Tiki", role: "Senior Backend Developer",
+			location: "Ho Chi Minh City", source: "Referral",
+			dateApplied:   day(34),
+			interviewDate: iday(5),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(34)},
+				{from: ptr("Applied"), to: "Interview", note: "Referred by ex-colleague.", changedAt: day(37)},
+			},
+		},
+		{
+			company: "Shopee", role: "Software Engineer",
+			location: "Ho Chi Minh City", source: "LinkedIn",
+			notes:         "E-commerce platform, good growth.",
+			dateApplied:   day(30),
+			interviewDate: iday(-1),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(30)},
+				{from: ptr("Applied"), to: "Interview", note: "Recruiter call done.", changedAt: day(34)},
+				{from: ptr("Interview"), to: "Offer", note: "Offer received, reviewing.", changedAt: day(39)},
+			},
+		},
+		{
+			company: "Grab", role: "Backend Engineer",
+			location: "Ho Chi Minh City", source: "LinkedIn",
+			dateApplied:   day(37),
+			interviewDate: iday(7),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(37)},
+				{from: ptr("Applied"), to: "Interview", note: "System design round booked.", changedAt: day(40)},
+			},
+		},
+		{
+			company: "MoMo", role: "Software Engineer",
+			location: "Ho Chi Minh City", source: "Company Site",
+			notes:       "Mobile payment leader in Vietnam.",
+			dateApplied: day(38),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(38)},
+			},
+		},
+		{
+			company: "Zalo", role: "Backend Developer",
+			location: "Ho Chi Minh City", source: "Referral",
+			dateApplied:   day(36),
+			interviewDate: iday(0),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(36)},
+				{from: ptr("Applied"), to: "Interview", note: "Interview today!", changedAt: day(39)},
+			},
+		},
+		{
+			company: "Be Group", role: "Mobile Developer",
+			location: "Ho Chi Minh City", source: "LinkedIn",
+			dateApplied: day(39),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(39)},
+			},
+		},
+		{
+			company: "FPT Software", role: "Go Engineer",
+			location: "Ha Noi", source: "Company Site",
+			notes:         "Offshore software division.",
+			dateApplied:   day(33),
+			interviewDate: iday(10),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(33)},
+				{from: ptr("Applied"), to: "Interview", note: "Online assessment passed.", changedAt: day(38)},
+			},
+		},
+		{
+			company: "FPTIS", role: "Java Developer",
+			location: "Ha Noi", source: "Indeed",
+			dateApplied:   day(25),
+			interviewDate: iday(-3),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(25)},
+				{from: ptr("Applied"), to: "Interview", note: "Interview held.", changedAt: day(30)},
+				{from: ptr("Interview"), to: "Rejected", note: "Went with another candidate.", changedAt: day(36)},
+			},
+		},
+		{
+			company: "Viettel Digital", role: "Backend Developer",
+			location: "Ha Noi", source: "Company Site",
+			notes:         "Telecom giant digital division.",
+			dateApplied:   day(35),
+			interviewDate: iday(14),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(35)},
+				{from: ptr("Applied"), to: "Interview", note: "HR screening passed.", changedAt: day(39)},
+			},
+		},
+		{
+			company: "KiotViet", role: "Go Developer",
+			location: "Ha Noi", source: "Company Site",
+			notes:       "POS & retail management SaaS.",
+			dateApplied: day(38),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(38)},
+			},
+		},
+		{
+			company: "Cốc Cốc", role: "Software Engineer",
+			location: "Ha Noi", source: "Glassdoor",
+			dateApplied: day(32),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(32)},
+				{from: ptr("Applied"), to: "Rejected", note: "Position on hold.", changedAt: day(37)},
+			},
+		},
+		{
+			company: "SoundCloud", role: "Full Stack Engineer",
+			location: "Berlin, Germany", source: "LinkedIn",
+			notes:         "Music streaming, remote-friendly.",
+			dateApplied:   day(36),
+			interviewDate: iday(4),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(36)},
+				{from: ptr("Applied"), to: "Interview", note: "Take-home task submitted.", changedAt: day(39)},
+			},
+		},
+		{
+			company: "Klarna", role: "Backend Developer",
+			location: "Stockholm, Sweden", source: "Indeed",
+			dateApplied:   day(28),
+			interviewDate: iday(-2),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(28)},
+				{from: ptr("Applied"), to: "Interview", note: "Technical round.", changedAt: day(33)},
+				{from: ptr("Interview"), to: "Offer", note: "Offer letter received.", changedAt: day(38)},
+			},
+		},
+		{
+			company: "Wise", role: "Software Engineer",
+			location: "Tallinn, Estonia", source: "Company Site",
+			notes:         "Fintech, remote work available.",
+			dateApplied:   day(37),
+			interviewDate: iday(6),
+			transitions: []transition{
+				{from: nil, to: "Applied", changedAt: day(37)},
+				{from: ptr("Applied"), to: "Interview", note: "Values interview done.", changedAt: day(40)},
 			},
 		},
 	}
 
+	inserted := 0
 	for _, a := range apps {
-		// Determine final status from last transition.
-		finalStatus := a.transitions[len(a.transitions)-1].to
+		// Skip if this (company, role) pair already exists for this user.
+		var existing applicationRow
+		if db.Where("user_id = ? AND company = ? AND role = ?", user.ID, a.company, a.role).First(&existing).Error == nil {
+			continue
+		}
 
+		finalStatus := a.transitions[len(a.transitions)-1].to
 		app := applicationRow{
-			UserID:      user.ID,
-			Company:     a.company,
-			Role:        a.role,
-			Status:      finalStatus,
-			DateApplied: a.dateApplied,
-			Location:    a.location,
-			Source:      a.source,
-			Notes:       a.notes,
+			UserID:        user.ID,
+			Company:       a.company,
+			Role:          a.role,
+			Status:        finalStatus,
+			DateApplied:   a.dateApplied,
+			Location:      a.location,
+			Source:        a.source,
+			Notes:         a.notes,
+			InterviewDate: a.interviewDate,
 		}
 		if err := db.Create(&app).Error; err != nil {
 			slog.Error("seed: failed to create application", "company", a.company, "error", err)
 			os.Exit(1)
 		}
-
 		for _, t := range a.transitions {
 			h := historyRow{
 				ApplicationID: app.ID,
@@ -250,13 +560,13 @@ func main() {
 				ChangedAt:     t.changedAt,
 			}
 			if err := db.Create(&h).Error; err != nil {
-				slog.Error("seed: failed to create status history", "company", a.company, "to", t.to, "error", err)
+				slog.Error("seed: failed to create history", "company", a.company, "error", err)
 				os.Exit(1)
 			}
 		}
-
 		slog.Info("seed: created application", "company", a.company, "status", finalStatus)
+		inserted++
 	}
 
-	slog.Info("seed: done — 1 user + 8 applications created", "email", demoEmail, "password", demoPassword)
+	slog.Info("seed: done", "email", demoEmail, "password", demoPassword, "inserted", inserted)
 }
