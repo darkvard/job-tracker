@@ -329,6 +329,24 @@ export default function KanbanView({ jobs }: KanbanViewProps) {
 
     setColumnMap((prev) => ({ ...prev, [jobId]: newStatus }))
     updateStatusMutation.mutate({ id: jobId, status: newStatus })
+
+    // Auto-set interviewDate = today when moving to Interview (if not set or already past)
+    if (newStatus === 'Interview') {
+      const job = jobs.find((j) => j.id === jobId)
+      const today = new Date().toISOString().split('T')[0]
+      if (job && (!job.interviewDate || job.interviewDate.split('T')[0] < today)) {
+        api.jobs.update(jobId, {
+          company: job.company,
+          role: job.role,
+          source: job.source,
+          dateApplied: job.dateApplied,
+          status: newStatus,
+          interviewDate: today,
+        }).then(() => {
+          qc.invalidateQueries({ queryKey: ['jobs'] })
+        }).catch(() => { /* status already updated — silent */ })
+      }
+    }
   }
 
   // Group jobs by column
