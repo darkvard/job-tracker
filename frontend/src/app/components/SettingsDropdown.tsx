@@ -79,7 +79,7 @@ export default function SettingsDropdown() {
               {SUPPORTED_LANGUAGES.map(({ code, label }) => (
                 <button
                   key={code}
-                  onClick={() => changeLanguage(code)}
+                  onClick={() => { changeLanguage(code); setOpen(false) }}
                   className={`flex-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                     language === code
                       ? 'bg-indigo-600 text-white'
