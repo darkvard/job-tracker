@@ -32,7 +32,7 @@ test.describe('Job Tracker smoke', () => {
 
     // Navigate to add form
     await page.getByRole('button', { name: /Add Application/i }).click()
-    await page.waitForURL('/jobs/new')
+    await page.waitForURL(/\/jobs\?open=new/)
 
     // Step 1: company + role
     await page.getByPlaceholder('e.g. Google').fill(company)
@@ -65,9 +65,9 @@ test.describe('Job Tracker smoke', () => {
     await page.getByRole('button', { name: 'Submit' }).click()
     await page.waitForURL('/jobs')
 
-    // Click the card to open detail
+    // Click the card to open detail sheet
     await page.getByText(company).first().click()
-    await page.waitForURL(/\/jobs\/\d+/)
+    await page.waitForURL(/\/jobs\?open=\d+/)
 
     // Enter inline edit mode and update status
     await page.getByRole('button', { name: 'Edit' }).click()
@@ -111,9 +111,9 @@ test.describe('Job Tracker smoke', () => {
     await page.getByRole('button', { name: 'Submit' }).click()
     await page.waitForURL('/jobs')
 
-    // Open detail
+    // Open detail sheet
     await page.getByText(company).first().click()
-    await page.waitForURL(/\/jobs\/\d+/)
+    await page.waitForURL(/\/jobs\?open=\d+/)
 
     // Delete — opens AlertDialog
     await page.getByRole('button', { name: 'Delete' }).click()

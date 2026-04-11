@@ -51,7 +51,7 @@ async function switchToVI(page: Page) {
 /** Create a minimal job (step through Add Application form in English). */
 async function addJob(page: Page, company: string) {
   await page.getByRole('button', { name: /Add Application/i }).click()
-  await page.waitForURL('/jobs/new')
+  await page.waitForURL(/\/jobs\?open=new/)
   await page.getByPlaceholder('e.g. Google').fill(company)
   await page.getByPlaceholder('e.g. Senior Product Designer').fill('Engineer')
   await page.getByRole('button', { name: 'Next' }).click()
@@ -167,7 +167,7 @@ test.describe('i18n: language switching', () => {
   test('5 — Add Application form labels in Vietnamese', async ({ page }) => {
     await switchToVI(page)
 
-    await page.goto('/jobs/new')
+    await page.goto('/jobs?open=new')
 
     // Page heading and step labels
     await expect(page.getByRole('heading', { name: 'Thêm đơn ứng tuyển' })).toBeVisible()
@@ -210,10 +210,7 @@ test.describe('i18n: language switching', () => {
     // Navigate to the created job
     await page.goto('/jobs')
     await page.getByText(company).first().click()
-    await page.waitForURL(/\/jobs\/\d+/)
-
-    // Back link
-    await expect(page.getByText('Quay lại danh sách')).toBeVisible()
+    await page.waitForURL(/\/jobs\?open=\d+/)
 
     // Application Timeline heading
     await expect(page.getByText('Tiến trình ứng tuyển')).toBeVisible()
