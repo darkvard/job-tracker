@@ -205,7 +205,7 @@ export default function Dashboard() {
                   <motion.tr
                     key={job.id}
                     whileHover={{ backgroundColor: 'rgba(99, 102, 241, 0.05)' }}
-                    onClick={() => navigate(`/jobs/${job.id}`)}
+                    onClick={() => navigate(`/jobs?open=${job.id}`)}
                     className="border-b border-gray-50 dark:border-gray-700/50 last:border-0 cursor-pointer"
                   >
                     <td className="py-3 pr-4">

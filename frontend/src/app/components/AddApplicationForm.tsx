@@ -52,11 +52,17 @@ function formatDateReadable(dateStr: string) {
   })
 }
 
-export default function AddApplicationForm() {
+interface AddApplicationFormProps {
+  /** When provided, the form runs in sheet mode: no back-button header, calls onSuccess() instead of navigating */
+  onSuccess?: () => void
+}
+
+export default function AddApplicationForm({ onSuccess }: AddApplicationFormProps) {
   const navigate = useNavigate()
   const qc = useQueryClient()
   const { t } = useTranslation()
   const toast = useToast()
+  const isSheetMode = Boolean(onSuccess)
   const [step, setStep] = useState(1)
   const [showBenefits, setShowBenefits] = useState(false)
   const [form, setForm] = useState<FormData>({
@@ -104,7 +110,11 @@ export default function AddApplicationForm() {
       qc.invalidateQueries({ queryKey: ['jobs'] })
       qc.invalidateQueries({ queryKey: ['dashboard'] })
       toast(t('toast.createSuccess'), 'success')
-      navigate('/jobs', { replace: true })
+      if (onSuccess) {
+        onSuccess()
+      } else {
+        navigate('/jobs', { replace: true })
+      }
     },
     onError: (err: unknown) => {
       const msg =
@@ -121,19 +131,21 @@ export default function AddApplicationForm() {
   const canNext = step === 1 ? form.company.trim() !== '' && form.role.trim() !== '' : true
 
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
-      <div className="mb-6">
-        <button
-          onClick={() => navigate('/jobs')}
-          className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 mb-4 transition-colors"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          {t('common.back')}
-        </button>
-        <h1 className="text-3xl font-semibold text-gray-900 dark:text-white">{t('jobs.addTitle')}</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-1">{t('jobs.addSubtitle')}</p>
-      </div>
+    <div className={isSheetMode ? 'px-6 py-6' : 'max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8'}>
+      {/* Header — hidden in sheet mode (sheet provides its own title + X button) */}
+      {!isSheetMode && (
+        <div className="mb-6">
+          <button
+            onClick={() => navigate('/jobs')}
+            className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 mb-4 transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            {t('common.back')}
+          </button>
+          <h1 className="text-3xl font-semibold text-gray-900 dark:text-white">{t('jobs.addTitle')}</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">{t('jobs.addSubtitle')}</p>
+        </div>
+      )}
 
       {/* Progress Steps */}
       <div className="flex items-center mb-8">
