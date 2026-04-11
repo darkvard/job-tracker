@@ -519,13 +519,209 @@ Full flow: register → login → create job → list (filter) → update status
 
 - [x] PR-29: Extended application fields (salary, benefits, interview_date) — DB + BE + FE
 - [x] PR-30: Kanban view with @dnd-kit drag-and-drop
+- [x] PR-31: Calendar view with date-fns month grid
 - [x] PR-37: Sheet-based create/detail/edit + URL state persistence [frontend]
-- [ ] PR-31: Calendar view with date-fns month grid
 - [ ] PR-32: Job comparison — backend scoring API
 - [ ] PR-33: Job comparison — frontend compare page
 - [ ] PR-34: Notification system — domain + backend API
 - [ ] PR-35: Notification bell UI + dashboard deadline section
 - [ ] PR-36: Polish — i18n keys, Swagger annotations, E2E tests
+
+---
+
+### [x] PR-31: Calendar view with date-fns month grid
+Shipped in commit `002ec39` (feat(calendar): dense chips for applied+interview, day detail panel, kanban auto-set interviewDate).
+
+**What was built:**
+- `CalendarView.tsx`: month grid, dense chips per day (Applied=indigo, Interview=amber)
+- Day detail panel: click a day → side panel lists that day's jobs, each opens sheet via `?open={id}`
+- Kanban: drag to Interview column → auto-fills `interviewDate` with today
+- Accessible via `?viewMode=calendar` URL param (same state persistence as list/kanban)
+- i18n key `calendar.title` added
+
+---
+
+### [ ] PR-32: Job comparison — backend scoring API
+**Docs:** `docs/RULES.md` · `docs/ARCHITECTURE_BACKEND.md` · `docs/API_SPEC.md`
+**Files:**
+- NEW: `backend/internal/domain/entity/comparison.go`
+- NEW: `backend/internal/application/job/usecase/compare_jobs.go`
+- NEW: `backend/internal/infrastructure/http/handler/comparison.go`
+- MODIFY: `backend/internal/infrastructure/http/router.go`
+- MODIFY: `backend/cmd/api/main.go`
+
+**What:**
+Stateless scoring endpoint — no DB table needed; reads existing `applications` rows.
+
+- `ComparisonScore` value type: `TotalComp int64` · `BenefitsScore int` · `OverallScore float64`
+  - `TotalComp` = `salary + lunchAllowance*12 + bonusAnnual - salary*(bhxhPct+bhytPct)/100`
+  - `BenefitsScore` = `noSaturday(+2) + noForcedOt(+2) + workType=="Remote"(+2)/"Hybrid"(+1)`
+  - `OverallScore` = `TotalComp/1_000_000 * 0.7 + BenefitsScore * 0.3` (normalized 0–100)
+- `CompareJobsUseCase.Execute(ctx, userID, ids []int)` → `[]ApplicationWithScore`
+  - Validates 2–5 IDs; verifies all belong to `userID` (403 otherwise)
+  - Reuses `ApplicationRepository.FindByID` — no new repo method needed
+- Handler: `GET /api/v1/applications/compare?ids=1,2,3`
+  - Parses comma-separated IDs; calls use case; returns array with score fields appended
+  - `// @Summary`, `// @Tags applications` Swagger annotations
+- Wire in `main.go` (reuses existing `appRepo` — no new infra dep)
+- `make mock && make swagger && make lint && make test`
+
+**Test:**
+- `GET /api/v1/applications/compare?ids=1,2` → 200 with score fields
+- `ids` belonging to another user → 403
+- `ids` < 2 or > 5 → 422
+- `make test` green
+
+---
+
+### [ ] PR-33: Job comparison — frontend compare page
+**Docs:** `docs/ARCHITECTURE_FRONTEND.md` · `.claude/skills/ui.md`
+**Files:**
+- NEW: `frontend/src/app/components/ComparisonPage.tsx`
+- MODIFY: `frontend/src/app/App.tsx` — add `/compare` route
+- MODIFY: `frontend/src/app/components/ApplicationsList.tsx` — add compare checkbox selection
+- MODIFY: `frontend/src/app/components/Navbar.tsx` — no new link (use floating button)
+- MODIFY: `frontend/src/lib/api.ts` — add `api.jobs.compare(ids)`
+- MODIFY: `frontend/src/i18n/locales/en.json` + `vi.json`
+
+**Navigation rule (PR-37 compat):** All "View Details" links in `ComparisonPage` must use
+`navigate('/jobs?open=' + jobId)` — never `/jobs/:id`.
+
+**What:**
+- `ApplicationsList.tsx`: add per-card checkbox (top-left, only visible on hover/when selection active)
+  - `compareIds: number[]` stored in URL param `?compare=1,2` (max 3)
+  - "Compare (N)" floating button bottom-right when ≥ 2 selected → `navigate('/compare?ids=1,2')`
+  - Selecting 4th job replaces the oldest selection
+- `api.ts`: `compare: (ids: number[]) => api.get('/applications/compare?ids=' + ids.join(','))`
+- `ComparisonPage.tsx` at `/compare`:
+  - Reads `?ids=` from URL; calls `useQuery(['compare', ids], () => api.jobs.compare(ids))`
+  - 3 states: loading skeleton / error / data
+  - Side-by-side table: row per field (company, role, salary, TotalComp, BenefitsScore, OverallScore, workType, noSaturday, noForcedOt)
+  - "Best" column highlighted in indigo
+  - Each column header: "View Details" button → `navigate('/jobs?open=' + job.id)`
+  - "← Back to jobs" → `navigate('/jobs')`
+  - Dark mode; `motion/react` entry animation
+- `App.tsx`: add `<Route path="/compare" element={<ComparisonPage />} />` inside `ProtectedLayout`
+- `Navbar.tsx`: no change (no new nav link for comparison)
+- i18n keys: `compare.*` group (title, subtitle, viewDetails, backToJobs, bestValue, score fields)
+- `make lint && make test-ui`
+
+**Test:**
+- Select 2 jobs on `/jobs` → floating "Compare (2)" appears → click → navigates to `/compare?ids=X,Y`
+- Comparison table shows both jobs side-by-side with scores; best score column highlighted
+- "View Details" on a job → `/jobs?open={id}` → sheet opens over list
+- "← Back to jobs" → `/jobs` with previous list state preserved (URL params intact)
+- Dark mode renders correctly
+
+---
+
+### [ ] PR-34: Notification system — domain + backend API
+**Docs:** `docs/RULES.md` · `docs/ARCHITECTURE_BACKEND.md`
+**Files:**
+- NEW: `backend/migrations/000003_notifications.up.sql` + `.down.sql`
+- NEW: `backend/internal/domain/entity/notification.go`
+- NEW: `backend/internal/domain/repository/notification.go`
+- NEW: `backend/internal/application/notification/usecase/list.go` + `mark_read.go`
+- NEW: `backend/internal/infrastructure/persistence/models/notification.go`
+- NEW: `backend/internal/infrastructure/persistence/notification_repo.go`
+- NEW: `backend/internal/infrastructure/http/handler/notification.go`
+- MODIFY: `backend/internal/infrastructure/http/router.go`
+- MODIFY: `backend/cmd/api/main.go`
+
+**What:**
+- Migration `000003`: `notifications(id, user_id, job_id, type, title, body, is_read, scheduled_at, created_at)`
+  - `type` = `'interview_reminder' | 'deadline'`
+  - Index: `(user_id, is_read, scheduled_at)`
+- `Notification` entity: `NewInterviewReminder(userID, jobID int, company, role string, interviewDate time.Time) *Notification`
+- `NotificationRepository` interface: `ListUnread(ctx, userID) ([]Notification, error)` · `MarkRead(ctx, id, userID) error` · `CreateBatch(ctx, notifs []Notification) error`
+- `ListNotificationsUseCase` + `MarkReadUseCase` with mockery unit tests
+- Handler `NotificationHandler`:
+  - `GET /api/v1/notifications` → lists unread, sorted by `scheduled_at`
+  - `PUT /api/v1/notifications/:id/read` → marks single notification read
+  - Swagger annotations on both
+- Seeder: on each `GET /api/v1/applications` or dashboard call, auto-create `interview_reminder` notifications for any `interviewDate` within the next 7 days that doesn't already have one (idempotent — check before insert)
+  - Simplest approach: trigger in `DashboardUseCase.Execute()` as a side-effect
+- Wire `NotificationRepository` + use cases + handler in `main.go`
+- `make mock && make swagger && make lint && make test`
+
+**Test:**
+- Create job with `interviewDate = tomorrow` → `GET /api/v1/notifications` → returns 1 reminder
+- `PUT /api/v1/notifications/:id/read` → re-fetch → not in list
+- `GET /api/v1/notifications` for other user → empty (isolation)
+- `make test` green
+
+---
+
+### [ ] PR-35: Notification bell UI + dashboard deadline section
+**Docs:** `docs/ARCHITECTURE_FRONTEND.md` · `.claude/skills/ui.md`
+**Files:**
+- NEW: `frontend/src/app/components/NotificationsDropdown.tsx`
+- MODIFY: `frontend/src/app/components/Navbar.tsx`
+- MODIFY: `frontend/src/app/components/Dashboard.tsx`
+- MODIFY: `frontend/src/lib/api.ts`
+- MODIFY: `frontend/src/i18n/locales/en.json` + `vi.json`
+
+**Navigation rule (PR-37 compat):** All "open job" actions must use
+`navigate('/jobs?open=' + jobId)` — never `/jobs/:id`.
+
+**What:**
+- `api.ts`: `api.notifications.list()` + `api.notifications.markRead(id)`
+- `NotificationsDropdown.tsx`:
+  - `useQuery(['notifications'], api.notifications.list)` + `useMutation(api.notifications.markRead, { onSuccess: () => qc.invalidateQueries(['notifications']) })`
+  - 3 states: loading / error / empty ("All caught up 🎉")
+  - Each item: bell icon + `title` + relative time (`X days until interview`)
+  - Click item → `navigate('/jobs?open=' + notification.jobId)` + `markRead(id)`
+  - "Mark all read" button at bottom (calls `markRead` for each unread)
+  - Dark mode; max-height scroll; `motion/react` slide-down animation
+- `Navbar.tsx`: replace decorative `<Bell>` button with `<NotificationsDropdown />`
+  - Red dot badge shows unread count (hidden when 0)
+  - Click-outside closes dropdown
+- `Dashboard.tsx`: add "Upcoming Deadlines" card below KPI row
+  - Lists jobs with `interviewDate` within 7 days (uses existing `?status=Upcoming` filter via `api.jobs.list({ status: 'Upcoming' })` or a dedicated `useQuery`)
+  - Each row: company avatar + role + interview date + countdown chip
+  - Click row → `navigate('/jobs?open=' + job.id)` (opens sheet over list)
+  - Hidden when no upcoming jobs
+- i18n keys: `notifications.*` group (title, empty, markAllRead, daysUntil, today) + `dashboard.upcomingDeadlines`
+- `make lint && make test-ui`
+
+**Test:**
+- Create job with `interviewDate` within 7 days → bell shows red badge → click → dropdown shows reminder
+- Click notification → `/jobs?open={id}` sheet opens; notification marked read; badge disappears
+- Dashboard "Upcoming Deadlines" card appears; click job row → `/jobs?open={id}` sheet opens
+- Dark mode renders correctly
+
+---
+
+### [ ] PR-36: Polish — i18n keys, Swagger annotations, E2E tests
+**Docs:** `docs/ARCHITECTURE_FRONTEND.md` · `docs/API_SPEC.md`
+**Files:**
+- MODIFY: all backend handler files — ensure `// @Summary`, `// @Tags`, `// @Param`, `// @Success`, `// @Failure` on every endpoint → `make swagger` → commit `backend/docs/`
+- MODIFY: `frontend/src/i18n/locales/en.json` + `vi.json` — fill any keys missing after PR-33 + PR-35
+- NEW/MODIFY: `frontend/e2e/smoke.spec.ts` — extend with comparison + notification smoke tests
+- NEW: `frontend/e2e/comparison.spec.ts`
+- NEW: `frontend/e2e/notification.spec.ts`
+
+**E2E navigation patterns (PR-37 compat — REQUIRED):**
+```typescript
+// ✅ correct — sheet-based detail
+await page.waitForURL(/\/jobs\?open=\d+/)
+// ✅ correct — create sheet
+await page.waitForURL(/\/jobs\?open=new/)
+// ✅ correct — goto create sheet
+await page.goto('/jobs?open=new')
+// ❌ wrong — old full-page routes no longer exist
+// await page.waitForURL('/jobs/new')
+// await page.waitForURL(/\/jobs\/\d+/)
+```
+
+**What:**
+- Swagger: every handler in `application.go`, `auth.go`, `dashboard.go`, `analytics.go`, `notification.go`, `comparison.go` must have full annotations → `make swagger` once at end
+- i18n audit: grep for any `t('...')` calls not covered in `en.json`/`vi.json` → fill gaps; run tests in VI mode to surface missing keys
+- `comparison.spec.ts`: select 2 jobs, compare, assert scores visible, "View Details" opens sheet
+- `notification.spec.ts`: create job with interview date tomorrow, reload dashboard, assert bell badge, click → sheet opens
+- `make lint && make test-ui` green
+
+**Test:** All 13+ Playwright tests green · `make swagger` produces no diff in `backend/docs/`
 
 ---
 
@@ -543,6 +739,6 @@ Full flow: register → login → create job → list (filter) → update status
 | 7: UX fixes | PR-25 | Edit mode, delete fix, dashboard navigation |
 | 8: Toast + UX polish | PR-26 | Toast system, smooth create flow, date UX |
 | 9: User Profile | PR-27 → PR-28 | Profile API (backend) + Profile UI (frontend) |
-| 10: Real-World UX | PR-29 → PR-36 | Extended fields, Kanban, Calendar, Comparison, Notifications |
+| 10: Real-World UX | PR-29 → PR-37 | Extended fields, Kanban, Calendar, Sheet nav, Comparison, Notifications |
 
-**Total: 36 PRs** · each 100–400 lines · strictly ordered
+**Total: 37 PRs** · each 100–400 lines · strictly ordered

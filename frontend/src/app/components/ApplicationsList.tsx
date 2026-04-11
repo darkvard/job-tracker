@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion } from 'motion/react'
@@ -25,7 +25,7 @@ import {
 
 // Status filter values stay in English (API contract). 'Upcoming' is client-side only.
 const STATUS_FILTER_VALUES = ['All', 'Applied', 'Interview', 'Offer', 'Rejected', 'Upcoming']
-const PAGE_SIZE = 12
+const PAGE_SIZE = 24
 const KANBAN_PAGE_SIZE = 999
 const UPCOMING_DAYS = 7
 
@@ -102,11 +102,7 @@ function ApplicationCard({
       </div>
 
       {/* Footer: location + source/date + countdown + delete */}
-      <div
-        className="px-4 pb-3 pt-2 border-t border-gray-100 dark:border-gray-700 space-y-1"
-        onClick={(e) => e.stopPropagation()}
-        onPointerDown={(e) => e.stopPropagation()}
-      >
+      <div className="px-4 pb-3 pt-2 border-t border-gray-100 dark:border-gray-700 space-y-1">
         {job.location && (
           <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{job.location}</p>
         )}
@@ -127,6 +123,7 @@ function ApplicationCard({
             </span>
           )}
           <span className="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">{dateStr}</span>
+          <span onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <button
@@ -149,6 +146,7 @@ function ApplicationCard({
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+          </span>
         </div>
       </div>
     </motion.div>
@@ -214,8 +212,13 @@ export default function ApplicationsList() {
     })
   }, [setSearchParams])
 
-  // Debounce search input → URL param (300ms)
+  // Track previous search to skip debounce on mount (Strict Mode safe)
+  const prevSearch = useRef(searchInput)
+
+  // Debounce search input → URL param (300ms). Skip if value hasn't changed (mount, Strict Mode).
   useEffect(() => {
+    if (searchInput === prevSearch.current) return
+    prevSearch.current = searchInput
     const timer = setTimeout(() => {
       setParam('search', searchInput || null)
       setParam('page', null) // reset page on new search
@@ -379,9 +382,9 @@ export default function ApplicationsList() {
 
       {/* Content */}
       {viewMode === 'kanban' && !isLoading && !error ? (
-        <KanbanView jobs={allJobs} />
+        <KanbanView jobs={allJobs} onView={(id) => openSheet(String(id))} />
       ) : viewMode === 'calendar' && !isLoading && !error ? (
-        <CalendarView jobs={allJobs} />
+        <CalendarView jobs={allJobs} onView={(id) => openSheet(String(id))} />
       ) : isLoading ? (
         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {[...Array(8)].map((_, i) => (

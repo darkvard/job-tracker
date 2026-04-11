@@ -94,7 +94,10 @@ export default function Navbar() {
         </button>
 
         {/* Avatar / user dropdown */}
-        <div ref={userMenuRef} className="relative">
+        {showUserMenu && (
+          <div className="fixed inset-0 z-40 bg-black/40" onClick={() => setShowUserMenu(false)} />
+        )}
+        <div ref={userMenuRef} className="relative z-50">
           <button
             onClick={() => setShowUserMenu((v) => !v)}
             title={t('nav.profile')}

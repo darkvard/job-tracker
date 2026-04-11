@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, X, CalendarDays, Dot } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { Job } from '@/lib/api'
@@ -37,10 +36,10 @@ function toDateKey(d: string) {
 
 interface CalendarViewProps {
   jobs: Job[]
+  onView: (id: number) => void
 }
 
-export default function CalendarView({ jobs }: CalendarViewProps) {
-  const navigate = useNavigate()
+export default function CalendarView({ jobs, onView }: CalendarViewProps) {
   const { t } = useTranslation()
   const today = new Date()
   const [viewYear, setViewYear] = useState(today.getFullYear())
@@ -168,7 +167,7 @@ export default function CalendarView({ jobs }: CalendarViewProps) {
                       return (
                         <button
                           key={`i-${job.id}-${i}`}
-                          onClick={() => navigate(`/jobs/${job.id}`)}
+                          onClick={() => onView(job.id)}
                           title={`Interview: ${job.company} — ${job.role}`}
                           className={`w-full text-left flex items-center gap-0.5 text-xs px-1 py-0.5 rounded truncate font-medium hover:opacity-80 transition-opacity ${INTERVIEW_CHIP[statusKey] ?? INTERVIEW_CHIP.interview}`}
                         >
@@ -180,7 +179,7 @@ export default function CalendarView({ jobs }: CalendarViewProps) {
                       return (
                         <button
                           key={`a-${job.id}-${i}`}
-                          onClick={() => navigate(`/jobs/${job.id}`)}
+                          onClick={() => onView(job.id)}
                           title={`Applied: ${job.company} — ${job.role}`}
                           className={`w-full text-left flex items-center gap-0.5 text-xs px-1 py-0.5 rounded truncate border-l-2 bg-gray-100/60 dark:bg-gray-700/40 text-gray-600 dark:text-gray-400 hover:opacity-80 transition-opacity ${APPLIED_BORDER[statusKey] ?? APPLIED_BORDER.applied}`}
                         >
@@ -251,7 +250,7 @@ export default function CalendarView({ jobs }: CalendarViewProps) {
                   {selectedEvents.filter(e => e.type === 'interview').map(({ job }) => (
                     <button
                       key={`panel-i-${job.id}`}
-                      onClick={() => navigate(`/jobs/${job.id}`)}
+                      onClick={() => onView(job.id)}
                       className="w-full text-left p-2 rounded-lg border border-amber-100 dark:border-amber-900/40 bg-amber-50/50 dark:bg-amber-950/20 hover:bg-amber-50 dark:hover:bg-amber-950/30 transition-colors group"
                     >
                       <p className="text-sm font-medium text-gray-900 dark:text-white truncate group-hover:text-amber-700 dark:group-hover:text-amber-300">{job.company}</p>
@@ -272,7 +271,7 @@ export default function CalendarView({ jobs }: CalendarViewProps) {
                   {selectedEvents.filter(e => e.type === 'applied').map(({ job }) => (
                     <button
                       key={`panel-a-${job.id}`}
-                      onClick={() => navigate(`/jobs/${job.id}`)}
+                      onClick={() => onView(job.id)}
                       className="w-full text-left p-2 rounded-lg border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
                     >
                       <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{job.company}</p>

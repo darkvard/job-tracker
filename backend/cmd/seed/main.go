@@ -254,7 +254,7 @@ func main() {
 		},
 		{
 			company: "Vercel", role: "DevRel Engineer",
-			location: "Remote", source: "Twitter/X",
+			location: "Remote", source: "Other",
 			notes:       "Found via @vercel tweet about openings.",
 			dateApplied: day(21),
 			transitions: []transition{
@@ -335,7 +335,7 @@ func main() {
 		},
 		{
 			company: "Supabase", role: "Fullstack Engineer",
-			location: "Remote", source: "Twitter/X",
+			location: "Remote", source: "Other",
 			notes:       "Open source first culture.",
 			dateApplied: day(31),
 			transitions: []transition{
