@@ -6,12 +6,16 @@ import {
   DragStartEvent,
   closestCenter,
   useDroppable,
-  useDraggable,
 } from '@dnd-kit/core'
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+  arrayMove,
+} from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { motion } from 'motion/react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Trash2 } from 'lucide-react'
 import { api, type Job } from '@/lib/api'
@@ -62,30 +66,25 @@ const COLUMN_STYLES: Record<
   },
 }
 
-// ── Draggable Card — compact, no status badge (column implies status) ─────────
-// Layout:
-//   [Avatar] Company                            ← drag handle
-//            Role
-//   ─────────────────────────────────────────
-//   Location (if any)
-//   Source               Date    [🗑]
+// ── Sortable Card ──────────────────────────────────────────────────────────────
 
-interface DraggableCardProps {
+interface SortableCardProps {
   job: Job
   isDragging: boolean
   onDelete: (id: number) => void
+  onView: (id: number) => void
 }
 
-function DraggableCard({ job, isDragging, onDelete }: DraggableCardProps) {
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+function SortableCard({ job, isDragging, onDelete, onView }: SortableCardProps) {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
     id: String(job.id),
-    data: { status: job.status },
+    data: { type: 'card', status: job.status },
   })
-  const navigate = useNavigate()
   const { t } = useTranslation()
 
   const style = {
-    transform: CSS.Translate.toString(transform),
+    transform: CSS.Transform.toString(transform),
+    transition,
     opacity: isDragging ? 0.35 : 1,
   }
 
@@ -106,7 +105,7 @@ function DraggableCard({ job, isDragging, onDelete }: DraggableCardProps) {
           {...listeners}
           {...attributes}
           className="flex items-start gap-3 px-4 pt-4 pb-3 cursor-grab active:cursor-grabbing"
-          onClick={() => { if (!transform) navigate(`/jobs/${job.id}`) }}
+          onClick={() => { if (!transform) onView(job.id) }}
         >
           <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-semibold text-base flex-shrink-0">
             {job.company.charAt(0)}
@@ -121,11 +120,7 @@ function DraggableCard({ job, isDragging, onDelete }: DraggableCardProps) {
         </div>
 
         {/* Footer: location + source + date + delete */}
-        <div
-          className="px-4 pb-3 pt-2 border-t border-gray-100 dark:border-gray-700 space-y-1"
-          onClick={(e) => e.stopPropagation()}
-          onPointerDown={(e) => e.stopPropagation()}
-        >
+        <div className="px-4 pb-3 pt-2 border-t border-gray-100 dark:border-gray-700 space-y-1">
           {job.location && (
             <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
               {job.location}
@@ -138,30 +133,32 @@ function DraggableCard({ job, isDragging, onDelete }: DraggableCardProps) {
             <span className="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">
               {dateStr}
             </span>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <button
-                  className="p-1 rounded text-gray-300 dark:text-gray-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors flex-shrink-0"
-                  aria-label="Delete application"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>{t('jobs.deleteTitle')}</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    {t('jobs.deleteConfirmMsg', { company: job.company, role: job.role })}
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => onDelete(job.id)}>
-                    {t('common.delete')}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            <span onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button
+                    className="p-1 rounded text-gray-300 dark:text-gray-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors flex-shrink-0"
+                    aria-label="Delete application"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>{t('jobs.deleteTitle')}</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      {t('jobs.deleteConfirmMsg', { company: job.company, role: job.role })}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => onDelete(job.id)}>
+                      {t('common.delete')}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </span>
           </div>
         </div>
       </motion.div>
@@ -194,15 +191,21 @@ function DroppableColumn({
   jobs,
   activeId,
   onDelete,
+  onView,
 }: {
   status: Status
   jobs: Job[]
   activeId: string | null
   onDelete: (id: number) => void
+  onView: (id: number) => void
 }) {
   const { t } = useTranslation()
-  const { isOver, setNodeRef } = useDroppable({ id: status })
+  const { isOver, setNodeRef } = useDroppable({
+    id: status,
+    data: { type: 'column', status },
+  })
   const styles = COLUMN_STYLES[status]
+  const jobIds = jobs.map((j) => String(j.id))
 
   return (
     <div
@@ -225,20 +228,23 @@ function DroppableColumn({
         ref={setNodeRef}
         className="flex-1 p-3 space-y-3 overflow-y-auto max-h-[calc(100vh-240px)]"
       >
-        {jobs.map((job) => (
-          <DraggableCard
-            key={job.id}
-            job={job}
-            isDragging={activeId === String(job.id)}
-            onDelete={onDelete}
-          />
-        ))}
+        <SortableContext items={jobIds} strategy={verticalListSortingStrategy}>
+          {jobs.map((job) => (
+            <SortableCard
+              key={job.id}
+              job={job}
+              isDragging={activeId === String(job.id)}
+              onDelete={onDelete}
+              onView={onView}
+            />
+          ))}
+        </SortableContext>
         {jobs.length === 0 && !isOver && (
           <div className="flex items-center justify-center h-24 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl">
             <p className="text-xs text-gray-400 dark:text-gray-600">{t('kanban.dropHere')}</p>
           </div>
         )}
-        {isOver && (
+        {isOver && activeId && !jobIds.includes(activeId) && (
           <div className="flex items-center justify-center h-16 border-2 border-dashed border-indigo-400 dark:border-indigo-500 rounded-xl bg-indigo-50 dark:bg-indigo-950/20">
             <p className="text-xs text-indigo-500 dark:text-indigo-400 font-medium">
               {t('kanban.moveHere')}
@@ -254,25 +260,40 @@ function DroppableColumn({
 
 interface KanbanViewProps {
   jobs: Job[]
+  onView: (id: number) => void
 }
 
-export default function KanbanView({ jobs }: KanbanViewProps) {
+export default function KanbanView({ jobs, onView }: KanbanViewProps) {
   const qc = useQueryClient()
   const toast = useToast()
   const { t } = useTranslation()
 
-  // Local columns: job.id → current status (optimistic updates)
+  // columnMap: job.id → current status (for cross-column moves)
   const [columnMap, setColumnMap] = useState<Record<number, string>>(() => {
     const m: Record<number, string> = {}
     jobs.forEach((j) => { m[j.id] = j.status })
     return m
   })
 
-  // Sync columnMap when jobs prop changes (e.g. after refetch following a successful mutation)
+  // columnOrder: status → ordered job IDs (for within-column sorting)
+  const [columnOrder, setColumnOrder] = useState<Record<Status, number[]>>(() => {
+    const o = { Applied: [], Interview: [], Offer: [], Rejected: [] } as Record<Status, number[]>
+    jobs.forEach((j) => {
+      if (STATUSES.includes(j.status as Status)) o[j.status as Status].push(j.id)
+    })
+    return o
+  })
+
+  // Sync state when jobs prop changes (after refetch)
   useEffect(() => {
     const m: Record<number, string> = {}
     jobs.forEach((j) => { m[j.id] = j.status })
     setColumnMap(m)
+    const o = { Applied: [], Interview: [], Offer: [], Rejected: [] } as Record<Status, number[]>
+    jobs.forEach((j) => {
+      if (STATUSES.includes(j.status as Status)) o[j.status as Status].push(j.id)
+    })
+    setColumnOrder(o)
   }, [jobs])
 
   const [activeJob, setActiveJob] = useState<Job | null>(null)
@@ -319,48 +340,101 @@ export default function KanbanView({ jobs }: KanbanViewProps) {
   function handleDragEnd(event: DragEndEvent) {
     setActiveJob(null)
     const { active, over } = event
-    if (!over) return
+    if (!over || active.id === over.id) return
 
-    const jobId = Number(active.id)
-    const newStatus = String(over.id) as Status
-    const currentStatus = columnMap[jobId]
+    const activeJobId = Number(active.id)
+    const activeStatus = (columnMap[activeJobId] ?? '') as Status
 
-    if (!STATUSES.includes(newStatus) || newStatus === currentStatus) return
+    const overId = String(over.id)
+    const isOverColumn = (STATUSES as readonly string[]).includes(overId)
 
-    setColumnMap((prev) => ({ ...prev, [jobId]: newStatus }))
-    updateStatusMutation.mutate({ id: jobId, status: newStatus })
+    if (isOverColumn) {
+      // ── Cross-column drop onto empty column or column droppable ──────────
+      const newStatus = overId as Status
+      if (newStatus === activeStatus) return
 
-    // Auto-set interviewDate = today when moving to Interview (if not set or already past)
-    if (newStatus === 'Interview') {
-      const job = jobs.find((j) => j.id === jobId)
-      const today = new Date().toISOString().split('T')[0]
-      if (job && (!job.interviewDate || job.interviewDate.split('T')[0] < today)) {
-        api.jobs.update(jobId, {
-          company: job.company,
-          role: job.role,
-          source: job.source,
-          dateApplied: job.dateApplied,
-          status: newStatus,
-          interviewDate: today,
-        }).then(() => {
-          qc.invalidateQueries({ queryKey: ['jobs'] })
-        }).catch(() => { /* status already updated — silent */ })
+      setColumnMap((prev) => ({ ...prev, [activeJobId]: newStatus }))
+      setColumnOrder((prev) => {
+        const src = prev[activeStatus].filter((id) => id !== activeJobId)
+        const dst = [...prev[newStatus], activeJobId]
+        return { ...prev, [activeStatus]: src, [newStatus]: dst }
+      })
+      updateStatusMutation.mutate({ id: activeJobId, status: newStatus })
+      autoSetInterviewDate(activeJobId, newStatus)
+    } else {
+      // ── Drop onto another card ───────────────────────────────────────────
+      const overJobId = Number(overId)
+      const overStatus = (columnMap[overJobId] ?? '') as Status
+
+      if (activeStatus === overStatus) {
+        // Within-column reorder
+        setColumnOrder((prev) => {
+          const col = prev[activeStatus]
+          const oldIndex = col.indexOf(activeJobId)
+          const newIndex = col.indexOf(overJobId)
+          if (oldIndex === -1 || newIndex === -1) return prev
+          return { ...prev, [activeStatus]: arrayMove(col, oldIndex, newIndex) }
+        })
+      } else {
+        // Cross-column drop onto a card → insert at that card's position
+        setColumnMap((prev) => ({ ...prev, [activeJobId]: overStatus }))
+        setColumnOrder((prev) => {
+          const src = prev[activeStatus].filter((id) => id !== activeJobId)
+          const dst = [...prev[overStatus]]
+          const insertAt = dst.indexOf(overJobId)
+          if (insertAt === -1) dst.push(activeJobId)
+          else dst.splice(insertAt, 0, activeJobId)
+          return { ...prev, [activeStatus]: src, [overStatus]: dst }
+        })
+        updateStatusMutation.mutate({ id: activeJobId, status: overStatus })
+        autoSetInterviewDate(activeJobId, overStatus)
       }
     }
   }
 
-  // Group jobs by column
+  function autoSetInterviewDate(jobId: number, newStatus: string) {
+    if (newStatus !== 'Interview') return
+    const job = jobs.find((j) => j.id === jobId)
+    const today = new Date().toISOString().split('T')[0]
+    if (job && (!job.interviewDate || job.interviewDate.split('T')[0] < today)) {
+      api.jobs.update(jobId, {
+        company: job.company,
+        role: job.role,
+        source: job.source,
+        dateApplied: job.dateApplied,
+        status: newStatus,
+        interviewDate: today,
+      }).then(() => {
+        qc.invalidateQueries({ queryKey: ['jobs'] })
+      }).catch(() => { /* status already updated — silent */ })
+    }
+  }
+
+  // Build columns: use columnOrder for ordering, columnMap for status assignment
   const columns: Record<Status, Job[]> = {
     Applied: [],
     Interview: [],
     Offer: [],
     Rejected: [],
   }
-  jobs.forEach((job) => {
-    const status = (columnMap[job.id] ?? job.status) as Status
-    if (STATUSES.includes(status)) {
-      columns[status].push({ ...job, status })
-    }
+  const jobMap: Record<number, Job> = {}
+  jobs.forEach((j) => { jobMap[j.id] = j })
+
+  STATUSES.forEach((status) => {
+    columnOrder[status].forEach((jobId) => {
+      const job = jobMap[jobId]
+      const currentStatus = (columnMap[jobId] ?? job?.status) as Status
+      if (job && currentStatus === status) {
+        columns[status].push({ ...job, status })
+      }
+    })
+    // Include any jobs in this status that aren't in columnOrder yet
+    jobs.forEach((job) => {
+      const currentStatus = (columnMap[job.id] ?? job.status) as Status
+      if (currentStatus === status && !columnOrder[status].includes(job.id)) {
+        columns[status].push({ ...job, status })
+      }
+    })
   })
 
   return (
@@ -378,6 +452,7 @@ export default function KanbanView({ jobs }: KanbanViewProps) {
             jobs={columns[status]}
             activeId={activeJob ? String(activeJob.id) : null}
             onDelete={(id) => deleteMutation.mutate(id)}
+            onView={onView}
           />
         ))}
       </div>

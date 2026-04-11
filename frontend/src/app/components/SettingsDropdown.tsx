@@ -22,7 +22,10 @@ export default function SettingsDropdown() {
   }, [open])
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className="relative z-50">
+      {open && (
+        <div className="fixed inset-0 z-40 bg-black/40" onClick={() => setOpen(false)} />
+      )}
       <button
         onClick={() => setOpen((v) => !v)}
         title={t('settings.title')}

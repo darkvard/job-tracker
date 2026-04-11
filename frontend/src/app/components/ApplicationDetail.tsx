@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion } from 'motion/react'
-import { ChevronLeft, MapPin, Calendar, ExternalLink, Pencil, Check, X } from 'lucide-react'
+import { ChevronLeft, ChevronDown, MapPin, Calendar, ExternalLink, Pencil, Check, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
 import StatusBadge from '@/components/StatusBadge'
@@ -35,7 +35,16 @@ const inputClass =
 const readonlyClass =
   'text-sm font-medium text-gray-900 dark:text-white'
 
-const selectClass = inputClass + ' pr-8'
+const selectClass = inputClass + ' appearance-none pr-8'
+
+function SelectWrapper({ className, children, ...props }: React.SelectHTMLAttributes<HTMLSelectElement>) {
+  return (
+    <div className="relative">
+      <select className={`${selectClass}${className ? ' ' + className : ''}`} {...props}>{children}</select>
+      <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+    </div>
+  )
+}
 
 function DetailSkeleton() {
   return (
@@ -313,21 +322,22 @@ export default function ApplicationDetail({ jobId: jobIdProp, onClose }: Applica
                   placeholder={t('jobs.companyPlaceholder')}
                   className={inputClass}
                 />
-                <select
+                <SelectWrapper
                   value={editForm.status}
                   onChange={(e) => setField('status', e.target.value)}
-                  className={selectClass}
                 >
                   {statusOptions.map((s) => (
                     <option key={s} value={s}>{t(`status.${s.toLowerCase()}`)}</option>
                   ))}
-                </select>
+                </SelectWrapper>
               </div>
             ) : (
               <>
                 <h1 className="text-xl font-semibold text-gray-900 dark:text-white">{job.role}</h1>
                 <p className="text-gray-600 dark:text-gray-400 mb-3">{job.company}</p>
-                <StatusBadge status={job.status} size="md" />
+                <div className="-ml-3">
+                  <StatusBadge status={job.status} size="md" />
+                </div>
               </>
             )}
           </div>
@@ -346,8 +356,8 @@ export default function ApplicationDetail({ jobId: jobIdProp, onClose }: Applica
         {/* Info grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {/* Location */}
-          <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
-            <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
+          <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+            <MapPin className="w-4 h-4 text-gray-400 dark:text-gray-300 flex-shrink-0" />
             <div className="min-w-0 flex-1">
               <p className="text-xs text-gray-500 dark:text-gray-500">{t('detail.locationLabel')}</p>
               {isEditing ? (
@@ -364,37 +374,17 @@ export default function ApplicationDetail({ jobId: jobIdProp, onClose }: Applica
           </div>
 
           {/* Date applied */}
-          <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
-            <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
+          <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+            <Calendar className="w-4 h-4 text-gray-400 dark:text-gray-300 flex-shrink-0" />
             <div className="min-w-0 flex-1">
-              <div className="flex items-center justify-between">
-                <p className="text-xs text-gray-500 dark:text-gray-500">{t('detail.appliedLabel')}</p>
-                {isEditing && (
-                  <button
-                    type="button"
-                    onClick={() => setField('dateApplied', new Date().toISOString().split('T')[0])}
-                    className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
-                  >
-                    {t('common.today')}
-                  </button>
-                )}
-              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-500">{t('detail.appliedLabel')}</p>
               {isEditing ? (
-                <>
-                  <input
-                    type="date"
-                    value={editForm.dateApplied}
-                    onChange={(e) => setField('dateApplied', e.target.value)}
-                    className={inputClass + ' mt-0.5'}
-                  />
-                  {editForm.dateApplied && (
-                    <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
-                      {new Date(editForm.dateApplied + 'T12:00:00').toLocaleDateString('en-US', {
-                        weekday: 'short', month: 'long', day: 'numeric', year: 'numeric',
-                      })}
-                    </p>
-                  )}
-                </>
+                <input
+                  type="date"
+                  value={editForm.dateApplied}
+                  onChange={(e) => setField('dateApplied', e.target.value)}
+                  className={inputClass + ' mt-0.5'}
+                />
               ) : (
                 <p className={readonlyClass}>{formatDate(job.dateApplied)}</p>
               )}
@@ -402,20 +392,20 @@ export default function ApplicationDetail({ jobId: jobIdProp, onClose }: Applica
           </div>
 
           {/* Source */}
-          <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
-            <ExternalLink className="w-4 h-4 text-gray-400 flex-shrink-0" />
+          <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+            <ExternalLink className="w-4 h-4 text-gray-400 dark:text-gray-300 flex-shrink-0" />
             <div className="min-w-0 flex-1">
               <p className="text-xs text-gray-500 dark:text-gray-500">{t('detail.sourceLabel')}</p>
               {isEditing ? (
-                <select
+                <SelectWrapper
                   value={editForm.source}
                   onChange={(e) => setField('source', e.target.value)}
-                  className={selectClass + ' mt-0.5'}
+                  className="mt-0.5"
                 >
                   {SOURCES.map((s) => (
                     <option key={s} value={s}>{s}</option>
                   ))}
-                </select>
+                </SelectWrapper>
               ) : (
                 <p className={readonlyClass}>{job.source}</p>
               )}
@@ -423,7 +413,7 @@ export default function ApplicationDetail({ jobId: jobIdProp, onClose }: Applica
           </div>
 
           {/* Interview date */}
-          <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+          <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
             <Calendar className="w-4 h-4 text-amber-400 flex-shrink-0" />
             <div className="min-w-0 flex-1">
               <p className="text-xs text-gray-500 dark:text-gray-500">{t('jobs.interviewDate')}</p>
@@ -606,9 +596,9 @@ export default function ApplicationDetail({ jobId: jobIdProp, onClose }: Applica
             </div>
             <div className="col-span-2">
               <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{t('jobs.workType')}</label>
-              <select value={editForm.workType} onChange={(e) => setField('workType', e.target.value)} className={selectClass}>
+              <SelectWrapper value={editForm.workType} onChange={(e) => setField('workType', e.target.value)}>
                 {WORK_TYPES.map((w) => <option key={w} value={w}>{w}</option>)}
-              </select>
+              </SelectWrapper>
             </div>
             <div className="col-span-2">
               <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{t('jobs.commuteAddress')}</label>
@@ -617,11 +607,11 @@ export default function ApplicationDetail({ jobId: jobIdProp, onClose }: Applica
           </div>
           <div className="flex gap-6 mt-3">
             <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
-              <input type="checkbox" checked={editForm.noSaturday} onChange={(e) => setField('noSaturday', e.target.checked)} className="w-4 h-4 text-indigo-600 rounded" />
+              <input type="checkbox" checked={editForm.noSaturday} onChange={(e) => setField('noSaturday', e.target.checked)} className="w-4 h-4 accent-indigo-600 rounded cursor-pointer" />
               {t('jobs.noSaturday')}
             </label>
             <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
-              <input type="checkbox" checked={editForm.noForcedOt} onChange={(e) => setField('noForcedOt', e.target.checked)} className="w-4 h-4 text-indigo-600 rounded" />
+              <input type="checkbox" checked={editForm.noForcedOt} onChange={(e) => setField('noForcedOt', e.target.checked)} className="w-4 h-4 accent-indigo-600 rounded cursor-pointer" />
               {t('jobs.noForcedOt')}
             </label>
           </div>
