@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { motion } from 'motion/react'
-import { Search, Briefcase, ChevronLeft, ChevronRight, Trash2, LayoutGrid, List, Clock, CalendarDays } from 'lucide-react'
+import { motion, AnimatePresence } from 'motion/react'
+import { Search, Briefcase, ChevronLeft, ChevronRight, Trash2, LayoutGrid, List, Clock, CalendarDays, GitCompare } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { api, type Job, type JobFilters } from '@/lib/api'
 import StatusBadge from '@/components/StatusBadge'
@@ -61,11 +61,15 @@ function ApplicationCard({
   index,
   onDelete,
   onView,
+  isSelected,
+  onToggleCompare,
 }: {
   job: Job
   index: number
   onDelete: (id: number) => void
   onView: (id: number) => void
+  isSelected: boolean
+  onToggleCompare: (id: number) => void
 }) {
   const { t } = useTranslation()
   const dateStr = new Date(job.dateApplied).toLocaleDateString('en-US', {
@@ -87,11 +91,28 @@ function ApplicationCard({
       transition={{ delay: index * 0.04 }}
       whileHover={{ y: -2, boxShadow: '0 6px 20px rgba(0,0,0,0.08)' }}
       onClick={() => onView(job.id)}
-      className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 cursor-pointer select-none overflow-hidden"
+      className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border cursor-pointer select-none overflow-hidden transition-colors ${
+        isSelected
+          ? 'border-indigo-400 dark:border-indigo-500 ring-2 ring-indigo-200 dark:ring-indigo-900'
+          : 'border-gray-100 dark:border-gray-700'
+      }`}
     >
       {/* Header: avatar + company/role + status icon */}
-      <div className="flex items-start gap-3 px-4 pt-4 pb-3">
-        <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-semibold text-base flex-shrink-0">
+      <div className="flex items-start gap-3 px-4 pt-4 pb-3 relative">
+        {/* Compare checkbox — top-left corner */}
+        <span
+          onClick={(e) => { e.stopPropagation(); onToggleCompare(job.id) }}
+          className="absolute top-3 left-3 z-10"
+        >
+          <input
+            type="checkbox"
+            checked={isSelected}
+            readOnly
+            className="w-4 h-4 rounded accent-indigo-600 cursor-pointer"
+            aria-label={`Select ${job.company} for comparison`}
+          />
+        </span>
+        <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-semibold text-base flex-shrink-0 ml-4">
           {job.company.charAt(0)}
         </div>
         <div className="flex-1 min-w-0">
@@ -157,7 +178,32 @@ export default function ApplicationsList() {
   const qc = useQueryClient()
   const { t } = useTranslation()
   const toast = useToast()
+  const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
+
+  // Compare selection — stored in URL param ?compare=1,2,3 (max 3)
+  const compareIds = (() => {
+    const raw = searchParams.get('compare') ?? ''
+    return raw ? raw.split(',').map(Number).filter(Boolean) : []
+  })()
+
+  const toggleCompare = useCallback((id: number) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      const current = (prev.get('compare') ?? '').split(',').map(Number).filter(Boolean)
+      let updated: number[]
+      if (current.includes(id)) {
+        updated = current.filter((x) => x !== id)
+      } else if (current.length >= 3) {
+        updated = [...current.slice(1), id] // replace oldest
+      } else {
+        updated = [...current, id]
+      }
+      if (updated.length === 0) next.delete('compare')
+      else next.set('compare', updated.join(','))
+      return next
+    }, { replace: true })
+  }, [setSearchParams])
 
   // All list state lives in URL params — survives navigation, refresh, back/forward
   const statusFilter = (() => {
@@ -421,6 +467,8 @@ export default function ApplicationsList() {
                 index={index}
                 onDelete={(id) => deleteMutation.mutate(id)}
                 onView={(id) => openSheet(String(id))}
+                isSelected={compareIds.includes(job.id)}
+                onToggleCompare={toggleCompare}
               />
             ))}
           </div>
@@ -485,6 +533,22 @@ export default function ApplicationsList() {
           )}
         </>
       )}
+
+      {/* Floating compare button */}
+      <AnimatePresence>
+        {compareIds.length >= 2 && (
+          <motion.button
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 24 }}
+            onClick={() => navigate(`/compare?ids=${compareIds.join(',')}`)}
+            className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-full shadow-lg font-medium text-sm transition-colors"
+          >
+            <GitCompare className="w-4 h-4" />
+            {t('compare.compareButton', { count: compareIds.length })}
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       {/* Create sheet */}
       <JobFormSheet

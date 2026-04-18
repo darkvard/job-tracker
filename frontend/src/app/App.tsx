@@ -10,6 +10,7 @@ import Dashboard from '@/app/components/Dashboard'
 import ApplicationsList from '@/app/components/ApplicationsList'
 import Analytics from '@/app/components/Analytics'
 import ProfilePage from '@/app/components/ProfilePage'
+import ComparisonPage from '@/app/components/ComparisonPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -44,6 +45,7 @@ export default function App() {
               <Route path="/jobs/:id" element={<JobDetailRedirect />} />
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/compare" element={<ComparisonPage />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
