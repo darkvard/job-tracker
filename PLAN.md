@@ -574,7 +574,7 @@ Stateless scoring endpoint — no DB table needed; reads existing `applications`
 
 ---
 
-### [ ] PR-33: Job comparison — frontend compare page
+### [x] PR-33: Job comparison — frontend compare page
 **Docs:** `docs/ARCHITECTURE_FRONTEND.md` · `.claude/skills/ui.md`
 **Files:**
 - NEW: `frontend/src/app/components/ComparisonPage.tsx`
