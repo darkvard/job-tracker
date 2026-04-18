@@ -66,11 +66,12 @@ func main() {
 	authHandler := handler.NewAuthHandler(registerUC, loginUC, updateProfileUC, userRepo)
 	jobHandler := handler.NewJobHandler(jobUCs, jobInvalidator)
 	analyticsHandler := handler.NewAnalyticsHandler(dashboardUC, analyticsUC)
+	comparisonHandler := handler.NewComparisonHandler(jobUCs)
 
 	// Middleware
 	authMiddleware := middleware.NewAuth(tokens)
 
-	router := httpinfra.NewRouter(healthHandler, authHandler, jobHandler, analyticsHandler, authMiddleware)
+	router := httpinfra.NewRouter(healthHandler, authHandler, jobHandler, analyticsHandler, comparisonHandler, authMiddleware)
 	server := httpinfra.NewServer(cfg.Port, router)
 	server.Start()
 }

@@ -169,6 +169,67 @@ const docTemplate = `{
                 }
             }
         },
+        "/applications/compare": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns 2–5 job applications with computed compensation and benefits scores",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "applications"
+                ],
+                "summary": "Compare job applications",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Comma-separated job IDs (2–5)",
+                        "name": "ids",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/job-tracker_internal_application_job.CompareResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_infrastructure_http_handler.errorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/internal_infrastructure_http_handler.errorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/internal_infrastructure_http_handler.errorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/internal_infrastructure_http_handler.errorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/login": {
             "post": {
                 "description": "Authenticate with email and password, receive a JWT token",
@@ -1092,39 +1153,24 @@ const docTemplate = `{
                 }
             }
         },
-        "job-tracker_internal_application_job.CreateRequest": {
+        "job-tracker_internal_application_job.CompareResponse": {
             "type": "object",
             "properties": {
-                "company": {
+                "benefitsScore": {
+                    "type": "integer"
+                },
+                "bhxhPct": {
+                    "type": "number"
+                },
+                "bhytPct": {
+                    "type": "number"
+                },
+                "bonusAnnual": {
+                    "type": "integer"
+                },
+                "commuteAddress": {
                     "type": "string"
                 },
-                "dateApplied": {
-                    "type": "string"
-                },
-                "location": {
-                    "type": "string"
-                },
-                "notes": {
-                    "type": "string"
-                },
-                "role": {
-                    "type": "string"
-                },
-                "source": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "string"
-                },
-                "userID": {
-                    "type": "integer",
-                    "format": "int64"
-                }
-            }
-        },
-        "job-tracker_internal_application_job.JobResponse": {
-            "type": "object",
-            "properties": {
                 "company": {
                     "type": "string"
                 },
@@ -1137,14 +1183,178 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
+                "interviewDate": {
+                    "type": "string"
+                },
                 "location": {
                     "type": "string"
+                },
+                "lunchAllowance": {
+                    "type": "integer"
+                },
+                "noForcedOt": {
+                    "type": "boolean"
+                },
+                "noSaturday": {
+                    "type": "boolean"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "overallScore": {
+                    "type": "number"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "salary": {
+                    "description": "Extended optional fields",
+                    "type": "integer"
+                },
+                "source": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "statusHistory": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/job-tracker_internal_application_job.StatusHistoryItem"
+                    }
+                },
+                "totalComp": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "integer"
+                },
+                "workType": {
+                    "type": "string"
+                }
+            }
+        },
+        "job-tracker_internal_application_job.CreateRequest": {
+            "type": "object",
+            "properties": {
+                "bhxhpct": {
+                    "type": "number",
+                    "format": "float64"
+                },
+                "bhytpct": {
+                    "type": "number",
+                    "format": "float64"
+                },
+                "bonusAnnual": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "commuteAddress": {
+                    "type": "string"
+                },
+                "company": {
+                    "type": "string"
+                },
+                "dateApplied": {
+                    "type": "string"
+                },
+                "interviewDate": {
+                    "description": "YYYY-MM-DD, optional",
+                    "type": "string"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "lunchAllowance": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "noForcedOT": {
+                    "type": "boolean"
+                },
+                "noSaturday": {
+                    "type": "boolean"
                 },
                 "notes": {
                     "type": "string"
                 },
                 "role": {
                     "type": "string"
+                },
+                "salary": {
+                    "description": "Extended optional fields",
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "source": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "userID": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "workType": {
+                    "type": "string"
+                }
+            }
+        },
+        "job-tracker_internal_application_job.JobResponse": {
+            "type": "object",
+            "properties": {
+                "bhxhPct": {
+                    "type": "number"
+                },
+                "bhytPct": {
+                    "type": "number"
+                },
+                "bonusAnnual": {
+                    "type": "integer"
+                },
+                "commuteAddress": {
+                    "type": "string"
+                },
+                "company": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "dateApplied": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "interviewDate": {
+                    "type": "string"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "lunchAllowance": {
+                    "type": "integer"
+                },
+                "noForcedOt": {
+                    "type": "boolean"
+                },
+                "noSaturday": {
+                    "type": "boolean"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "salary": {
+                    "description": "Extended optional fields",
+                    "type": "integer"
                 },
                 "source": {
                     "type": "string"
@@ -1163,6 +1373,9 @@ const docTemplate = `{
                 },
                 "userId": {
                     "type": "integer"
+                },
+                "workType": {
+                    "type": "string"
                 }
             }
         },
@@ -1189,6 +1402,21 @@ const docTemplate = `{
         "job-tracker_internal_application_job.UpdateRequest": {
             "type": "object",
             "properties": {
+                "bhxhpct": {
+                    "type": "number",
+                    "format": "float64"
+                },
+                "bhytpct": {
+                    "type": "number",
+                    "format": "float64"
+                },
+                "bonusAnnual": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "commuteAddress": {
+                    "type": "string"
+                },
                 "company": {
                     "type": "string"
                 },
@@ -1199,14 +1427,33 @@ const docTemplate = `{
                     "type": "integer",
                     "format": "int64"
                 },
+                "interviewDate": {
+                    "description": "YYYY-MM-DD, optional",
+                    "type": "string"
+                },
                 "location": {
                     "type": "string"
+                },
+                "lunchAllowance": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "noForcedOT": {
+                    "type": "boolean"
+                },
+                "noSaturday": {
+                    "type": "boolean"
                 },
                 "notes": {
                     "type": "string"
                 },
                 "role": {
                     "type": "string"
+                },
+                "salary": {
+                    "description": "Extended optional fields",
+                    "type": "integer",
+                    "format": "int64"
                 },
                 "source": {
                     "type": "string"
@@ -1217,6 +1464,9 @@ const docTemplate = `{
                 "userID": {
                     "type": "integer",
                     "format": "int64"
+                },
+                "workType": {
+                    "type": "string"
                 }
             }
         },

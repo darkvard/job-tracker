@@ -211,28 +211,18 @@ definitions:
       salaryCurrency:
         type: string
     type: object
-  job-tracker_internal_application_job.CreateRequest:
+  job-tracker_internal_application_job.CompareResponse:
     properties:
-      company:
-        type: string
-      dateApplied:
-        type: string
-      location:
-        type: string
-      notes:
-        type: string
-      role:
-        type: string
-      source:
-        type: string
-      status:
-        type: string
-      userID:
-        format: int64
+      benefitsScore:
         type: integer
-    type: object
-  job-tracker_internal_application_job.JobResponse:
-    properties:
+      bhxhPct:
+        type: number
+      bhytPct:
+        type: number
+      bonusAnnual:
+        type: integer
+      commuteAddress:
+        type: string
       company:
         type: string
       createdAt:
@@ -241,12 +231,124 @@ definitions:
         type: string
       id:
         type: integer
+      interviewDate:
+        type: string
       location:
         type: string
+      lunchAllowance:
+        type: integer
+      noForcedOt:
+        type: boolean
+      noSaturday:
+        type: boolean
+      notes:
+        type: string
+      overallScore:
+        type: number
+      role:
+        type: string
+      salary:
+        description: Extended optional fields
+        type: integer
+      source:
+        type: string
+      status:
+        type: string
+      statusHistory:
+        items:
+          $ref: '#/definitions/job-tracker_internal_application_job.StatusHistoryItem'
+        type: array
+      totalComp:
+        type: integer
+      updatedAt:
+        type: string
+      userId:
+        type: integer
+      workType:
+        type: string
+    type: object
+  job-tracker_internal_application_job.CreateRequest:
+    properties:
+      bhxhpct:
+        format: float64
+        type: number
+      bhytpct:
+        format: float64
+        type: number
+      bonusAnnual:
+        format: int64
+        type: integer
+      commuteAddress:
+        type: string
+      company:
+        type: string
+      dateApplied:
+        type: string
+      interviewDate:
+        description: YYYY-MM-DD, optional
+        type: string
+      location:
+        type: string
+      lunchAllowance:
+        format: int64
+        type: integer
+      noForcedOT:
+        type: boolean
+      noSaturday:
+        type: boolean
       notes:
         type: string
       role:
         type: string
+      salary:
+        description: Extended optional fields
+        format: int64
+        type: integer
+      source:
+        type: string
+      status:
+        type: string
+      userID:
+        format: int64
+        type: integer
+      workType:
+        type: string
+    type: object
+  job-tracker_internal_application_job.JobResponse:
+    properties:
+      bhxhPct:
+        type: number
+      bhytPct:
+        type: number
+      bonusAnnual:
+        type: integer
+      commuteAddress:
+        type: string
+      company:
+        type: string
+      createdAt:
+        type: string
+      dateApplied:
+        type: string
+      id:
+        type: integer
+      interviewDate:
+        type: string
+      location:
+        type: string
+      lunchAllowance:
+        type: integer
+      noForcedOt:
+        type: boolean
+      noSaturday:
+        type: boolean
+      notes:
+        type: string
+      role:
+        type: string
+      salary:
+        description: Extended optional fields
+        type: integer
       source:
         type: string
       status:
@@ -259,6 +361,8 @@ definitions:
         type: string
       userId:
         type: integer
+      workType:
+        type: string
     type: object
   job-tracker_internal_application_job.StatusHistoryItem:
     properties:
@@ -275,6 +379,17 @@ definitions:
     type: object
   job-tracker_internal_application_job.UpdateRequest:
     properties:
+      bhxhpct:
+        format: float64
+        type: number
+      bhytpct:
+        format: float64
+        type: number
+      bonusAnnual:
+        format: int64
+        type: integer
+      commuteAddress:
+        type: string
       company:
         type: string
       dateApplied:
@@ -282,12 +397,26 @@ definitions:
       id:
         format: int64
         type: integer
+      interviewDate:
+        description: YYYY-MM-DD, optional
+        type: string
       location:
         type: string
+      lunchAllowance:
+        format: int64
+        type: integer
+      noForcedOT:
+        type: boolean
+      noSaturday:
+        type: boolean
       notes:
         type: string
       role:
         type: string
+      salary:
+        description: Extended optional fields
+        format: int64
+        type: integer
       source:
         type: string
       status:
@@ -295,6 +424,8 @@ definitions:
       userID:
         format: int64
         type: integer
+      workType:
+        type: string
     type: object
   job-tracker_internal_application_job.UpdateStatusRequest:
     properties:
@@ -416,6 +547,46 @@ paths:
       summary: Get weekly application counts
       tags:
       - analytics
+  /applications/compare:
+    get:
+      description: Returns 2–5 job applications with computed compensation and benefits
+        scores
+      parameters:
+      - description: Comma-separated job IDs (2–5)
+        in: query
+        name: ids
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/job-tracker_internal_application_job.CompareResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/internal_infrastructure_http_handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Compare job applications
+      tags:
+      - applications
   /auth/login:
     post:
       consumes:
