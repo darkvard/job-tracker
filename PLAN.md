@@ -541,7 +541,7 @@ Shipped in commit `002ec39` (feat(calendar): dense chips for applied+interview, 
 
 ---
 
-### [ ] PR-32: Job comparison — backend scoring API
+### [x] PR-32: Job comparison — backend scoring API
 **Docs:** `docs/RULES.md` · `docs/ARCHITECTURE_BACKEND.md` · `docs/API_SPEC.md`
 **Files:**
 - NEW: `backend/internal/domain/entity/comparison.go`
