@@ -33,6 +33,12 @@ export interface UpdateProfilePayload {
   salaryCurrency: string
 }
 
+export interface CompareJob extends Job {
+  totalComp: number
+  benefitsScore: number
+  overallScore: number
+}
+
 export interface Job {
   id: number
   userId: number
@@ -165,6 +171,8 @@ export const api = {
       client.patch<ApiResponse<Job>>(`/jobs/${id}/status`, data).then((r) => r.data),
     delete: (id: number) =>
       client.delete<ApiResponse<{ message: string }>>(`/jobs/${id}`).then((r) => r.data),
+    compare: (ids: number[]) =>
+      client.get<ApiResponse<CompareJob[]>>(`/applications/compare?ids=${ids.join(',')}`).then((r) => r.data),
   },
   dashboard: {
     getKPIs: () =>

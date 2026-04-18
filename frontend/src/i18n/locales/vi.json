@@ -168,6 +168,26 @@
     "moveHere": "Chuyển vào đây",
     "statusUpdated": "Đã cập nhật trạng thái"
   },
+  "compare": {
+    "title": "So Sánh Ứng Tuyển",
+    "subtitle": "So sánh các công việc đã chọn",
+    "backToJobs": "← Quay lại",
+    "viewDetails": "Xem Chi Tiết",
+    "bestValue": "Tốt nhất",
+    "totalComp": "Tổng Thu Nhập",
+    "benefitsScore": "Điểm Phúc Lợi",
+    "overallScore": "Điểm Tổng",
+    "salary": "Lương Cơ Bản",
+    "workType": "Hình Thức Làm Việc",
+    "noSaturday": "Không làm thứ 7",
+    "noForcedOt": "Không OT bắt buộc",
+    "company": "Công ty",
+    "role": "Vị trí",
+    "status": "Trạng thái",
+    "selectToCompare": "Chọn 2–3 công việc để so sánh",
+    "compareButton": "So sánh ({{count}})",
+    "failedToLoad": "Không thể tải dữ liệu so sánh"
+  },
   "profile": {
     "title": "Hồ sơ",
     "subtitle": "Quản lý thông tin cá nhân",

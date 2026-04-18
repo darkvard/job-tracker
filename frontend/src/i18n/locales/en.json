@@ -168,6 +168,26 @@
     "moveHere": "Move here",
     "statusUpdated": "Status updated"
   },
+  "compare": {
+    "title": "Compare Applications",
+    "subtitle": "Side-by-side comparison of selected jobs",
+    "backToJobs": "← Back to jobs",
+    "viewDetails": "View Details",
+    "bestValue": "Best",
+    "totalComp": "Total Compensation",
+    "benefitsScore": "Benefits Score",
+    "overallScore": "Overall Score",
+    "salary": "Base Salary",
+    "workType": "Work Type",
+    "noSaturday": "No Saturday",
+    "noForcedOt": "No Forced OT",
+    "company": "Company",
+    "role": "Role",
+    "status": "Status",
+    "selectToCompare": "Select 2–3 jobs to compare",
+    "compareButton": "Compare ({{count}})",
+    "failedToLoad": "Failed to load comparison data"
+  },
   "profile": {
     "title": "Profile",
     "subtitle": "Manage your personal information",
