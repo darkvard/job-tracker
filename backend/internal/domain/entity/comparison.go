@@ -56,6 +56,8 @@ func (a *Application) ComputeScore() ComparisonScore {
 		benefits += 2
 	case valueobject.WorkTypeHybrid:
 		benefits += 1
+	case valueobject.WorkTypeOnsite, valueobject.WorkTypeUnknown:
+		// no benefit bonus
 	}
 
 	overall := float64(totalComp)/1_000_000*0.7 + float64(benefits)*0.3

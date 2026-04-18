@@ -65,4 +65,3 @@ func (uc *CompareUseCase) Execute(ctx context.Context, req CompareRequest) ([]Co
 	}
 	return results, nil
 }
-

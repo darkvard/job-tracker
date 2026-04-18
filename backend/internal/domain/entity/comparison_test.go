@@ -8,7 +8,7 @@ import (
 	"job-tracker/internal/domain/valueobject"
 )
 
-func int64Ptr(v int64) *int64 { return &v }
+func int64Ptr(v int64) *int64       { return &v }
 func float64Ptr(v float64) *float64 { return &v }
 
 func TestComputeScore_AllFields(t *testing.T) {
@@ -32,7 +32,7 @@ func TestComputeScore_AllFields(t *testing.T) {
 	score := app.ComputeScore()
 
 	// TotalComp = 20M + 500K*12 + 5M - 20M*9.5/100 = 20M + 6M + 5M - 1.9M = 29.1M
-	expectedTC := int64(20_000_000 + 500_000*12 + 5_000_000 - int64(float64(20_000_000)*9.5/100))
+	expectedTC := 20_000_000 + 500_000*12 + 5_000_000 - int64(float64(20_000_000)*9.5/100)
 	if score.TotalComp != expectedTC {
 		t.Errorf("TotalComp: want %d, got %d", expectedTC, score.TotalComp)
 	}
