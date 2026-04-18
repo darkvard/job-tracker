@@ -12,6 +12,7 @@ type UseCases struct {
 	Update       *UpdateUseCase
 	UpdateStatus *UpdateStatusUseCase
 	Delete       *DeleteUseCase
+	Compare      *CompareUseCase
 }
 
 // NewUseCases constructs all job use cases with their shared dependencies.
@@ -23,5 +24,6 @@ func NewUseCases(repo repository.ApplicationRepository, tx repository.TxManager)
 		Update:       NewUpdateUseCase(repo),
 		UpdateStatus: NewUpdateStatusUseCase(repo, tx),
 		Delete:       NewDeleteUseCase(repo),
+		Compare:      NewCompareUseCase(repo),
 	}
 }

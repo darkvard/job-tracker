@@ -87,9 +87,10 @@ func TestMain(m *testing.M) {
 	authHandler := handler.NewAuthHandler(registerUC, loginUC, updateProfileUC, userRepo)
 	jobHandler := handler.NewJobHandler(jobUCs, jobInvalidator)
 	analyticsHandler := handler.NewAnalyticsHandler(dashboardUC, analyticsUC)
+	comparisonHandler := handler.NewComparisonHandler(jobUCs)
 	authMiddleware := middleware.NewAuth(tokens)
 
-	router := httpinfra.NewRouter(healthHandler, authHandler, jobHandler, analyticsHandler, authMiddleware)
+	router := httpinfra.NewRouter(healthHandler, authHandler, jobHandler, analyticsHandler, comparisonHandler, authMiddleware)
 	testSrv = httptest.NewServer(router)
 
 	code := m.Run()

@@ -18,6 +18,7 @@ func NewRouter(
 	authHandler *handler.AuthHandler,
 	jobHandler *handler.JobHandler,
 	analyticsHandler *handler.AnalyticsHandler,
+	comparisonHandler *handler.ComparisonHandler,
 	authMiddleware func(http.Handler) http.Handler,
 ) http.Handler {
 	r := chi.NewRouter()
@@ -69,6 +70,12 @@ func NewRouter(
 			r.Get("/funnel", analyticsHandler.GetFunnel)
 			r.Get("/sources", analyticsHandler.GetSources)
 			r.Get("/metrics", analyticsHandler.GetMetrics)
+		})
+
+		// Applications routes (all protected)
+		r.Route("/applications", func(r chi.Router) {
+			r.Use(authMiddleware)
+			r.Get("/compare", comparisonHandler.Compare)
 		})
 	})
 
